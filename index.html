@@ -457,17 +457,17 @@
       font-weight: 600;
     }
 
-    /* Editable Interests Input Area */
+    /* Editable Interests Container */
     .interests-container {
       display: flex;
       align-items: center;
       gap: 6px;
       background: #0b0f19;
-      border: 1px solid var(--border-color);
+      border: 1px solid #2d3748;
       padding: 4px 8px;
       border-radius: 6px;
-      min-width: 220px;
-      max-width: 420px;
+      min-width: 250px;
+      max-width: 480px;
       overflow-x: auto;
       flex-shrink: 0;
     }
@@ -481,10 +481,10 @@
     .tag-badge {
       background: #1e3a8a;
       color: #93c5fd;
-      font-size: 0.74rem;
-      padding: 3px 6px;
+      font-size: 0.76rem;
+      padding: 3px 7px;
       border-radius: 4px;
-      display: flex;
+      display: inline-flex;
       align-items: center;
       gap: 5px;
       white-space: nowrap;
@@ -493,28 +493,53 @@
 
     .tag-badge .remove-tag {
       cursor: pointer;
-      font-weight: bold;
-      color: #bfdbfe;
-      font-size: 0.78rem;
+      font-weight: 800;
+      color: #93c5fd;
+      font-size: 0.85rem;
       line-height: 1;
+      padding: 0 2px;
     }
 
     .tag-badge .remove-tag:hover {
-      color: #ef4444;
+      color: #f87171;
+    }
+
+    .tag-input-wrap {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex: 1;
+      min-width: 130px;
     }
 
     .tag-input {
       background: transparent;
       border: none;
       color: #fff;
-      font-size: 0.78rem;
+      font-size: 0.8rem;
       outline: none;
-      min-width: 90px;
-      flex: 1;
+      width: 100%;
     }
 
     .tag-input::placeholder {
-      color: #6b7280;
+      color: #64748b;
+    }
+
+    .btn-add-tag {
+      background: #334155;
+      color: #cbd5e1;
+      border: none;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn-add-tag:hover {
+      background: var(--primary);
+      color: #fff;
     }
 
     .status-text {
@@ -647,13 +672,13 @@
       </select>
     </div>
 
-    <!-- 3. Add/Remove Custom Interest Tags -->
-    <div class="interests-container" id="interestsContainer" title="Add interests to match with common topics">
-      <div class="tags-list" id="tagsList">
-        <span class="tag-badge">#chatting <span class="remove-tag" data-tag="chatting">&times;</span></span>
-        <span class="tag-badge">#music <span class="remove-tag" data-tag="music">&times;</span></span>
+    <!-- 3. Dynamic Interests Box -->
+    <div class="interests-container" id="interestsContainer">
+      <div class="tags-list" id="tagsList"></div>
+      <div class="tag-input-wrap">
+        <input type="text" id="tagInput" class="tag-input" placeholder="+ Add interest..." autocomplete="off" />
+        <button class="btn-add-tag" id="btnAddTag">+ Add</button>
       </div>
-      <input type="text" id="tagInput" class="tag-input" placeholder="+ Add topic..." autocomplete="off" />
     </div>
 
     <span class="status-text" id="statusHelp">Press <b>Esc</b> to skip stranger</span>
@@ -692,7 +717,7 @@
       } catch (e) {}
     }
 
-    // --- Stranger Profiles with Gender and Multi-Tags ---
+    // --- Stranger Profiles with Gender and Tags ---
     const strangerProfiles = [
       { name: "Sofia (Spain)", gender: "female", skin: "#f6d5b8", hair: "#1c1917", shirt: "#ef4444", tags: ["music", "travel", "chatting"] },
       { name: "Alex (Canada)", gender: "male", skin: "#fbd3b2", hair: "#3e2723", shirt: "#3b82f6", tags: ["gaming", "coding", "chatting"] },
@@ -727,27 +752,37 @@
     const quickChips = document.querySelectorAll(".quick-chip");
     const tagsList = document.getElementById("tagsList");
     const tagInput = document.getElementById("tagInput");
+    const btnAddTag = document.getElementById("btnAddTag");
 
-    // --- 0. Interest Tags Management ---
+    // --- 0. Dynamic Tag Management ---
     function renderTags() {
       tagsList.innerHTML = "";
       userTags.forEach(tag => {
         const badge = document.createElement("span");
         badge.className = "tag-badge";
-        badge.innerHTML = `#${escapeHTML(tag)} <span class="remove-tag" data-tag="${escapeHTML(tag)}">&times;</span>`;
+        badge.innerHTML = `#${escapeHTML(tag)} <span class="remove-tag" data-tag="${escapeHTML(tag)}" title="Remove tag">&times;</span>`;
         tagsList.appendChild(badge);
       });
     }
 
+    function addTagFromInput() {
+      let val = tagInput.value.trim().toLowerCase().replace(/^[#,\s]+/, "");
+      if (val && !userTags.includes(val)) {
+        userTags.push(val);
+        renderTags();
+      }
+      tagInput.value = "";
+    }
+
+    btnAddTag.addEventListener("click", (e) => {
+      e.preventDefault();
+      addTagFromInput();
+    });
+
     tagInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === ",") {
         e.preventDefault();
-        let val = tagInput.value.trim().toLowerCase().replace(/^[#,]+/, "");
-        if (val && !userTags.includes(val)) {
-          userTags.push(val);
-          renderTags();
-        }
-        tagInput.value = "";
+        addTagFromInput();
       }
     });
 
@@ -758,6 +793,9 @@
         renderTags();
       }
     });
+
+    // Initialize tags on boot
+    renderTags();
 
     // --- 1. Canvas Dimensions & Resizing ---
     function syncCanvasSizes() {
@@ -773,7 +811,7 @@
     window.addEventListener("resize", syncCanvasSizes);
     setTimeout(syncCanvasSizes, 100);
 
-    // --- 2. Dynamic Local Person Avatar (Male / Female Selection) ---
+    // --- 2. Dynamic Local Person Avatar ---
     let localFrameStep = 0;
     function renderLocalPerson() {
       if (!localCanvas) return;
@@ -798,7 +836,7 @@
       const headRadius = Math.min(w, h) * 0.19; 
       const cy = h * 0.38 + breath;
 
-      // 1. Shoulders & Shirt based on chosen gender
+      // Shoulders & Shirt
       ctx.fillStyle = myGender === "female" ? "#ec4899" : "#2563eb";
       ctx.beginPath();
       ctx.ellipse(cx, h * 0.95 + breath, w * 0.42, h * 0.38, 0, 0, Math.PI * 2);
@@ -812,19 +850,19 @@
       ctx.lineTo(cx + (headRadius * 0.35), h * 0.65 + breath);
       ctx.fill();
 
-      // 2. Neck
+      // Neck
       ctx.fillStyle = "#e0ac69";
       const neckWidth = headRadius * 0.46;
       const neckHeight = headRadius * 0.55;
       ctx.fillRect(cx - (neckWidth / 2), cy + (headRadius * 0.65), neckWidth, neckHeight);
 
-      // 3. Head
+      // Head
       ctx.fillStyle = "#f1c27d";
       ctx.beginPath();
       ctx.arc(cx, cy, headRadius, 0, Math.PI * 2);
       ctx.fill();
 
-      // 4. Hair based on chosen gender
+      // Hair
       ctx.fillStyle = myGender === "female" ? "#7c2d12" : "#18181b";
       ctx.beginPath();
       if (myGender === "female") {
@@ -836,7 +874,7 @@
       }
       ctx.fill();
 
-      // 5. Eyes with Blinking
+      // Eyes
       ctx.fillStyle = "#09090b";
       const eyeOffset = headRadius * 0.36;
       const isBlinking = Math.sin(localFrameStep * 0.45) > 0.96;
@@ -851,7 +889,7 @@
         ctx.fill();
       }
 
-      // 6. Friendly Smile
+      // Smile
       ctx.strokeStyle = myGender === "female" ? "#be123c" : "#78350f";
       ctx.lineWidth = 3;
       ctx.lineCap = "round";
@@ -897,24 +935,24 @@
       const headRadius = Math.min(w, h) * 0.19; 
       const cy = h * 0.38 + breath;
 
-      // 1. Shoulders / Chest
+      // Shoulders / Chest
       ctx.fillStyle = currentStranger.shirt;
       ctx.beginPath();
       ctx.ellipse(cx, h * 0.95 + breath, w * 0.42, h * 0.38, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      // 2. Neck
+      // Neck
       ctx.fillStyle = currentStranger.skin;
       const neckWidth = headRadius * 0.48;
       const neckHeight = headRadius * 0.55;
       ctx.fillRect(cx - (neckWidth / 2), cy + (headRadius * 0.65), neckWidth, neckHeight);
 
-      // 3. Head
+      // Head
       ctx.beginPath();
       ctx.arc(cx, cy, headRadius, 0, Math.PI * 2);
       ctx.fill();
 
-      // 4. Hair
+      // Hair
       ctx.fillStyle = currentStranger.hair;
       ctx.beginPath();
       if (currentStranger.gender === "female") {
@@ -926,7 +964,7 @@
       }
       ctx.fill();
 
-      // 5. Eyes with Blinking
+      // Eyes
       ctx.fillStyle = "#111827";
       const eyeOffset = headRadius * 0.36;
       const isBlinking = Math.sin(frameStep * 0.5) > 0.96;
@@ -940,7 +978,7 @@
         ctx.arc(cx + eyeOffset, cy, headRadius * 0.07, 0, Math.PI * 2);
       }
 
-      // 6. Smile
+      // Smile
       ctx.strokeStyle = "#4b2d18";
       ctx.lineWidth = 3;
       ctx.lineCap = "round";
@@ -1094,7 +1132,7 @@
         pool = strangerProfiles.filter(p => p.gender === pref);
       }
 
-      // 2. Interest-based prioritization
+      // 2. Prioritize candidates based on active interests
       let matchedTag = "chatting";
       let prioritized = pool.filter(p => p.tags.some(t => userTags.includes(t)));
       
