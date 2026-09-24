@@ -390,7 +390,7 @@
 
     /* Bottom Control Bar */
     footer {
-      height: 62px;
+      height: 64px;
       background: var(--card-bg);
       border-top: 1px solid var(--border-color);
       display: flex;
@@ -398,13 +398,14 @@
       padding: 0 16px;
       gap: 12px;
       flex-shrink: 0;
+      overflow-x: auto;
     }
 
     .btn-main-action {
       background: var(--primary);
       color: #fff;
       border: none;
-      padding: 10px 24px;
+      padding: 10px 22px;
       border-radius: 6px;
       font-weight: 700;
       font-size: 0.95rem;
@@ -412,6 +413,7 @@
       display: flex;
       align-items: center;
       gap: 8px;
+      white-space: nowrap;
       transition: background 0.2s;
     }
 
@@ -435,12 +437,14 @@
       border: 1px solid var(--border-color);
       padding: 5px 10px;
       border-radius: 6px;
+      flex-shrink: 0;
     }
 
     .gender-picker-wrap label {
       font-size: 0.78rem;
       color: var(--text-muted);
       font-weight: 600;
+      white-space: nowrap;
     }
 
     .gender-select {
@@ -453,7 +457,8 @@
       font-weight: 600;
     }
 
-    .interests-box {
+    /* Editable Interests Input Area */
+    .interests-container {
       display: flex;
       align-items: center;
       gap: 6px;
@@ -461,23 +466,62 @@
       border: 1px solid var(--border-color);
       padding: 4px 8px;
       border-radius: 6px;
+      min-width: 220px;
+      max-width: 420px;
+      overflow-x: auto;
+      flex-shrink: 0;
+    }
+
+    .tags-list {
+      display: flex;
+      align-items: center;
+      gap: 5px;
     }
 
     .tag-badge {
       background: #1e3a8a;
       color: #93c5fd;
       font-size: 0.74rem;
-      padding: 2px 6px;
+      padding: 3px 6px;
       border-radius: 4px;
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 5px;
+      white-space: nowrap;
+      user-select: none;
+    }
+
+    .tag-badge .remove-tag {
+      cursor: pointer;
+      font-weight: bold;
+      color: #bfdbfe;
+      font-size: 0.78rem;
+      line-height: 1;
+    }
+
+    .tag-badge .remove-tag:hover {
+      color: #ef4444;
+    }
+
+    .tag-input {
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 0.78rem;
+      outline: none;
+      min-width: 90px;
+      flex: 1;
+    }
+
+    .tag-input::placeholder {
+      color: #6b7280;
     }
 
     .status-text {
       font-size: 0.83rem;
       color: var(--text-muted);
       margin-left: auto;
+      white-space: nowrap;
     }
 
     @media (max-width: 900px) {
@@ -603,9 +647,13 @@
       </select>
     </div>
 
-    <div class="interests-box">
-      <span class="tag-badge">#chatting</span>
-      <span class="tag-badge">#music</span>
+    <!-- 3. Add/Remove Custom Interest Tags -->
+    <div class="interests-container" id="interestsContainer" title="Add interests to match with common topics">
+      <div class="tags-list" id="tagsList">
+        <span class="tag-badge">#chatting <span class="remove-tag" data-tag="chatting">&times;</span></span>
+        <span class="tag-badge">#music <span class="remove-tag" data-tag="music">&times;</span></span>
+      </div>
+      <input type="text" id="tagInput" class="tag-input" placeholder="+ Add topic..." autocomplete="off" />
     </div>
 
     <span class="status-text" id="statusHelp">Press <b>Esc</b> to skip stranger</span>
@@ -622,6 +670,9 @@
     let partnerAnimationTimer = null;
     let localAvatarTimer = null;
     let botDialogueTimeout = null;
+
+    // --- Active User Interests List ---
+    let userTags = ["chatting", "music"];
 
     // --- Sound Effects Synthesizer ---
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -641,14 +692,14 @@
       } catch (e) {}
     }
 
-    // --- Stranger Profiles with Gender Tags ---
+    // --- Stranger Profiles with Gender and Multi-Tags ---
     const strangerProfiles = [
-      { name: "Sofia (Spain)", gender: "female", skin: "#f6d5b8", hair: "#1c1917", shirt: "#ef4444", tag: "#music" },
-      { name: "Alex (Canada)", gender: "male", skin: "#fbd3b2", hair: "#3e2723", shirt: "#3b82f6", tag: "#gaming" },
-      { name: "Kenji (Japan)", gender: "male", skin: "#f4cca4", hair: "#111827", shirt: "#10b981", tag: "#music" },
-      { name: "Maya (Brazil)", gender: "female", skin: "#c68642", hair: "#1e1b18", shirt: "#8b5cf6", tag: "#art" },
-      { name: "Emma (UK)", gender: "female", skin: "#ffe0bd", hair: "#b55239", shirt: "#ec4899", tag: "#chatting" },
-      { name: "Lucas (France)", gender: "male", skin: "#f5d0b5", hair: "#4a3728", shirt: "#0284c7", tag: "#movies" }
+      { name: "Sofia (Spain)", gender: "female", skin: "#f6d5b8", hair: "#1c1917", shirt: "#ef4444", tags: ["music", "travel", "chatting"] },
+      { name: "Alex (Canada)", gender: "male", skin: "#fbd3b2", hair: "#3e2723", shirt: "#3b82f6", tags: ["gaming", "coding", "chatting"] },
+      { name: "Kenji (Japan)", gender: "male", skin: "#f4cca4", hair: "#111827", shirt: "#10b981", tags: ["music", "anime", "art"] },
+      { name: "Maya (Brazil)", gender: "female", skin: "#c68642", hair: "#1e1b18", shirt: "#8b5cf6", tags: ["art", "dancing", "chatting"] },
+      { name: "Emma (UK)", gender: "female", skin: "#ffe0bd", hair: "#b55239", shirt: "#ec4899", tags: ["movies", "chatting", "books"] },
+      { name: "Lucas (France)", gender: "male", skin: "#f5d0b5", hair: "#4a3728", shirt: "#0284c7", tags: ["movies", "sports", "gaming"] }
     ];
     let currentStranger = null;
 
@@ -674,6 +725,39 @@
     const btnMuteAudio = document.getElementById("btnMuteAudio");
     const btnMuteVideo = document.getElementById("btnMuteVideo");
     const quickChips = document.querySelectorAll(".quick-chip");
+    const tagsList = document.getElementById("tagsList");
+    const tagInput = document.getElementById("tagInput");
+
+    // --- 0. Interest Tags Management ---
+    function renderTags() {
+      tagsList.innerHTML = "";
+      userTags.forEach(tag => {
+        const badge = document.createElement("span");
+        badge.className = "tag-badge";
+        badge.innerHTML = `#${escapeHTML(tag)} <span class="remove-tag" data-tag="${escapeHTML(tag)}">&times;</span>`;
+        tagsList.appendChild(badge);
+      });
+    }
+
+    tagInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === ",") {
+        e.preventDefault();
+        let val = tagInput.value.trim().toLowerCase().replace(/^[#,]+/, "");
+        if (val && !userTags.includes(val)) {
+          userTags.push(val);
+          renderTags();
+        }
+        tagInput.value = "";
+      }
+    });
+
+    tagsList.addEventListener("click", (e) => {
+      if (e.target.classList.contains("remove-tag")) {
+        const toRemove = e.target.getAttribute("data-tag");
+        userTags = userTags.filter(t => t !== toRemove);
+        renderTags();
+      }
+    });
 
     // --- 1. Canvas Dimensions & Resizing ---
     function syncCanvasSizes() {
@@ -707,7 +791,6 @@
       const breath = Math.sin(localFrameStep) * 2;
       const myGender = myGenderSelect.value;
 
-      // Dark card background
       ctx.fillStyle = "#0c1322";
       ctx.fillRect(0, 0, w, h);
 
@@ -745,12 +828,10 @@
       ctx.fillStyle = myGender === "female" ? "#7c2d12" : "#18181b";
       ctx.beginPath();
       if (myGender === "female") {
-        // Longer flowing hair
         ctx.arc(cx, cy - (headRadius * 0.15), headRadius * 1.08, Math.PI, Math.PI * 2);
         ctx.fillRect(cx - headRadius * 1.05, cy - (headRadius * 0.15), headRadius * 0.4, headRadius * 1.2);
         ctx.fillRect(cx + headRadius * 0.65, cy - (headRadius * 0.15), headRadius * 0.4, headRadius * 1.2);
       } else {
-        // Shorter male haircut
         ctx.arc(cx, cy - (headRadius * 0.1), headRadius * 1.02, Math.PI, Math.PI * 2);
       }
       ctx.fill();
@@ -784,7 +865,6 @@
     syncCanvasSizes();
     renderLocalPerson();
 
-    // Re-render local avatar immediately if "I am:" changes
     myGenderSelect.addEventListener("change", () => {
       if (localVideo.style.display === "none") {
         renderLocalPerson();
@@ -810,7 +890,6 @@
       frameStep += 0.04;
       const breath = Math.sin(frameStep) * 2;
 
-      // Card Background
       ctx.fillStyle = "#0c1322";
       ctx.fillRect(0, 0, w, h);
 
@@ -859,7 +938,6 @@
         ctx.beginPath();
         ctx.arc(cx - eyeOffset, cy, headRadius * 0.07, 0, Math.PI * 2);
         ctx.arc(cx + eyeOffset, cy, headRadius * 0.07, 0, Math.PI * 2);
-        ctx.fill();
       }
 
       // 6. Smile
@@ -924,7 +1002,7 @@
       btnMuteAudio.textContent = micMuted ? "🔇 Unmute" : "🎤 Mute";
     });
 
-    // Toggle Camera (With Instant Person Avatar Fallback)
+    // Toggle Camera
     btnMuteVideo.addEventListener("click", () => {
       if (!localStream) return;
       camDisabled = !camDisabled;
@@ -932,7 +1010,6 @@
       localStream.getVideoTracks().forEach(t => (t.enabled = !camDisabled));
 
       if (camDisabled) {
-        // Camera is OFF -> Switch to Person Avatar
         localVideo.style.display = "none";
         localCanvas.style.display = "block";
         renderLocalPerson();
@@ -941,7 +1018,6 @@
         localLabel.textContent = "You (Camera Paused)";
         btnMuteVideo.textContent = "📷 Start Cam";
       } else {
-        // Camera is ON -> Switch to Live Video
         localVideo.style.display = "block";
         localCanvas.style.display = "none";
 
@@ -974,7 +1050,7 @@
       return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
 
-    // --- 6. Stranger Connection & Gender Matching ---
+    // --- 6. Stranger Connection with Interest & Gender Matching ---
     function startSearching() {
       if (partnerAnimationTimer) cancelAnimationFrame(partnerAnimationTimer);
       clearTimeout(botDialogueTimeout);
@@ -1011,17 +1087,31 @@
       isSearching = false;
       isConnected = true;
 
-      // Filter candidates based on selected gender preference
+      // 1. Gender Filter
       const pref = genderSelect.value;
       let pool = strangerProfiles;
       if (pref !== "both") {
         pool = strangerProfiles.filter(p => p.gender === pref);
       }
 
-      currentStranger = pool[Math.floor(Math.random() * pool.length)];
+      // 2. Interest-based prioritization
+      let matchedTag = "chatting";
+      let prioritized = pool.filter(p => p.tags.some(t => userTags.includes(t)));
+      
+      let candidate;
+      if (prioritized.length > 0) {
+        candidate = prioritized[Math.floor(Math.random() * prioritized.length)];
+        const common = candidate.tags.filter(t => userTags.includes(t));
+        matchedTag = common[0] || "chatting";
+      } else {
+        candidate = pool[Math.floor(Math.random() * pool.length)];
+        matchedTag = candidate.tags[0] || "chatting";
+      }
+
+      currentStranger = candidate;
       strangerDot.className = "badge-dot connected";
       strangerLabel.textContent = currentStranger.name;
-      strangerTag.textContent = `Matched on: ${currentStranger.tag}`;
+      strangerTag.textContent = `Matched on: #${matchedTag}`;
       strangerTag.style.display = "block";
       btnMainAction.textContent = "⏹ Next (Esc)";
 
@@ -1031,12 +1121,17 @@
 
       playBeep(880, 0.12);
       appendMessage("", "You're now chatting with a random stranger. Say hi!", "system");
-      appendMessage("", `You both like ${currentStranger.tag}.`, "system");
+      appendMessage("", `You both like #${matchedTag}.`, "system");
       renderStrangerFrame();
 
       botDialogueTimeout = setTimeout(() => {
         if (!isConnected) return;
-        const intros = ["Hey! How's your day going?", "Hello from the other side!", "What's up?", "Konnichiwa! Hey!"];
+        const intros = [
+          `Hey! Glad to meet another #${matchedTag} fan!`,
+          "Hello from the other side! How's your day going?",
+          "What's up? Nice to meet you!",
+          "Konnichiwa! Hey friend!"
+        ];
         appendMessage("Stranger", intros[Math.floor(Math.random() * intros.length)], "stranger");
       }, 1200);
     }
