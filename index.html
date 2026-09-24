@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Omegle Web - Random Video & Text Chat</title>
+  <title>Omegle Web - Live Random Video & Chat</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -24,10 +24,10 @@
               blue: '#0084ff',
               lightBlue: '#38a1ff',
               orange: '#ff6b35',
-              dark: '#121417',
-              surface: '#1b1f24',
-              panel: '#22272e',
-              border: '#2d333b',
+              dark: '#0c0e12',
+              surface: '#151921',
+              panel: '#1c212b',
+              border: '#2a313d',
               stranger: '#ff4d4f',
               you: '#0084ff'
             }
@@ -38,34 +38,26 @@
   </script>
 
   <style>
-    /* Custom Scrollbar */
-    ::-webkit-scrollbar {
+    /* Fixed smooth custom scrollbar */
+    #chatMessages::-webkit-scrollbar {
       width: 6px;
-      height: 6px;
     }
-    ::-webkit-scrollbar-track {
-      background: #181c21;
+    #chatMessages::-webkit-scrollbar-track {
+      background: #11141a;
     }
-    ::-webkit-scrollbar-thumb {
-      background: #374151;
+    #chatMessages::-webkit-scrollbar-thumb {
+      background: #2f3746;
       border-radius: 9999px;
     }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #4b5563;
+    #chatMessages::-webkit-scrollbar-thumb:hover {
+      background: #414c60;
     }
 
-    /* Video Filters */
-    .filter-none { filter: none; }
-    .filter-cyberpunk { filter: hue-rotate(180deg) saturate(200%) contrast(120%); }
-    .filter-blur { filter: blur(4px); }
-    .filter-vintage { filter: sepia(60%) contrast(110%) brightness(90%); }
-    .filter-noir { filter: grayscale(100%) contrast(150%); }
-
-    /* Scanline overlay for simulated remote video */
+    /* Scanline effect for stranger video feed */
     .scanlines {
       background: linear-gradient(
         rgba(18, 16, 16, 0) 50%, 
-        rgba(0, 0, 0, 0.25) 50%
+        rgba(0, 0, 0, 0.28) 50%
       ), linear-gradient(
         90deg,
         rgba(255, 0, 0, 0.03),
@@ -75,7 +67,7 @@
       background-size: 100% 3px, 6px 100%;
     }
 
-    /* Typing bubble bounce */
+    /* Typing dots animation */
     @keyframes typingBounce {
       0%, 60%, 100% { transform: translateY(0); }
       30% { transform: translateY(-4px); }
@@ -85,190 +77,162 @@
     .dot-3 { animation: typingBounce 1.2s infinite ease-in-out 0.4s; }
   </style>
 </head>
-<body class="bg-[#0f1115] text-slate-100 font-sans min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
+<body class="bg-omegle-dark text-slate-100 font-sans h-screen w-screen flex flex-col overflow-hidden select-none">
 
-  <header class="h-14 border-b border-omegle-border bg-omegle-surface px-4 flex items-center justify-between shrink-0 z-20">
+  <!-- Header -->
+  <header class="h-14 border-b border-omegle-border bg-omegle-surface px-4 flex items-center justify-between shrink-0 z-30">
     <div class="flex items-center gap-3">
-      <div class="flex items-center gap-1.5 cursor-pointer" onclick="resetToHome()">
+      <div class="flex items-center gap-1.5 cursor-pointer" onclick="resetApp()">
         <span class="text-2xl font-black tracking-tight text-omegle-blue">omegle</span>
-        <span class="text-xs px-2 py-0.5 rounded font-mono font-semibold bg-blue-500/20 text-blue-400 border border-blue-500/30">WEB</span>
+        <span class="text-xs px-2 py-0.5 rounded font-mono font-semibold bg-blue-500/20 text-blue-400 border border-blue-500/30">LIVE</span>
       </div>
-      <div class="hidden sm:flex items-center text-xs text-slate-400 bg-black/30 px-3 py-1.5 rounded-full border border-slate-800">
+      <div class="hidden sm:flex items-center text-xs text-slate-400 bg-black/40 px-3 py-1.5 rounded-full border border-slate-800">
         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse mr-2"></span>
-        <span id="onlineCountText">38,419</span>&nbsp;strangers online
+        <span id="onlineCountText">41,208</span>&nbsp;online now
       </div>
     </div>
 
+    <!-- Right Controls -->
     <div class="flex items-center gap-2">
-      <!-- Quick Info / Safety -->
-      <button onclick="toggleModal('safetyModal', true)" class="text-xs text-slate-400 hover:text-white px-2.5 py-1.5 rounded-lg border border-slate-700/80 hover:bg-slate-800 transition flex items-center gap-1.5">
-        <i class="fa-solid fa-shield-halved text-emerald-400"></i>
-        <span class="hidden md:inline">Safety & Guidelines</span>
+      <!-- Media Permission Request Button -->
+      <button id="enableMediaBtn" onclick="requestMediaPermissions()" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition flex items-center gap-1.5 shadow-sm">
+        <i class="fa-solid fa-video" id="mediaStateIcon"></i>
+        <span id="mediaBtnText">Enable Camera & Mic</span>
       </button>
 
-      <!-- Video Filter Switcher -->
-      <div class="relative group">
-        <button id="filterBtn" class="text-xs text-slate-300 px-2.5 py-1.5 rounded-lg border border-slate-700 hover:bg-slate-800 transition flex items-center gap-1.5">
-          <i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i>
-          <span class="hidden sm:inline" id="filterLabel">Filter: Normal</span>
-        </button>
-        <div class="absolute right-0 mt-1 w-36 bg-omegle-panel border border-omegle-border rounded-lg shadow-xl hidden group-hover:block z-30 py-1 text-xs">
-          <button onclick="setFilter('filter-none', 'Normal')" class="w-full text-left px-3 py-1.5 hover:bg-slate-700 text-slate-200">Normal</button>
-          <button onclick="setFilter('filter-blur', 'Blur BG')" class="w-full text-left px-3 py-1.5 hover:bg-slate-700 text-slate-200">Soft Blur</button>
-          <button onclick="setFilter('filter-vintage', 'Vintage')" class="w-full text-left px-3 py-1.5 hover:bg-slate-700 text-slate-200">Warm Vintage</button>
-          <button onclick="setFilter('filter-noir', 'Noir')" class="w-full text-left px-3 py-1.5 hover:bg-slate-700 text-slate-200">Noir B&W</button>
-          <button onclick="setFilter('filter-cyberpunk', 'Cyberpunk')" class="w-full text-left px-3 py-1.5 hover:bg-slate-700 text-slate-200">Cyberpunk</button>
-        </div>
-      </div>
+      <!-- Audio Mute Switch -->
+      <button onclick="toggleAudioFx()" id="audioToggleBtn" title="Sound Effects" class="p-2 text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 rounded-lg border border-slate-700 text-xs transition">
+        <i class="fa-solid fa-volume-high" id="audioToggleIcon"></i>
+      </button>
 
-      <!-- Settings / Mode Switcher -->
-      <button onclick="toggleModal('settingsModal', true)" class="text-slate-300 hover:text-white p-2 rounded-lg border border-slate-700 hover:bg-slate-800 transition text-sm">
-        <i class="fa-solid fa-gear"></i>
+      <!-- Safety Rules -->
+      <button onclick="toggleModal('safetyModal', true)" title="Rules" class="p-2 text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 rounded-lg border border-slate-700 text-xs transition">
+        <i class="fa-solid fa-shield-halved text-emerald-400"></i>
       </button>
     </div>
   </header>
 
-  <main class="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
+  <!-- Main Split Body -->
+  <main class="flex-1 flex flex-col md:flex-row overflow-hidden relative">
 
-    <!-- LEFT / TOP: Video Grid Container -->
-    <section class="flex-1 bg-black flex flex-col p-2.5 gap-2 relative min-h-[260px] lg:min-h-0">
+    <!-- LEFT: Video Screens Container -->
+    <section class="flex-1 flex flex-col p-2.5 gap-2 bg-black min-h-[300px] md:min-h-0 relative">
       
-      <!-- Video Grid (Remote + Local) -->
-      <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-2 h-full relative">
-
+      <!-- Split Video Canvas / Streams -->
+      <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-2.5 h-full relative">
+        
         <!-- Remote Stranger Screen -->
-        <div id="remoteContainer" class="relative bg-slate-900 rounded-xl overflow-hidden border border-slate-800 flex items-center justify-center group">
-          <!-- Canvas for simulated remote video stream -->
-          <canvas id="remoteCanvas" class="w-full h-full object-cover transition-all duration-300"></canvas>
-
-          <!-- Scanline & Vignette Effect Overlay -->
-          <div class="absolute inset-0 scanlines pointer-events-none opacity-40"></div>
+        <div id="remoteBox" class="relative bg-slate-950 rounded-xl overflow-hidden border border-slate-800 flex items-center justify-center">
+          <canvas id="remoteCanvas" class="w-full h-full object-cover"></canvas>
+          <div class="absolute inset-0 scanlines pointer-events-none opacity-30"></div>
 
           <!-- Remote Status Badge -->
-          <div class="absolute top-3 left-3 flex items-center gap-2 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full text-xs font-medium border border-white/10 z-10">
+          <div class="absolute top-3 left-3 flex items-center gap-2 bg-black/70 backdrop-blur-md px-3 py-1 rounded-full text-xs font-medium border border-white/10 z-10">
             <span id="remoteDot" class="w-2 h-2 rounded-full bg-slate-500"></span>
             <span id="remoteStatusText" class="text-slate-300">Disconnected</span>
           </div>
 
-          <!-- Stranger Name / Location badge -->
-          <div id="strangerProfileBadge" class="hidden absolute top-3 right-3 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-xs border border-white/10 text-slate-300 z-10 flex items-center gap-1.5">
-            <i class="fa-solid fa-globe text-blue-400"></i>
+          <!-- Location Badge -->
+          <div id="strangerTagBadge" class="hidden absolute top-3 right-3 bg-black/70 backdrop-blur-md px-3 py-1 rounded-full text-xs border border-white/10 text-slate-300 z-10 flex items-center gap-1.5">
+            <i class="fa-solid fa-earth-americas text-blue-400"></i>
             <span id="strangerLocation">Stranger (United States)</span>
           </div>
 
-          <!-- Connecting / Waiting Animated Overlay -->
-          <div id="remoteSearchingOverlay" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-sm flex flex-col items-center justify-center gap-3 z-10">
-            <div class="relative">
-              <div class="w-14 h-14 rounded-full border-4 border-blue-500/20 border-t-blue-500 animate-spin"></div>
-              <i class="fa-solid fa-satellite-dish absolute inset-0 m-auto text-blue-400 text-lg flex items-center justify-center"></i>
-            </div>
-            <p class="text-sm font-medium text-slate-300 animate-pulse" id="searchingSubtitle">Searching for a stranger...</p>
-            <p class="text-xs text-slate-500">Tip: Matching by shared interests</p>
+          <!-- Loading Spinner -->
+          <div id="remoteSearchingLoader" class="hidden absolute inset-0 bg-slate-950/85 backdrop-blur-sm flex flex-col items-center justify-center gap-3 z-20">
+            <div class="w-12 h-12 rounded-full border-4 border-blue-500/20 border-t-blue-500 animate-spin"></div>
+            <p class="text-sm font-medium text-slate-200 animate-pulse">Connecting to a random stranger...</p>
           </div>
-
-          <!-- Report Button in corner -->
-          <button id="reportBtn" onclick="openReportModal()" class="hidden absolute bottom-3 right-3 bg-red-600/80 hover:bg-red-600 text-white text-xs px-2.5 py-1.5 rounded-lg backdrop-blur-md transition items-center gap-1 z-10">
-            <i class="fa-solid fa-flag"></i> Report
-          </button>
         </div>
 
-        <!-- Local Camera Screen -->
-        <div id="localContainer" class="relative bg-slate-900 rounded-xl overflow-hidden border border-slate-800 flex items-center justify-center">
-          <!-- Real Webcam Video element -->
-          <video id="localVideo" autoplay playsinline muted class="w-full h-full object-cover filter-none transition-all duration-300 transform -scale-x-100"></video>
-          <!-- Canvas fallback if camera blocked or turned off -->
-          <canvas id="localFallbackCanvas" class="w-full h-full object-cover hidden"></canvas>
+        <!-- Local User Screen -->
+        <div id="localBox" class="relative bg-slate-950 rounded-xl overflow-hidden border border-slate-800 flex items-center justify-center">
+          <!-- Real Webcam Video Feed -->
+          <video id="localVideo" autoplay playsinline muted class="w-full h-full object-cover hidden -scale-x-100"></video>
+          <!-- Static Avatar Fallback when camera is off/denied -->
+          <canvas id="localCanvas" class="w-full h-full object-cover"></canvas>
 
           <!-- Local Status Badge -->
-          <div class="absolute top-3 left-3 flex items-center gap-2 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full text-xs font-medium border border-white/10 z-10">
-            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-            <span class="text-slate-300">You (Local)</span>
+          <div class="absolute top-3 left-3 flex items-center gap-2 bg-black/70 backdrop-blur-md px-3 py-1 rounded-full text-xs font-medium border border-white/10 z-10">
+            <span id="localCamDot" class="w-2 h-2 rounded-full bg-amber-500"></span>
+            <span id="localCamStatus" class="text-slate-300">You (Avatar Mode)</span>
           </div>
 
-          <!-- Media Controls (Mute / Cam off / Flip) -->
-          <div class="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex items-center gap-2 bg-black/70 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 z-10">
-            <button id="toggleMicBtn" onclick="toggleAudio()" title="Toggle Microphone" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-xs text-slate-200 transition">
+          <!-- Media Control Buttons Overlay -->
+          <div class="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex items-center gap-2 bg-black/75 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/15 z-10">
+            <button id="toggleMicBtn" onclick="toggleLocalAudio()" title="Mute/Unmute Mic" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-xs text-slate-200 transition">
               <i class="fa-solid fa-microphone" id="micIcon"></i>
             </button>
-            <button id="toggleCamBtn" onclick="toggleVideo()" title="Toggle Video" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-xs text-slate-200 transition">
+            <button id="toggleCamBtn" onclick="toggleLocalVideo()" title="Camera On/Off" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-xs text-slate-200 transition">
               <i class="fa-solid fa-video" id="camIcon"></i>
             </button>
-            <button id="flipCamBtn" onclick="flipCameraMirror()" title="Flip Mirror" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-xs text-slate-200 transition">
-              <i class="fa-solid fa-repeat"></i>
+            <button onclick="flipLocalCamera()" title="Mirror Feed" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-xs text-slate-200 transition">
+              <i class="fa-solid fa-arrows-rotate"></i>
             </button>
           </div>
         </div>
 
       </div>
 
-      <!-- Action Footer with Matchmaking Buttons and Tags -->
-      <div class="h-14 bg-omegle-surface rounded-xl border border-omegle-border px-3 flex items-center justify-between gap-3 shrink-0">
-        
-        <!-- Next / Stop Control Button -->
+      <!-- Action Panel -->
+      <div class="h-16 bg-omegle-surface rounded-xl border border-omegle-border px-3.5 flex items-center justify-between gap-3 shrink-0">
         <div class="flex items-center gap-2">
-          <button id="btnMainAction" onclick="handleMainActionClick()" class="h-10 px-5 rounded-lg font-bold text-sm bg-omegle-blue hover:bg-blue-600 active:scale-95 text-white transition flex items-center gap-2 shadow-lg shadow-blue-500/20">
+          <!-- Main Action Button -->
+          <button id="mainActionBtn" onclick="handleMainAction()" class="h-11 px-6 rounded-lg font-bold text-sm bg-omegle-blue hover:bg-blue-600 active:scale-95 text-white transition flex items-center gap-2 shadow-lg shadow-blue-500/20">
             <i class="fa-solid fa-play" id="mainActionIcon"></i>
             <span id="mainActionText">Start Chat</span>
           </button>
-          
-          <div class="hidden sm:flex flex-col text-[11px] text-slate-400 font-mono leading-tight">
-            <span>Press <kbd class="px-1 py-0.5 bg-slate-800 border border-slate-700 rounded text-slate-300">Esc</kbd> once to stop</span>
-            <span>Press <kbd class="px-1 py-0.5 bg-slate-800 border border-slate-700 rounded text-slate-300">Esc</kbd> twice to skip</span>
-          </div>
+
+          <span id="escPromptText" class="text-xs text-slate-400 font-mono hidden sm:inline ml-2">
+            Press <kbd class="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-slate-200">Esc</kbd> to skip
+          </span>
         </div>
 
-        <!-- Tags Bar (Gaming, Music, Coding etc) -->
-        <div class="flex-1 max-w-md hidden md:flex items-center gap-1.5 bg-black/40 border border-slate-800 rounded-lg px-2.5 py-1.5">
-          <i class="fa-solid fa-tags text-slate-500 text-xs"></i>
-          <div id="tagsList" class="flex items-center gap-1 overflow-x-auto whitespace-nowrap py-0.5">
+        <!-- Interest Tags Input -->
+        <div class="flex-1 max-w-sm hidden lg:flex items-center gap-1.5 bg-black/40 border border-slate-800 rounded-lg px-3 py-1.5">
+          <i class="fa-solid fa-hashtag text-slate-500 text-xs"></i>
+          <div id="tagsList" class="flex items-center gap-1 overflow-x-auto whitespace-nowrap">
             <span class="inline-flex items-center gap-1 text-[11px] bg-blue-500/20 text-blue-300 border border-blue-500/30 px-2 py-0.5 rounded-full">
-              gaming <button onclick="removeTag('gaming')" class="hover:text-white">&times;</button>
-            </span>
-            <span class="inline-flex items-center gap-1 text-[11px] bg-blue-500/20 text-blue-300 border border-blue-500/30 px-2 py-0.5 rounded-full">
-              coding <button onclick="removeTag('coding')" class="hover:text-white">&times;</button>
+              chatting <button onclick="removeTag('chatting')" class="hover:text-white">&times;</button>
             </span>
           </div>
-          <input id="tagInput" type="text" placeholder="Add interest (Press Enter)..." class="bg-transparent text-xs text-slate-200 placeholder-slate-500 focus:outline-none flex-1 min-w-[100px]" onkeydown="handleTagInput(event)">
+          <input id="tagInput" type="text" placeholder="Add interest..." class="bg-transparent text-xs text-slate-200 placeholder-slate-500 focus:outline-none flex-1 min-w-[70px]" onkeydown="handleTagKey(event)">
         </div>
 
-        <!-- Fullscreen Toggle -->
-        <button onclick="toggleFullScreen()" title="Toggle Fullscreen" class="w-9 h-9 rounded-lg border border-slate-700 hover:bg-slate-800 text-slate-300 flex items-center justify-center text-sm transition">
-          <i class="fa-solid fa-expand"></i>
+        <button onclick="clearChatLog()" title="Clear Chat History" class="h-10 px-3 rounded-lg border border-slate-700 hover:bg-slate-800 text-slate-300 text-xs transition flex items-center gap-1.5">
+          <i class="fa-solid fa-trash-can"></i>
+          <span class="hidden sm:inline">Clear</span>
         </button>
       </div>
 
     </section>
 
-    <!-- RIGHT: Text Chat Sidebar -->
-    <section class="w-full lg:w-96 bg-omegle-panel border-t lg:border-t-0 lg:border-l border-omegle-border flex flex-col h-72 lg:h-auto shrink-0">
+    <!-- RIGHT: Live Chat Sidebar -->
+    <section class="w-full md:w-96 lg:w-[420px] bg-omegle-panel border-t md:border-t-0 md:border-l border-omegle-border flex flex-col h-72 md:h-auto shrink-0 select-text">
       
-      <!-- Chat Header -->
-      <div class="h-11 px-4 border-b border-omegle-border bg-omegle-surface flex items-center justify-between text-xs text-slate-300 shrink-0">
+      <!-- Chat Topbar -->
+      <div class="h-12 px-4 border-b border-omegle-border bg-omegle-surface flex items-center justify-between text-xs text-slate-300 shrink-0 select-none">
         <div class="flex items-center gap-2">
-          <i class="fa-regular fa-comment-dots text-blue-400"></i>
-          <span class="font-semibold text-slate-200">Live Chat</span>
+          <i class="fa-regular fa-comments text-blue-400 text-sm"></i>
+          <span class="font-semibold text-slate-200">Text Chat</span>
         </div>
-        <div id="matchInterestBadge" class="hidden text-[11px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">
-          Matches on: <span id="sharedInterestText" class="font-bold">gaming</span>
+        <div id="commonInterestBadge" class="hidden text-[11px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-medium">
+          Matches on: <span id="commonInterestName" class="font-bold">#chatting</span>
         </div>
-        <button onclick="clearChatMessages()" title="Clear chat history" class="text-slate-400 hover:text-slate-200 transition">
-          <i class="fa-solid fa-broom"></i>
-        </button>
       </div>
 
-      <!-- Messages Log Container -->
-      <div id="chatMessages" class="flex-1 overflow-y-auto p-3 space-y-2.5 text-sm select-text">
-        <!-- Welcome System Message -->
-        <div class="system-msg bg-blue-950/30 border border-blue-900/40 rounded-lg p-2.5 text-xs text-blue-300/90 leading-relaxed">
-          <p class="font-semibold flex items-center gap-1.5 text-blue-300 mb-1">
+      <!-- Messages Scrollable Box -->
+      <div id="chatMessages" class="flex-1 overflow-y-auto p-3.5 space-y-3 text-xs leading-relaxed">
+        <div class="bg-blue-950/40 border border-blue-900/50 rounded-lg p-3 text-blue-200 text-xs">
+          <p class="font-semibold mb-1 flex items-center gap-1.5 text-blue-300">
             <i class="fa-solid fa-circle-info"></i> Welcome to Omegle Web!
           </p>
-          Click <strong>Start Chat</strong> or hit <kbd class="px-1 bg-black/40 rounded border border-blue-800">Space</kbd> to pair up with a stranger. Stay courteous and follow community safety rules.
+          Click <strong>Start Chat</strong> to connect with a random stranger. Always follow community rules.
         </div>
       </div>
 
-      <!-- Stranger Typing Indicator -->
-      <div id="typingIndicator" class="h-6 px-4 flex items-center gap-2 text-xs text-slate-400 italic hidden shrink-0">
+      <!-- Typing Indicator -->
+      <div id="typingBar" class="h-6 px-4 flex items-center gap-2 text-xs text-slate-400 italic hidden shrink-0 select-none">
         <span>Stranger is typing</span>
         <div class="flex items-center gap-1">
           <span class="w-1.5 h-1.5 bg-slate-400 rounded-full dot-1"></span>
@@ -277,32 +241,30 @@
         </div>
       </div>
 
-      <!-- Quick Reactions Bar -->
-      <div class="px-3 py-1.5 border-t border-omegle-border/60 bg-omegle-surface flex items-center justify-between text-xs shrink-0">
-        <span class="text-[11px] text-slate-500">Quick React:</span>
-        <div class="flex items-center gap-1">
-          <button onclick="sendQuickMessage('👋 Hey there!')" class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 transition text-[11px]">👋 Hey</button>
-          <button onclick="sendQuickMessage('Where are you from? 🌍')" class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 transition text-[11px]">🌍 ASL?</button>
-          <button onclick="sendQuickMessage('Nice to meet you! 😊')" class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 transition text-[11px]">😊 Nice</button>
-          <button onclick="sendQuickMessage('Skipping, take care! 👋')" class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 transition text-[11px]">Next</button>
-        </div>
+      <!-- Quick Canned Messages Bar -->
+      <div class="px-3 py-1.5 border-t border-omegle-border/60 bg-omegle-surface flex items-center gap-1.5 overflow-x-auto whitespace-nowrap text-xs shrink-0 select-none">
+        <span class="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Quick:</span>
+        <button onclick="sendPreset('Hey! How are you?')" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] transition">👋 Hey</button>
+        <button onclick="sendPreset('Where are you from?')" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] transition">🌍 ASL?</button>
+        <button onclick="sendPreset('What are your hobbies?')" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] transition">🎮 Hobbies</button>
+        <button onclick="sendPreset('Nice meeting you!')" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] transition">😊 Nice</button>
       </div>
 
-      <!-- Chat Input Field -->
-      <form id="chatForm" onsubmit="handleSendMessage(event)" class="p-2.5 bg-omegle-surface border-t border-omegle-border flex items-center gap-2 shrink-0">
+      <!-- Chat Input Form -->
+      <form id="chatForm" onsubmit="submitChatMessage(event)" class="p-2.5 bg-omegle-surface border-t border-omegle-border flex items-center gap-2 shrink-0 select-none">
         <input 
           id="chatInput" 
           type="text" 
           disabled
           autocomplete="off" 
-          placeholder="Start a chat to send messages..." 
-          class="flex-1 bg-black/40 border border-slate-700 focus:border-blue-500 rounded-lg px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none transition disabled:opacity-50 disabled:cursor-not-allowed"
+          placeholder="Click 'Start Chat' to talk..." 
+          class="flex-1 bg-black/40 border border-slate-700 focus:border-blue-500 rounded-lg px-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none transition disabled:opacity-50 disabled:cursor-not-allowed"
         />
         <button 
-          id="btnSendChat" 
+          id="sendBtn" 
           type="submit" 
           disabled
-          class="w-10 h-10 rounded-lg bg-omegle-blue hover:bg-blue-600 disabled:opacity-40 disabled:hover:bg-omegle-blue text-white flex items-center justify-center transition active:scale-95 shrink-0"
+          class="w-10 h-9 rounded-lg bg-omegle-blue hover:bg-blue-600 disabled:opacity-40 disabled:hover:bg-omegle-blue text-white flex items-center justify-center transition active:scale-95 shrink-0"
         >
           <i class="fa-solid fa-paper-plane text-xs"></i>
         </button>
@@ -312,125 +274,49 @@
 
   </main>
 
-  <!-- MODAL: Safety & Guidelines -->
-  <div id="safetyModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-omegle-panel border border-omegle-border rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
-      <h3 class="text-lg font-bold text-white mb-2 flex items-center gap-2">
-        <i class="fa-solid fa-shield-halved text-emerald-400"></i> Safety & Guidelines
+  <!-- MODAL: Safety Rules -->
+  <div id="safetyModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-omegle-panel border border-omegle-border rounded-xl max-w-sm w-full p-5 shadow-2xl">
+      <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+        <i class="fa-solid fa-shield-halved text-emerald-400"></i> Safety Guidelines
       </h3>
-      <div class="space-y-3 text-xs text-slate-300 leading-relaxed mb-6">
-        <p>• <strong>Age restriction:</strong> You must be 18+ (or 13+ with parental permission) to use video chat.</p>
-        <p>• <strong>Protect privacy:</strong> Do not share personal information like full names, phone numbers, home addresses, or passwords.</p>
-        <p>• <strong>Zero tolerance:</strong> Inappropriate, harassing, racist, or unsolicited adult behavior results in an immediate IP ban.</p>
-        <p>• <strong>Report tool:</strong> Use the "Report" button in the corner of the stranger's screen to flag violators.</p>
+      <div class="space-y-2.5 text-xs text-slate-300 leading-relaxed mb-4">
+        <p>• You must be 18+ to use video chat.</p>
+        <p>• Never share private details: password, address, or financial info.</p>
+        <p>• Explicit adult behavior or harassment is strictly prohibited.</p>
       </div>
-      <button onclick="toggleModal('safetyModal', false)" class="w-full py-2.5 rounded-lg bg-omegle-blue hover:bg-blue-600 text-white font-semibold text-sm transition">
-        I Understand & Agree
+      <button onclick="toggleModal('safetyModal', false)" class="w-full py-2 rounded-lg bg-omegle-blue hover:bg-blue-600 text-white font-semibold text-xs transition">
+        I Understand
       </button>
     </div>
   </div>
 
-  <!-- MODAL: Report User -->
-  <div id="reportModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-omegle-panel border border-omegle-border rounded-2xl max-w-sm w-full p-5 shadow-2xl">
-      <h3 class="text-base font-bold text-red-400 mb-1 flex items-center gap-2">
-        <i class="fa-solid fa-triangle-exclamation"></i> Report Stranger
-      </h3>
-      <p class="text-xs text-slate-400 mb-4">Select the reason for reporting this participant. A snapshot log will be forwarded to moderation.</p>
-      
-      <div class="space-y-2 mb-4 text-xs">
-        <label class="flex items-center gap-2 p-2 rounded bg-slate-800/80 hover:bg-slate-800 cursor-pointer">
-          <input type="radio" name="reportReason" value="inappropriate" checked class="text-blue-500">
-          <span>Inappropriate or NSFW video</span>
-        </label>
-        <label class="flex items-center gap-2 p-2 rounded bg-slate-800/80 hover:bg-slate-800 cursor-pointer">
-          <input type="radio" name="reportReason" value="harassment" class="text-blue-500">
-          <span>Harassment or toxic language</span>
-        </label>
-        <label class="flex items-center gap-2 p-2 rounded bg-slate-800/80 hover:bg-slate-800 cursor-pointer">
-          <input type="radio" name="reportReason" value="spam" class="text-blue-500">
-          <span>Bot, advertisement, or spamming</span>
-        </label>
-      </div>
-
-      <div class="flex gap-2">
-        <button onclick="toggleModal('reportModal', false)" class="flex-1 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium">Cancel</button>
-        <button onclick="submitReport()" class="flex-1 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-semibold">Submit & Skip</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL: Settings -->
-  <div id="settingsModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-omegle-panel border border-omegle-border rounded-2xl max-w-sm w-full p-5 shadow-2xl">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="text-base font-bold text-white flex items-center gap-2">
-          <i class="fa-solid fa-sliders text-blue-400"></i> Settings & Simulation
-        </h3>
-        <button onclick="toggleModal('settingsModal', false)" class="text-slate-400 hover:text-white">&times;</button>
-      </div>
-
-      <div class="space-y-4 text-xs">
-        <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-800">
-          <div>
-            <div class="font-medium text-slate-200">Audio Synth Sounds</div>
-            <div class="text-[11px] text-slate-400">Connect, skip & message chimes</div>
-          </div>
-          <input type="checkbox" id="settingSoundToggle" checked class="w-4 h-4 rounded text-blue-600">
-        </div>
-
-        <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-800">
-          <div>
-            <div class="font-medium text-slate-200">Stranger Simulation Mode</div>
-            <div class="text-[11px] text-slate-400">Generates animated avatars & dynamic AI responses</div>
-          </div>
-          <input type="checkbox" id="settingSimulationToggle" checked class="w-4 h-4 rounded text-blue-600">
-        </div>
-
-        <div class="p-2.5 rounded-lg bg-slate-800 space-y-1.5">
-          <div class="font-medium text-slate-200">Stranger Persona</div>
-          <select id="personaSelect" class="w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-xs text-slate-200">
-            <option value="random">Dynamic / Random Persona</option>
-            <option value="gamer">Gamer / Tech Enthusiast</option>
-            <option value="musician">Indie Musician</option>
-            <option value="chill">Casual / Chill Chatter</option>
-          </select>
-        </div>
-      </div>
-
-      <button onclick="toggleModal('settingsModal', false)" class="w-full mt-5 py-2 rounded-lg bg-omegle-blue hover:bg-blue-600 text-white font-semibold text-xs">
-        Done
-      </button>
-    </div>
-  </div>
-
-  <!-- Toast Notification Container -->
-  <div id="toast" class="fixed bottom-5 left-1/2 transform -translate-x-1/2 bg-slate-900 text-slate-100 border border-slate-700 text-xs px-4 py-2 rounded-full shadow-2xl opacity-0 transition-opacity pointer-events-none z-50">
-    Notification message
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-slate-900 text-slate-200 border border-slate-700 text-xs px-4 py-2 rounded-full shadow-2xl opacity-0 transition-opacity pointer-events-none z-50">
+    Notification
   </div>
 
   <script>
-    /* App State Machine:
-     * 'IDLE' -> 'SEARCHING' -> 'CONNECTED'
-     */
+    /* -------------------------------------------------------------
+     * Global State Machine
+     * states: 'IDLE' | 'SEARCHING' | 'CONNECTED'
+     * ------------------------------------------------------------- */
     let appState = 'IDLE';
-    let userInterests = ['gaming', 'coding'];
+    let userInterests = ['chatting', 'music'];
     let localStream = null;
     let isMicMuted = false;
-    let isVideoOff = false;
-    let isFlipped = true;
-    let currentFilter = 'filter-none';
-    let escapePressCount = 0;
-    let escapePressTimer = null;
+    let isVideoMuted = false;
+    let isMirrored = true;
+    let audioFxEnabled = true;
     let currentStranger = null;
-    let strangerAnimationId = null;
-    let partnerTypingTimeout = null;
-    let simulatedOnlineBase = 38419;
+    let strangerAnimId = null;
+    let strangerReplyTimer = null;
+    let isStrangerTalking = false;
+    let simulatedOnline = 41208;
 
-    // Web Audio Synthesizer Context
+    // Web Audio synthesizer for system sound effects
     let audioCtx = null;
-
-    function getAudioContext() {
+    function getAudioCtx() {
       if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       }
@@ -440,613 +326,565 @@
       return audioCtx;
     }
 
-    /* Sound Effects Generator */
-    function playBeep(type) {
-      if (!document.getElementById('settingSoundToggle').checked) return;
+    function playSound(type) {
+      if (!audioFxEnabled) return;
       try {
-        const ctx = getAudioContext();
+        const ctx = getAudioCtx();
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.connect(gain);
         gain.connect(ctx.destination);
-
-        const now = ctx.currentTime;
+        const t = ctx.currentTime;
 
         if (type === 'connect') {
-          // Dual ascending chime
           osc.type = 'sine';
-          osc.frequency.setValueAtTime(440, now);
-          osc.frequency.exponentialRampToValueAtTime(880, now + 0.15);
-          gain.gain.setValueAtTime(0.08, now);
-          gain.gain.linearRampToValueAtTime(0, now + 0.3);
-          osc.start(now);
-          osc.stop(now + 0.3);
+          osc.frequency.setValueAtTime(400, t);
+          osc.frequency.exponentialRampToValueAtTime(800, t + 0.15);
+          gain.gain.setValueAtTime(0.08, t);
+          gain.gain.linearRampToValueAtTime(0, t + 0.3);
+          osc.start(t);
+          osc.stop(t + 0.3);
         } else if (type === 'disconnect') {
-          // Descending pitch
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(350, t);
+          osc.frequency.linearRampToValueAtTime(150, t + 0.2);
+          gain.gain.setValueAtTime(0.08, t);
+          gain.gain.linearRampToValueAtTime(0, t + 0.22);
+          osc.start(t);
+          osc.stop(t + 0.22);
+        } else if (type === 'message') {
           osc.type = 'triangle';
-          osc.frequency.setValueAtTime(500, now);
-          osc.frequency.exponentialRampToValueAtTime(220, now + 0.2);
-          gain.gain.setValueAtTime(0.1, now);
-          gain.gain.linearRampToValueAtTime(0, now + 0.25);
-          osc.start(now);
-          osc.stop(now + 0.25);
-        } else if (type === 'msg') {
-          // Subtle pop
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(600, now);
-          gain.gain.setValueAtTime(0.05, now);
-          gain.gain.linearRampToValueAtTime(0, now + 0.08);
-          osc.start(now);
-          osc.stop(now + 0.08);
+          osc.frequency.setValueAtTime(650, t);
+          gain.gain.setValueAtTime(0.04, t);
+          gain.gain.linearRampToValueAtTime(0, t + 0.08);
+          osc.start(t);
+          osc.stop(t + 0.08);
         }
-      } catch (err) {
-        console.warn('Audio playback bypassed:', err);
+      } catch (e) {
+        console.warn('Audio effect failed', e);
       }
     }
 
-    async function initCamera() {
+    function toggleAudioFx() {
+      audioFxEnabled = !audioFxEnabled;
+      const icon = document.getElementById('audioToggleIcon');
+      if (audioFxEnabled) {
+        icon.className = 'fa-solid fa-volume-high';
+        showToast('Sound effects ON');
+      } else {
+        icon.className = 'fa-solid fa-volume-xmark text-red-400';
+        showToast('Sound effects MUTED');
+      }
+    }
+
+    /* -------------------------------------------------------------
+     * STREAMING_CHUNK:Implementing Camera and Microphone Access...
+     * ------------------------------------------------------------- */
+    async function requestMediaPermissions() {
       try {
+        showToast('Requesting Camera & Mic access...');
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: "user" },
           audio: true
         });
+
         localStream = stream;
-        const videoElem = document.getElementById('localVideo');
-        videoElem.srcObject = stream;
-        videoElem.classList.remove('hidden');
-        document.getElementById('localFallbackCanvas').classList.add('hidden');
+        const video = document.getElementById('localVideo');
+        video.srcObject = stream;
+        video.classList.remove('hidden');
+        document.getElementById('localCanvas').classList.add('hidden');
+
+        // Update UI Badges
+        document.getElementById('localCamDot').className = 'w-2 h-2 rounded-full bg-emerald-500';
+        document.getElementById('localCamStatus').innerText = 'You (Live WebCam)';
+
+        const enableBtn = document.getElementById('enableMediaBtn');
+        enableBtn.className = 'text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-800 text-emerald-400 border border-emerald-500/30 transition flex items-center gap-1.5 shadow-sm';
+        document.getElementById('mediaBtnText').innerText = 'Camera Connected';
+        document.getElementById('mediaStateIcon').className = 'fa-solid fa-circle-check text-emerald-400';
+
+        showToast('Camera and Microphone enabled!');
       } catch (err) {
-        console.info('Live camera unavailable or denied. Falling back to animated mirror canvas.', err);
-        startLocalFallbackCanvas();
+        console.error('Camera access failed or denied:', err);
+        showToast('Camera access denied or unavailable. Fallback avatar active.');
+        drawLocalAvatarFallback();
       }
     }
 
-    function startLocalFallbackCanvas() {
-      const videoElem = document.getElementById('localVideo');
-      videoElem.classList.add('hidden');
-      const canvas = document.getElementById('localFallbackCanvas');
-      canvas.classList.remove('hidden');
-      const ctx = canvas.getContext('2d');
-      canvas.width = 400;
-      canvas.height = 300;
-
-      let tick = 0;
-      function renderLocalMock() {
-        tick += 0.03;
-        ctx.fillStyle = '#0f172a';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // Grid lines
-        ctx.strokeStyle = '#1e293b';
-        ctx.lineWidth = 1;
-        for (let x = 0; x < canvas.width; x += 40) {
-          ctx.beginPath();
-          ctx.moveTo(x, 0);
-          ctx.lineTo(x, canvas.height);
-          ctx.stroke();
-        }
-
-        // Animated user avatar outline
-        const cx = canvas.width / 2;
-        const cy = canvas.height / 2 + Math.sin(tick) * 4;
-
-        ctx.fillStyle = '#3b82f6';
-        ctx.beginPath();
-        ctx.arc(cx, cy - 25, 26, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.ellipse(cx, cy + 35, 45, 30, 0, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = '11px Inter, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('Camera Inactive (Avatar Mode)', cx, canvas.height - 20);
-
-        requestAnimationFrame(renderLocalMock);
+    function toggleLocalAudio() {
+      if (!localStream) {
+        showToast('Enable camera & mic first.');
+        return;
       }
-      renderLocalMock();
-    }
-
-    function toggleAudio() {
-      if (!localStream) return;
       isMicMuted = !isMicMuted;
       localStream.getAudioTracks().forEach(track => track.enabled = !isMicMuted);
       const icon = document.getElementById('micIcon');
       const btn = document.getElementById('toggleMicBtn');
       if (isMicMuted) {
         icon.className = 'fa-solid fa-microphone-slash text-red-400';
-        btn.classList.add('bg-red-950/60');
+        btn.classList.add('bg-red-950/80');
         showToast('Microphone muted');
       } else {
         icon.className = 'fa-solid fa-microphone text-slate-200';
-        btn.classList.remove('bg-red-950/60');
+        btn.classList.remove('bg-red-950/80');
         showToast('Microphone unmuted');
       }
     }
 
-    function toggleVideo() {
-      if (!localStream) return;
-      isVideoOff = !isVideoOff;
-      localStream.getVideoTracks().forEach(track => track.enabled = !isVideoOff);
+    function toggleLocalVideo() {
+      if (!localStream) {
+        showToast('Enable camera & mic first.');
+        return;
+      }
+      isVideoMuted = !isVideoMuted;
+      localStream.getVideoTracks().forEach(track => track.enabled = !isVideoMuted);
       const icon = document.getElementById('camIcon');
       const btn = document.getElementById('toggleCamBtn');
-      if (isVideoOff) {
+      const video = document.getElementById('localVideo');
+      const canvas = document.getElementById('localCanvas');
+
+      if (isVideoMuted) {
         icon.className = 'fa-solid fa-video-slash text-red-400';
-        btn.classList.add('bg-red-950/60');
-        showToast('Camera paused');
+        btn.classList.add('bg-red-950/80');
+        video.classList.add('hidden');
+        canvas.classList.remove('hidden');
+        drawLocalAvatarFallback();
+        showToast('Camera video disabled');
       } else {
         icon.className = 'fa-solid fa-video text-slate-200';
-        btn.classList.remove('bg-red-950/60');
-        showToast('Camera resumed');
+        btn.classList.remove('bg-red-950/80');
+        video.classList.remove('hidden');
+        canvas.classList.add('hidden');
+        showToast('Camera video enabled');
       }
     }
 
-    function flipCameraMirror() {
-      isFlipped = !isFlipped;
-      const v = document.getElementById('localVideo');
-      v.style.transform = isFlipped ? 'scaleX(-1)' : 'scaleX(1)';
-      showToast(isFlipped ? 'Mirror view active' : 'True view active');
+    function flipLocalCamera() {
+      isMirrored = !isMirrored;
+      const video = document.getElementById('localVideo');
+      video.style.transform = isMirrored ? 'scaleX(-1)' : 'scaleX(1)';
+      showToast(isMirrored ? 'Mirror active' : 'True perspective active');
     }
 
-    function setFilter(filterClass, label) {
-      currentFilter = filterClass;
-      const localVid = document.getElementById('localVideo');
-      localVid.className = `w-full h-full object-cover transition-all duration-300 transform ${isFlipped ? '-scale-x-100' : 'scale-x-100'} ${filterClass}`;
-      document.getElementById('filterLabel').innerText = `Filter: ${label}`;
+    /* -------------------------------------------------------------
+     * STREAMING_CHUNK:Fixing Avatar Scaling and Rendering Canvas Safely...
+     * Strict width/height locking and clearRect prevention of size growth
+     * ------------------------------------------------------------- */
+    function drawLocalAvatarFallback() {
+      const canvas = document.getElementById('localCanvas');
+      const ctx = canvas.getContext('2d');
+      // Set fixed internal buffer dimensions
+      canvas.width = 400;
+      canvas.height = 300;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      const cx = 200;
+      const cy = 140;
+
+      // Head
+      ctx.fillStyle = '#3b82f6';
+      ctx.beginPath();
+      ctx.arc(cx, cy, 45, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Torso
+      ctx.beginPath();
+      ctx.ellipse(cx, cy + 120, 80, 60, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Text label
+      ctx.fillStyle = '#64748b';
+      ctx.font = '12px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Camera Disabled (Local Avatar)', cx, 280);
     }
 
     const strangerPersonas = [
       {
-        name: "Alex",
-        country: "Canada",
-        flag: "🇨🇦",
-        interests: ["gaming", "coding", "music"],
+        name: "Jordan",
+        country: "United States",
         color: "#6366f1",
-        avatarStyle: "headphones",
+        interests: ["chatting", "gaming", "coding"],
         dialogues: [
-          "yo! what's up?",
-          "nice to meet you! do you play games or code?",
-          "i'm currently chilling and listening to some lofi beats",
-          "where are you from?",
-          "haha totally agree with that",
-          "what kind of tech or games do you like most?",
-          "nice talking to you! catch you around 👋"
+          "hey there! what's up?",
+          "nice to connect with someone! where are you from?",
+          "i was just playing some games on my pc",
+          "totally agree with that!",
+          "what kind of music or hobbies do you enjoy?",
+          "haha sweet! good meeting you 👋"
         ]
       },
       {
-        name: "Maya",
+        name: "Sophie",
         country: "United Kingdom",
-        flag: "🇬🇧",
-        interests: ["music", "art", "photography"],
         color: "#ec4899",
-        avatarStyle: "glasses",
+        interests: ["music", "movies", "travel"],
         dialogues: [
-          "hey there! how is your day going?",
-          "i was just playing some guitar 🎸",
-          "love that we matched on shared interests!",
-          "omg really? that's awesome",
-          "london weather has been crazy today haha",
-          "any music recommendations?"
-        ]
-      },
-      {
-        name: "Liam",
-        country: "Germany",
-        flag: "🇩🇪",
-        interests: ["coding", "ai", "startups"],
-        color: "#10b981",
-        avatarStyle: "hoodie",
-        dialogues: [
-          "Hey! Fellow developer?",
-          "building a web app right now, needed a quick break",
-          "what languages do you work with mainly?",
-          "JavaScript and Python are my go-tos!",
-          "cool setup you got there!",
-          "brb someone is knocking at my door haha"
-        ]
-      },
-      {
-        name: "Chloe",
-        country: "Australia",
-        flag: "🇦🇺",
-        interests: ["gaming", "anime", "movies"],
-        color: "#f59e0b",
-        avatarStyle: "beanie",
-        dialogues: [
-          "g'day! 🦘",
-          "finally someone who doesn't skip in 0.2 seconds lol",
-          "watched any good movies lately?",
+          "hello! how are you today?",
+          "watching movies and relaxing right now 🍿",
+          "london has been super rainy all week haha",
           "that is so cool!",
-          "what time is it over there?"
+          "have you watched anything good lately?",
+          "nice chatting with you!"
+        ]
+      },
+      {
+        name: "Kenji",
+        country: "Japan",
+        color: "#10b981",
+        interests: ["anime", "gaming", "music"],
+        dialogues: [
+          "Konnichiwa! Hey!",
+          "Cool that we matched! How is your day going?",
+          "Just listening to some city pop and lofi beats 🎧",
+          "Yes! Exactly!",
+          "Do you play any games or watch anime?",
+          "Take care my friend!"
         ]
       }
     ];
 
-    function startRemoteSimulation(stranger) {
+    function startStrangerSimulation(stranger) {
       const canvas = document.getElementById('remoteCanvas');
       const ctx = canvas.getContext('2d');
       canvas.width = 640;
       canvas.height = 480;
 
       let tick = 0;
-      if (strangerAnimationId) cancelAnimationFrame(strangerAnimationId);
+      if (strangerAnimId) cancelAnimationFrame(strangerAnimId);
 
-      function drawFrame() {
+      function renderFrame() {
         if (appState !== 'CONNECTED') return;
         tick += 0.04;
 
-        // Background Room Gradient
-        const grad = ctx.createRadialGradient(320, 200, 20, 320, 240, 350);
-        grad.addColorStop(0, '#1e2530');
-        grad.addColorStop(1, '#0b0e14');
-        ctx.fillStyle = grad;
+        // 1. CLEAR FRAME COMPLETELY (Prevents growth bug)
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // 2. Background Room
+        const bg = ctx.createRadialGradient(320, 240, 20, 320, 240, 340);
+        bg.addColorStop(0, '#1c2331');
+        bg.addColorStop(1, '#080a0f');
+        ctx.fillStyle = bg;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Ambient background LED glow
+        // 3. Ambient LED Glow
         ctx.fillStyle = stranger.color;
-        ctx.globalAlpha = 0.15 + Math.sin(tick * 0.5) * 0.05;
+        ctx.globalAlpha = 0.12;
         ctx.beginPath();
-        ctx.arc(150, 120, 180, 0, Math.PI * 2);
+        ctx.arc(160, 140, 160, 0, Math.PI * 2);
         ctx.fill();
         ctx.globalAlpha = 1.0;
 
-        // Natural head bobbing & breathing
-        const headY = 200 + Math.sin(tick) * 5;
-        const headX = 320 + Math.cos(tick * 0.7) * 2;
-        const breathScale = 1 + Math.sin(tick * 0.8) * 0.015;
+        // 4. Fixed scale with subtle breathing bob
+        const headX = 320;
+        const headY = 220 + Math.sin(tick) * 3; // Fixed displacement only, no scaling accumulation
 
-        // Body / Shoulders
-        ctx.save();
-        ctx.translate(headX, headY);
-        ctx.scale(breathScale, breathScale);
-
+        // Torso
         ctx.fillStyle = stranger.color;
         ctx.beginPath();
-        ctx.ellipse(0, 170, 130, 90, 0, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Collar
-        ctx.fillStyle = '#0f172a';
-        ctx.beginPath();
-        ctx.arc(0, 95, 35, 0, Math.PI);
+        ctx.ellipse(headX, headY + 180, 140, 100, 0, 0, Math.PI * 2);
         ctx.fill();
 
         // Neck
         ctx.fillStyle = '#e2b397';
-        ctx.fillRect(-22, 60, 44, 45);
+        ctx.fillRect(headX - 22, headY + 60, 44, 45);
 
-        // Head
+        // Head (Strict fixed radius: 68px)
         ctx.beginPath();
-        ctx.arc(0, 0, 68, 0, Math.PI * 2);
+        ctx.arc(headX, headY, 68, 0, Math.PI * 2);
         ctx.fill();
 
-        // Hair / Accessory
-        if (stranger.avatarStyle === 'headphones') {
-          // Hair
-          ctx.fillStyle = '#1e1b18';
-          ctx.beginPath();
-          ctx.arc(0, -10, 72, Math.PI, Math.PI * 2);
-          ctx.fill();
+        // Hair
+        ctx.fillStyle = '#1e1b18';
+        ctx.beginPath();
+        ctx.arc(headX, headY - 10, 72, Math.PI, Math.PI * 2);
+        ctx.fill();
 
-          // Headphone band
-          ctx.strokeStyle = '#38bdf8';
-          ctx.lineWidth = 10;
-          ctx.beginPath();
-          ctx.arc(0, -5, 78, Math.PI * 0.8, Math.PI * 2.2);
-          ctx.stroke();
-
-          // Headphone ear cups
-          ctx.fillStyle = '#0284c7';
-          ctx.fillRect(-78, -15, 14, 38);
-          ctx.fillRect(64, -15, 14, 38);
-        } else if (stranger.avatarStyle === 'glasses') {
-          // Hair
-          ctx.fillStyle = '#7c2d12';
-          ctx.beginPath();
-          ctx.arc(0, -12, 72, Math.PI * 0.9, Math.PI * 2.1);
-          ctx.fill();
-
-          // Glasses
-          ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = 3;
-          ctx.strokeRect(-42, -8, 30, 20);
-          ctx.strokeRect(12, -8, 30, 20);
-          ctx.beginPath();
-          ctx.moveTo(-12, 0);
-          ctx.lineTo(12, 0);
-          ctx.stroke();
-        } else {
-          // Beanie / Cap
-          ctx.fillStyle = stranger.color;
-          ctx.beginPath();
-          ctx.ellipse(0, -32, 74, 45, 0, Math.PI, Math.PI * 2);
-          ctx.fill();
-        }
-
-        // Eyes (blinking cycle)
-        const isBlinking = (Math.sin(tick * 1.5) > 0.96);
+        // Blinking Eyes
+        const isBlinking = (Math.sin(tick * 1.5) > 0.95);
         ctx.fillStyle = '#1e293b';
         if (isBlinking) {
           ctx.lineWidth = 3;
           ctx.strokeStyle = '#1e293b';
           ctx.beginPath();
-          ctx.moveTo(-32, 2);
-          ctx.lineTo(-16, 2);
-          ctx.moveTo(16, 2);
-          ctx.lineTo(32, 2);
+          ctx.moveTo(headX - 32, headY + 2);
+          ctx.lineTo(headX - 16, headY + 2);
+          ctx.moveTo(headX + 16, headY + 2);
+          ctx.lineTo(headX + 32, headY + 2);
           ctx.stroke();
         } else {
           ctx.beginPath();
-          ctx.arc(-24, 0, 6, 0, Math.PI * 2);
-          ctx.arc(24, 0, 6, 0, Math.PI * 2);
+          ctx.arc(headX - 24, headY, 6, 0, Math.PI * 2);
+          ctx.arc(headX + 24, headY, 6, 0, Math.PI * 2);
           ctx.fill();
         }
 
-        // Smile / Talking mouth animation
+        // Talking mouth or resting smile
         ctx.strokeStyle = '#78350f';
         ctx.lineWidth = 3;
         ctx.beginPath();
-        const talkOffset = partnerTypingTimeout ? Math.abs(Math.sin(tick * 6)) * 4 : 0;
-        ctx.arc(0, 26, 14, 0.1, Math.PI - 0.1);
-        ctx.stroke();
-
-        ctx.restore();
-
-        // Subtle Simulated Noise Effect
-        ctx.fillStyle = 'rgba(255,255,255,0.02)';
-        for (let i = 0; i < 40; i++) {
-          ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 2, 2);
+        if (isStrangerTalking) {
+          // Open talking mouth
+          const mouthOpen = 6 + Math.abs(Math.sin(tick * 8)) * 8;
+          ctx.fillStyle = '#78350f';
+          ctx.ellipse(headX, headY + 28, 12, mouthOpen, 0, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          // Resting smile
+          ctx.arc(headX, headY + 26, 14, 0.1, Math.PI - 0.1);
+          ctx.stroke();
         }
 
-        strangerAnimationId = requestAnimationFrame(drawFrame);
+        strangerAnimId = requestAnimationFrame(renderFrame);
       }
-      drawFrame();
+
+      renderFrame();
     }
 
-    function handleMainActionClick() {
+    function clearStrangerScreen() {
+      if (strangerAnimId) cancelAnimationFrame(strangerAnimId);
+      const canvas = document.getElementById('remoteCanvas');
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#080a0f';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    /* -------------------------------------------------------------
+     * STREAMING_CHUNK:Matchmaking and State Machine Logic...
+     * ------------------------------------------------------------- */
+    function handleMainAction() {
       if (appState === 'IDLE') {
         startMatchmaking();
       } else if (appState === 'SEARCHING') {
-        disconnectSession(true);
+        disconnectChat(true);
       } else if (appState === 'CONNECTED') {
-        disconnectSession(true);
+        disconnectChat(true);
       }
     }
 
     function startMatchmaking() {
       appState = 'SEARCHING';
-      updateUIState();
-      playBeep('connect');
+      updateUI();
+      playSound('connect');
 
-      document.getElementById('remoteSearchingOverlay').classList.remove('hidden');
-      document.getElementById('strangerProfileBadge').classList.add('hidden');
-      document.getElementById('reportBtn').classList.add('hidden');
-      document.getElementById('matchInterestBadge').classList.add('hidden');
-      
-      appendSystemMessage("Looking for someone you can chat with...");
+      document.getElementById('remoteSearchingLoader').classList.remove('hidden');
+      document.getElementById('strangerTagBadge').classList.add('hidden');
+      document.getElementById('commonInterestBadge').classList.add('hidden');
 
-      // Simulate matchmaking latency between 1.2s and 2.6s
-      const delay = Math.floor(Math.random() * 1400) + 1200;
+      appendSystemNote("Looking for someone you can chat with...");
+
+      // Simulate network matching latency
       setTimeout(() => {
-        if (appState !== 'SEARCHING') return; // Cancelled
-        completeMatch();
-      }, delay);
+        if (appState !== 'SEARCHING') return; // User stopped early
+        connectWithStranger();
+      }, 1200 + Math.random() * 1000);
     }
 
-    function completeMatch() {
+    function connectWithStranger() {
       appState = 'CONNECTED';
-      updateUIState();
-      playBeep('connect');
+      updateUI();
+      playSound('connect');
 
-      // Pick stranger profile
-      const personaPref = document.getElementById('personaSelect').value;
-      if (personaPref === 'random') {
-        currentStranger = strangerPersonas[Math.floor(Math.random() * strangerPersonas.length)];
-      } else {
-        const found = strangerPersonas.find(p => p.avatarStyle === personaPref || p.name.toLowerCase() === personaPref);
-        currentStranger = found || strangerPersonas[0];
-      }
+      document.getElementById('remoteSearchingLoader').classList.add('hidden');
+
+      // Pick random persona
+      currentStranger = strangerPersonas[Math.floor(Math.random() * strangerPersonas.length)];
 
       // Check common interest
-      const shared = userInterests.filter(i => currentStranger.interests.includes(i));
-      const sharedTag = shared.length > 0 ? shared[0] : null;
+      const shared = userInterests.find(t => currentStranger.interests.includes(t));
+      
+      document.getElementById('strangerTagBadge').classList.remove('hidden');
+      document.getElementById('strangerLocation').innerText = `${currentStranger.name} (${currentStranger.country})`;
 
-      // Update UI Header & Badges
-      document.getElementById('remoteSearchingOverlay').classList.add('hidden');
-      document.getElementById('strangerProfileBadge').classList.remove('hidden');
-      document.getElementById('strangerLocation').innerText = `${currentStranger.name} (${currentStranger.country} ${currentStranger.flag})`;
-      document.getElementById('reportBtn').classList.remove('hidden');
-
-      if (sharedTag) {
-        document.getElementById('matchInterestBadge').classList.remove('hidden');
-        document.getElementById('sharedInterestText').innerText = sharedTag;
+      if (shared) {
+        document.getElementById('commonInterestBadge').classList.remove('hidden');
+        document.getElementById('commonInterestName').innerText = `#${shared}`;
       }
 
-      // Launch canvas rendering
-      startRemoteSimulation(currentStranger);
+      // Start the animated canvas stranger
+      startStrangerSimulation(currentStranger);
 
-      // System notification
-      appendSystemMessage("You're now chatting with a random stranger. Say hi!");
-      if (sharedTag) {
-        appendSystemMessage(`You both like <span class="text-blue-400 font-semibold font-mono">#${sharedTag}</span>.`);
+      appendSystemNote("You're now chatting with a random stranger. Say hi!");
+      if (shared) {
+        appendSystemNote(`You both like <strong class="text-blue-400">#${shared}</strong>.`);
       }
 
-      // Schedule stranger first greeting
-      scheduleStrangerMessage(currentStranger.dialogues[0], 1000 + Math.random() * 1200);
+      // Schedule stranger first message
+      triggerStrangerResponse(currentStranger.dialogues[0], 1200);
     }
 
-    function disconnectSession(manual = false) {
+    function disconnectChat(isUserTriggered) {
       if (appState === 'IDLE') return;
 
-      playBeep('disconnect');
-      if (strangerAnimationId) cancelAnimationFrame(strangerAnimationId);
-      if (partnerTypingTimeout) clearTimeout(partnerTypingTimeout);
+      playSound('disconnect');
+      if (strangerReplyTimer) clearTimeout(strangerReplyTimer);
+      isStrangerTalking = false;
+      clearStrangerScreen();
 
-      // Clear remote canvas
-      const canvas = document.getElementById('remoteCanvas');
-      const ctx = canvas.getContext('2d');
-      ctx.fillStyle = '#0b0f17';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      document.getElementById('remoteSearchingLoader').classList.add('hidden');
+      document.getElementById('strangerTagBadge').classList.add('hidden');
+      document.getElementById('commonInterestBadge').classList.add('hidden');
+      document.getElementById('typingBar').classList.add('hidden');
 
-      // Reset markers
-      document.getElementById('remoteSearchingOverlay').classList.add('hidden');
-      document.getElementById('strangerProfileBadge').classList.add('hidden');
-      document.getElementById('reportBtn').classList.add('hidden');
-      document.getElementById('matchInterestBadge').classList.add('hidden');
-      document.getElementById('typingIndicator').classList.add('hidden');
-
-      appendSystemMessage(manual ? "You have disconnected." : "Stranger has disconnected.");
+      appendSystemNote(isUserTriggered ? "You have disconnected." : "Stranger has disconnected.");
 
       appState = 'IDLE';
       currentStranger = null;
-      updateUIState();
+      updateUI();
     }
 
-    function updateUIState() {
-      const btn = document.getElementById('btnMainAction');
+    function updateUI() {
+      const btn = document.getElementById('mainActionBtn');
       const text = document.getElementById('mainActionText');
       const icon = document.getElementById('mainActionIcon');
       const input = document.getElementById('chatInput');
-      const sendBtn = document.getElementById('btnSendChat');
-      const remoteDot = document.getElementById('remoteDot');
-      const remoteStatus = document.getElementById('remoteStatusText');
+      const sendBtn = document.getElementById('sendBtn');
+      const rDot = document.getElementById('remoteDot');
+      const rStatus = document.getElementById('remoteStatusText');
+      const escPrompt = document.getElementById('escPromptText');
 
       if (appState === 'IDLE') {
-        btn.className = "h-10 px-5 rounded-lg font-bold text-sm bg-omegle-blue hover:bg-blue-600 active:scale-95 text-white transition flex items-center gap-2 shadow-lg shadow-blue-500/20";
+        btn.className = "h-11 px-6 rounded-lg font-bold text-sm bg-omegle-blue hover:bg-blue-600 active:scale-95 text-white transition flex items-center gap-2 shadow-lg shadow-blue-500/20";
         icon.className = "fa-solid fa-play";
         text.innerText = "Start Chat";
         input.disabled = true;
         sendBtn.disabled = true;
-        input.placeholder = "Start a chat to send messages...";
-        remoteDot.className = "w-2 h-2 rounded-full bg-slate-500";
-        remoteStatus.innerText = "Disconnected";
+        input.placeholder = "Click 'Start Chat' to talk...";
+        rDot.className = "w-2 h-2 rounded-full bg-slate-500";
+        rStatus.innerText = "Disconnected";
+        escPrompt.classList.add('hidden');
       } else if (appState === 'SEARCHING') {
-        btn.className = "h-10 px-5 rounded-lg font-bold text-sm bg-amber-600 hover:bg-amber-500 active:scale-95 text-white transition flex items-center gap-2";
+        btn.className = "h-11 px-6 rounded-lg font-bold text-sm bg-amber-600 hover:bg-amber-500 active:scale-95 text-white transition flex items-center gap-2";
         icon.className = "fa-solid fa-spinner animate-spin";
-        text.innerText = "Cancel Search";
+        text.innerText = "Stop";
         input.disabled = true;
         sendBtn.disabled = true;
-        remoteDot.className = "w-2 h-2 rounded-full bg-amber-500 animate-pulse";
-        remoteStatus.innerText = "Connecting...";
+        rDot.className = "w-2 h-2 rounded-full bg-amber-500 animate-pulse";
+        rStatus.innerText = "Searching...";
+        escPrompt.classList.remove('hidden');
       } else if (appState === 'CONNECTED') {
-        btn.className = "h-10 px-5 rounded-lg font-bold text-sm bg-red-600 hover:bg-red-500 active:scale-95 text-white transition flex items-center gap-2 shadow-lg shadow-red-500/20";
+        btn.className = "h-11 px-6 rounded-lg font-bold text-sm bg-red-600 hover:bg-red-500 active:scale-95 text-white transition flex items-center gap-2 shadow-lg shadow-red-500/20";
         icon.className = "fa-solid fa-stop";
-        text.innerText = "Next Stranger (Esc)";
+        text.innerText = "Next (Esc)";
         input.disabled = false;
         sendBtn.disabled = false;
-        input.placeholder = "Type a message here...";
+        input.placeholder = "Type your message here...";
         input.focus();
-        remoteDot.className = "w-2 h-2 rounded-full bg-emerald-500";
-        remoteStatus.innerText = "Connected";
+        rDot.className = "w-2 h-2 rounded-full bg-emerald-500";
+        rStatus.innerText = "Connected";
+        escPrompt.classList.remove('hidden');
       }
     }
 
-    function handleSendMessage(e) {
+    /* -------------------------------------------------------------
+     * STREAMING_CHUNK:Implementing Chat Messaging and Strict Auto-Scrolling...
+     * ------------------------------------------------------------- */
+    function submitChatMessage(e) {
       if (e) e.preventDefault();
       const input = document.getElementById('chatInput');
-      const text = input.value.trim();
-      if (!text || appState !== 'CONNECTED') return;
+      const msg = input.value.trim();
+      if (!msg || appState !== 'CONNECTED') return;
 
-      appendChatMessage('You', text, 'text-blue-400 font-semibold');
+      appendChatMessage('You', msg, 'text-omegle-blue font-bold');
       input.value = '';
-      playBeep('msg');
+      playSound('message');
 
-      // Generate intelligent simulated response
-      generateStrangerReply(text);
+      // Generate intelligent contextual response
+      generateBotReply(msg);
     }
 
-    function sendQuickMessage(text) {
+    function sendPreset(text) {
       if (appState !== 'CONNECTED') {
-        showToast('Connect with a stranger first!');
+        showToast('Connect with a stranger first.');
         return;
       }
-      appendChatMessage('You', text, 'text-blue-400 font-semibold');
-      playBeep('msg');
-      generateStrangerReply(text);
+      appendChatMessage('You', text, 'text-omegle-blue font-bold');
+      playSound('message');
+      generateBotReply(text);
     }
 
-    function generateStrangerReply(userText) {
+    function generateBotReply(userText) {
       if (appState !== 'CONNECTED' || !currentStranger) return;
 
       const lower = userText.toLowerCase();
       let reply = "";
 
       if (lower.includes('hey') || lower.includes('hello') || lower.includes('hi')) {
-        reply = "Hey! How are things with you?";
+        reply = "Hey! How's your day going?";
       } else if (lower.includes('asl') || lower.includes('where') || lower.includes('from')) {
-        reply = `I'm from ${currentStranger.country}! You?`;
+        reply = `I'm from ${currentStranger.country}! What about you?`;
       } else if (lower.includes('game') || lower.includes('play')) {
-        reply = "I've been playing a lot of Elden Ring and Valorant lately. Do you play?";
-      } else if (lower.includes('code') || lower.includes('programming')) {
-        reply = "Building apps is so satisfying. Doing frontend or backend mostly?";
+        reply = "I've been playing lots of games lately. Any favorites?";
       } else if (lower.includes('music') || lower.includes('song')) {
-        reply = "Listening to some indie rock right now 🎧";
+        reply = "I love discovering new songs! What do you listen to?";
       } else {
-        // Sample random dialogue from persona
-        const randomIdx = Math.floor(Math.random() * (currentStranger.dialogues.length - 1)) + 1;
-        reply = currentStranger.dialogues[randomIdx];
+        const pool = currentStranger.dialogues;
+        reply = pool[Math.floor(Math.random() * pool.length)];
       }
 
-      // Typing simulation
-      const typingDelay = 1000 + Math.random() * 1200;
-      setTimeout(() => {
-        if (appState !== 'CONNECTED') return;
-        document.getElementById('typingIndicator').classList.remove('hidden');
-
-        partnerTypingTimeout = setTimeout(() => {
-          if (appState !== 'CONNECTED') return;
-          document.getElementById('typingIndicator').classList.add('hidden');
-          appendChatMessage('Stranger', reply, 'text-red-400 font-semibold');
-          playBeep('msg');
-        }, typingDelay);
-      }, 500);
+      triggerStrangerResponse(reply, 1000 + Math.random() * 800);
     }
 
-    function scheduleStrangerMessage(text, delayMs) {
-      setTimeout(() => {
+    function triggerStrangerResponse(text, delayMs) {
+      strangerReplyTimer = setTimeout(() => {
         if (appState !== 'CONNECTED') return;
-        document.getElementById('typingIndicator').classList.remove('hidden');
-        partnerTypingTimeout = setTimeout(() => {
+
+        // Show typing indicator
+        document.getElementById('typingBar').classList.remove('hidden');
+        isStrangerTalking = true;
+
+        setTimeout(() => {
           if (appState !== 'CONNECTED') return;
-          document.getElementById('typingIndicator').classList.add('hidden');
-          appendChatMessage('Stranger', text, 'text-red-400 font-semibold');
-          playBeep('msg');
+          document.getElementById('typingBar').classList.add('hidden');
+          isStrangerTalking = false;
+
+          appendChatMessage('Stranger', text, 'text-omegle-stranger font-bold');
+          playSound('message');
         }, 1200);
+
       }, delayMs);
     }
 
-    function appendChatMessage(sender, message, labelStyle) {
+    function appendChatMessage(sender, text, labelClass) {
       const container = document.getElementById('chatMessages');
-      const msgDiv = document.createElement('div');
-      msgDiv.className = "text-xs leading-relaxed break-words py-0.5 animate-fadeIn";
-
       const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      msgDiv.innerHTML = `
-        <span class="text-[10px] text-slate-500 select-none mr-1">${time}</span>
-        <span class="${labelStyle}">${sender}:</span>
-        <span class="text-slate-200 ml-1">${escapeHtml(message)}</span>
+
+      const msgEl = document.createElement('div');
+      msgEl.className = 'py-0.5 break-words';
+      msgEl.innerHTML = `
+        <span class="text-[10px] text-slate-500 mr-1 select-none">${time}</span>
+        <span class="${labelClass}">${sender}:</span>
+        <span class="text-slate-200 ml-1 font-normal">${escapeHtml(text)}</span>
       `;
 
-      container.appendChild(msgDiv);
+      container.appendChild(msgEl);
+
+      // GUARANTEED CHAT AUTO-SCROLL
       container.scrollTop = container.scrollHeight;
     }
 
-    function appendSystemMessage(htmlText) {
+    function appendSystemNote(text) {
       const container = document.getElementById('chatMessages');
-      const div = document.createElement('div');
-      div.className = "text-[11px] text-slate-400 italic py-1 border-l-2 border-slate-700 pl-2 my-1";
-      div.innerHTML = htmlText;
-      container.appendChild(div);
+      const note = document.createElement('div');
+      note.className = 'text-[11px] text-slate-400 italic py-1 border-l-2 border-slate-700 pl-2 my-0.5';
+      note.innerHTML = text;
+      container.appendChild(note);
+
+      // Scroll after system messages too
       container.scrollTop = container.scrollHeight;
     }
 
-    function clearChatMessages() {
+    function clearChatLog() {
       const container = document.getElementById('chatMessages');
       container.innerHTML = `
-        <div class="system-msg bg-blue-950/30 border border-blue-900/40 rounded-lg p-2.5 text-xs text-blue-300/90 leading-relaxed">
-          <p class="font-semibold text-blue-300 mb-1"><i class="fa-solid fa-broom"></i> Chat Cleared</p>
+        <div class="bg-blue-950/40 border border-blue-900/50 rounded-lg p-3 text-blue-200 text-xs">
+          <p class="font-semibold mb-1 flex items-center gap-1.5 text-blue-300">
+            <i class="fa-solid fa-broom"></i> Chat Cleared
+          </p>
           Messages history reset.
         </div>
       `;
@@ -1056,7 +894,10 @@
       return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
 
-    function handleTagInput(e) {
+    /* -------------------------------------------------------------
+     * STREAMING_CHUNK:Adding Interest Tags, Shortcuts, and LifeCycle...
+     * ------------------------------------------------------------- */
+    function handleTagKey(e) {
       if (e.key === 'Enter') {
         e.preventDefault();
         const input = document.getElementById('tagInput');
@@ -1070,8 +911,8 @@
       }
     }
 
-    function removeTag(tagToRemove) {
-      userInterests = userInterests.filter(t => t !== tagToRemove);
+    function removeTag(tag) {
+      userInterests = userInterests.filter(t => t !== tag);
       renderTags();
     }
 
@@ -1079,86 +920,65 @@
       const container = document.getElementById('tagsList');
       container.innerHTML = userInterests.map(tag => `
         <span class="inline-flex items-center gap-1 text-[11px] bg-blue-500/20 text-blue-300 border border-blue-500/30 px-2 py-0.5 rounded-full">
-          ${tag} <button onclick="removeTag('${tag}')" class="hover:text-white">&times;</button>
+          #${tag} <button onclick="removeTag('${tag}')" class="hover:text-white">&times;</button>
         </span>
       `).join('');
     }
 
-    // Keyboard Shortcuts (Esc to stop / double Esc to skip)
+    // Classic Omegle Escape key behavior (Esc once to disconnect, Esc twice to skip)
+    let escPressCount = 0;
+    let escTimer = null;
     window.addEventListener('keydown', (e) => {
-      // Do not interrupt if actively typing in settings or tags
-      if (e.target.id === 'tagInput') return;
+      if (e.target.tagName === 'INPUT') return; // Don't interrupt typing
 
       if (e.key === 'Escape') {
-        escapePressCount++;
-        if (escapePressCount === 1) {
+        escPressCount++;
+        if (escPressCount === 1) {
           if (appState === 'CONNECTED') {
-            disconnectSession(true);
+            disconnectChat(true);
             showToast('Press Esc again to find next stranger');
           } else if (appState === 'SEARCHING') {
-            disconnectSession(true);
+            disconnectChat(true);
           }
-          escapePressTimer = setTimeout(() => {
-            escapePressCount = 0;
-          }, 700);
-        } else if (escapePressCount >= 2) {
-          clearTimeout(escapePressTimer);
-          escapePressCount = 0;
+          escTimer = setTimeout(() => { escPressCount = 0; }, 700);
+        } else if (escPressCount >= 2) {
+          clearTimeout(escTimer);
+          escPressCount = 0;
           startMatchmaking();
         }
       }
     });
 
-    function toggleFullScreen() {
-      if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch(e => console.warn(e));
-      } else {
-        if (document.exitFullscreen) document.exitFullscreen();
-      }
-    }
-
-    function toggleModal(modalId, show) {
-      const modal = document.getElementById(modalId);
-      if (show) modal.classList.remove('hidden');
-      else modal.classList.add('hidden');
-    }
-
-    function openReportModal() {
-      toggleModal('reportModal', true);
-    }
-
-    function submitReport() {
-      toggleModal('reportModal', false);
-      showToast('Report submitted. Skipping user...');
-      disconnectSession(true);
-      setTimeout(startMatchmaking, 400);
-    }
-
     function showToast(msg) {
       const toast = document.getElementById('toast');
       toast.innerText = msg;
       toast.style.opacity = '1';
-      setTimeout(() => {
-        toast.style.opacity = '0';
-      }, 2400);
+      setTimeout(() => { toast.style.opacity = '0'; }, 2200);
     }
 
-    function resetToHome() {
-      disconnectSession(true);
+    function toggleModal(id, show) {
+      const el = document.getElementById(id);
+      if (show) el.classList.remove('hidden');
+      else el.classList.add('hidden');
+    }
+
+    function resetApp() {
+      disconnectChat(true);
       showToast('Welcome to Omegle Web');
     }
 
-    // Realistic fluctuating online user count
+    // Online count fluktuations
     setInterval(() => {
-      const delta = Math.floor(Math.random() * 11) - 5;
-      simulatedOnlineBase = Math.max(30000, simulatedOnlineBase + delta);
-      document.getElementById('onlineCountText').innerText = simulatedOnlineBase.toLocaleString();
+      simulatedOnline += Math.floor(Math.random() * 9) - 4;
+      document.getElementById('onlineCountText').innerText = simulatedOnline.toLocaleString();
     }, 4000);
 
+    // Initial load
     window.addEventListener('DOMContentLoaded', () => {
-      initCamera();
+      drawLocalAvatarFallback();
+      clearStrangerScreen();
       renderTags();
-      updateUIState();
+      updateUI();
     });
   </script>
 </body>
