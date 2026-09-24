@@ -198,7 +198,6 @@
       display: none;
     }
 
-    /* Video & Canvas Elements */
     video {
       width: 100%;
       height: 100%;
@@ -512,7 +511,6 @@
       </div>
     </div>
     <div class="header-actions">
-      <!-- Live Video Filters -->
       <select id="filterSelect" class="filter-select" title="Camera Filter">
         <option value="none">✨ Filter: Normal</option>
         <option value="grayscale(100%)">Noir (B&W)</option>
@@ -547,7 +545,6 @@
         <video id="localVideo" class="mirrored" autoplay playsinline muted style="display: none;"></video>
         <canvas id="localCanvas"></canvas>
 
-        <!-- Media Controls (Includes Mirror & Cam Toggle) -->
         <div class="media-floating-controls" id="floatingControls" style="display: none;">
           <button id="btnToggleMirror" title="Flip Mirror">🪞 Mirror (On)</button>
           <button id="btnMuteAudio" title="Mute Mic">🎤 Mute</button>
@@ -587,7 +584,16 @@
   <footer>
     <button class="btn-main-action" id="btnMainAction">▶ Start Chat</button>
 
-    <!-- Gender Selector Feature -->
+    <!-- 1. Your Gender Picker -->
+    <div class="gender-picker-wrap">
+      <label for="myGenderSelect">I am:</label>
+      <select id="myGenderSelect" class="gender-select">
+        <option value="male">👨 Male</option>
+        <option value="female">👩 Female</option>
+      </select>
+    </div>
+
+    <!-- 2. Match Preference Picker -->
     <div class="gender-picker-wrap">
       <label for="genderSelect">Match With:</label>
       <select id="genderSelect" class="gender-select">
@@ -648,6 +654,7 @@
 
     // --- DOM Elements ---
     const filterSelect = document.getElementById("filterSelect");
+    const myGenderSelect = document.getElementById("myGenderSelect");
     const genderSelect = document.getElementById("genderSelect");
     const btnToggleHardware = document.getElementById("btnToggleHardware");
     const localVideo = document.getElementById("localVideo");
@@ -682,7 +689,7 @@
     window.addEventListener("resize", syncCanvasSizes);
     setTimeout(syncCanvasSizes, 100);
 
-    // --- 2. Realistic Local Person Avatar (Replacing Plain Silhouette) ---
+    // --- 2. Dynamic Local Person Avatar (Male / Female Selection) ---
     let localFrameStep = 0;
     function renderLocalPerson() {
       if (!localCanvas) return;
@@ -692,13 +699,13 @@
 
       ctx.clearRect(0, 0, w, h);
 
-      // Only draw when video is hidden
       if (localVideo.style.display !== "none") {
         return;
       }
 
       localFrameStep += 0.035;
       const breath = Math.sin(localFrameStep) * 2;
+      const myGender = myGenderSelect.value;
 
       // Dark card background
       ctx.fillStyle = "#0c1322";
@@ -708,14 +715,14 @@
       const headRadius = Math.min(w, h) * 0.19; 
       const cy = h * 0.38 + breath;
 
-      // 1. Shoulders / Casual Shirt
-      ctx.fillStyle = "#2563eb";
+      // 1. Shoulders & Shirt based on chosen gender
+      ctx.fillStyle = myGender === "female" ? "#ec4899" : "#2563eb";
       ctx.beginPath();
       ctx.ellipse(cx, h * 0.95 + breath, w * 0.42, h * 0.38, 0, 0, Math.PI * 2);
       ctx.fill();
 
       // Shirt Collar Accent
-      ctx.fillStyle = "#1d4ed8";
+      ctx.fillStyle = myGender === "female" ? "#db2777" : "#1d4ed8";
       ctx.beginPath();
       ctx.moveTo(cx - (headRadius * 0.35), h * 0.65 + breath);
       ctx.lineTo(cx, h * 0.76 + breath);
@@ -734,10 +741,18 @@
       ctx.arc(cx, cy, headRadius, 0, Math.PI * 2);
       ctx.fill();
 
-      // 4. Hair (Styled haircut)
-      ctx.fillStyle = "#18181b";
+      // 4. Hair based on chosen gender
+      ctx.fillStyle = myGender === "female" ? "#7c2d12" : "#18181b";
       ctx.beginPath();
-      ctx.arc(cx, cy - (headRadius * 0.1), headRadius * 1.02, Math.PI, Math.PI * 2);
+      if (myGender === "female") {
+        // Longer flowing hair
+        ctx.arc(cx, cy - (headRadius * 0.15), headRadius * 1.08, Math.PI, Math.PI * 2);
+        ctx.fillRect(cx - headRadius * 1.05, cy - (headRadius * 0.15), headRadius * 0.4, headRadius * 1.2);
+        ctx.fillRect(cx + headRadius * 0.65, cy - (headRadius * 0.15), headRadius * 0.4, headRadius * 1.2);
+      } else {
+        // Shorter male haircut
+        ctx.arc(cx, cy - (headRadius * 0.1), headRadius * 1.02, Math.PI, Math.PI * 2);
+      }
       ctx.fill();
 
       // 5. Eyes with Blinking
@@ -756,7 +771,7 @@
       }
 
       // 6. Friendly Smile
-      ctx.strokeStyle = "#78350f";
+      ctx.strokeStyle = myGender === "female" ? "#be123c" : "#78350f";
       ctx.lineWidth = 3;
       ctx.lineCap = "round";
       ctx.beginPath();
@@ -766,9 +781,15 @@
       localAvatarTimer = requestAnimationFrame(renderLocalPerson);
     }
 
-    // Start local avatar rendering loop
     syncCanvasSizes();
     renderLocalPerson();
+
+    // Re-render local avatar immediately if "I am:" changes
+    myGenderSelect.addEventListener("change", () => {
+      if (localVideo.style.display === "none") {
+        renderLocalPerson();
+      }
+    });
 
     // --- 3. Perfectly Proportioned Stranger Avatar ---
     let frameStep = 0;
@@ -817,7 +838,13 @@
       // 4. Hair
       ctx.fillStyle = currentStranger.hair;
       ctx.beginPath();
-      ctx.arc(cx, cy - (headRadius * 0.05), headRadius * 1.02, Math.PI, Math.PI * 2);
+      if (currentStranger.gender === "female") {
+        ctx.arc(cx, cy - (headRadius * 0.12), headRadius * 1.06, Math.PI, Math.PI * 2);
+        ctx.fillRect(cx - headRadius * 1.02, cy - (headRadius * 0.1), headRadius * 0.38, headRadius * 1.15);
+        ctx.fillRect(cx + headRadius * 0.64, cy - (headRadius * 0.1), headRadius * 0.38, headRadius * 1.15);
+      } else {
+        ctx.arc(cx, cy - (headRadius * 0.05), headRadius * 1.02, Math.PI, Math.PI * 2);
+      }
       ctx.fill();
 
       // 5. Eyes with Blinking
@@ -965,9 +992,10 @@
       chatInput.disabled = true;
       btnSendMessage.disabled = true;
 
+      const myGender = myGenderSelect.options[myGenderSelect.selectedIndex].text;
       const pref = genderSelect.value;
       const prefText = pref === "both" ? "someone" : `a ${pref} stranger`;
-      appendMessage("", `Looking for ${prefText} you can chat with...`, "system");
+      appendMessage("", `Looking for ${prefText} for you (${myGender})...`, "system");
 
       const ctx = strangerCanvas.getContext("2d");
       ctx.fillStyle = "#000";
