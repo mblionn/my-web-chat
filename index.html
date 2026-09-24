@@ -1,984 +1,782 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Omegle Web - Live Random Video & Chat</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Web TV 555 - Live Random Video Chat</title>
+  <style>
+    :root {
+      --bg-dark: #0b0f19;
+      --card-bg: #111827;
+      --border-color: #1f2937;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --danger: #ef4444;
+      --danger-hover: #dc2626;
+      --success: #10b981;
+      --text-main: #f9fafb;
+      --text-muted: #9ca3af;
+    }
 
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Inter', 'sans-serif'],
-            mono: ['JetBrains Mono', 'monospace'],
-          },
-          colors: {
-            omegle: {
-              blue: '#0084ff',
-              lightBlue: '#38a1ff',
-              orange: '#ff6b35',
-              dark: '#0c0e12',
-              surface: '#151921',
-              panel: '#1c212b',
-              border: '#2a313d',
-              stranger: '#ff4d4f',
-              you: '#0084ff'
-            }
-          }
-        }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Top Navigation */
+    header {
+      height: 56px;
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      flex-shrink: 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo {
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .logo-badge {
+      background: #2563eb;
+      color: #ffffff;
+      font-size: 0.75rem;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-weight: 700;
+    }
+
+    .online-counter {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .online-dot {
+      width: 7px;
+      height: 7px;
+      background: var(--success);
+      border-radius: 50%;
+      box-shadow: 0 0 6px var(--success);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .cam-btn {
+      background: var(--success);
+      color: #fff;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: opacity 0.2s;
+    }
+
+    .cam-btn:hover {
+      opacity: 0.9;
+    }
+
+    /* Main Container */
+    main {
+      flex: 1;
+      display: flex;
+      padding: 12px;
+      gap: 12px;
+      overflow: hidden;
+    }
+
+    /* Video Section */
+    .video-section {
+      flex: 7;
+      display: flex;
+      gap: 12px;
+      height: 100%;
+    }
+
+    .video-card {
+      flex: 1;
+      background: #000;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .video-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(4px);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--danger);
+    }
+
+    .badge-dot.connected {
+      background: var(--success);
+    }
+
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scaleX(-1); /* Mirror local feed */
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Floating Media Controls */
+    .media-floating-controls {
+      position: absolute;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(17, 24, 39, 0.85);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 4px 10px;
+      display: flex;
+      gap: 8px;
+      z-index: 10;
+    }
+
+    .media-floating-controls button {
+      background: none;
+      border: none;
+      color: #fff;
+      padding: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .media-floating-controls button:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    /* Chat Section */
+    .chat-section {
+      flex: 3;
+      min-width: 300px;
+      max-width: 400px;
+      background: var(--card-bg);
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      height: 100%;
+    }
+
+    .chat-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 0.88rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .messages-container {
+      flex: 1;
+      padding: 14px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      scroll-behavior: smooth;
+    }
+
+    .message {
+      font-size: 0.86rem;
+      line-height: 1.4;
+      word-break: break-word;
+    }
+
+    .message .time {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-right: 5px;
+    }
+
+    .message.stranger .sender {
+      color: var(--danger);
+      font-weight: 700;
+    }
+
+    .message.you .sender {
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    .message.system {
+      color: var(--text-muted);
+      font-style: italic;
+      font-size: 0.8rem;
+      text-align: center;
+      margin: 4px 0;
+    }
+
+    .chat-input-area {
+      padding: 10px 14px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      gap: 8px;
+    }
+
+    .chat-input-area input {
+      flex: 1;
+      background: #0b0f19;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: #fff;
+      font-size: 0.85rem;
+      outline: none;
+    }
+
+    .chat-input-area input:focus {
+      border-color: var(--primary);
+    }
+
+    .chat-input-area button {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+
+    .chat-input-area button:hover {
+      background: var(--primary-hover);
+    }
+
+    /* Bottom Control Bar */
+    footer {
+      height: 62px;
+      background: var(--card-bg);
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 14px;
+      flex-shrink: 0;
+    }
+
+    .btn-main-action {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 10px 24px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.2s;
+    }
+
+    .btn-main-action.stop {
+      background: var(--danger);
+    }
+
+    .btn-main-action.stop:hover {
+      background: var(--danger-hover);
+    }
+
+    .btn-main-action:hover {
+      background: var(--primary-hover);
+    }
+
+    .status-text {
+      font-size: 0.83rem;
+      color: var(--text-muted);
+    }
+
+    @media (max-width: 900px) {
+      main {
+        flex-direction: column;
+      }
+      .video-section {
+        flex: 1;
+      }
+      .chat-section {
+        max-width: none;
+        flex: 1;
       }
     }
-  </script>
-
-  <style>
-    /* Fixed smooth custom scrollbar */
-    #chatMessages::-webkit-scrollbar {
-      width: 6px;
-    }
-    #chatMessages::-webkit-scrollbar-track {
-      background: #11141a;
-    }
-    #chatMessages::-webkit-scrollbar-thumb {
-      background: #2f3746;
-      border-radius: 9999px;
-    }
-    #chatMessages::-webkit-scrollbar-thumb:hover {
-      background: #414c60;
-    }
-
-    /* Scanline effect for stranger video feed */
-    .scanlines {
-      background: linear-gradient(
-        rgba(18, 16, 16, 0) 50%, 
-        rgba(0, 0, 0, 0.28) 50%
-      ), linear-gradient(
-        90deg,
-        rgba(255, 0, 0, 0.03),
-        rgba(0, 255, 0, 0.01),
-        rgba(0, 0, 255, 0.03)
-      );
-      background-size: 100% 3px, 6px 100%;
-    }
-
-    /* Typing dots animation */
-    @keyframes typingBounce {
-      0%, 60%, 100% { transform: translateY(0); }
-      30% { transform: translateY(-4px); }
-    }
-    .dot-1 { animation: typingBounce 1.2s infinite ease-in-out; }
-    .dot-2 { animation: typingBounce 1.2s infinite ease-in-out 0.2s; }
-    .dot-3 { animation: typingBounce 1.2s infinite ease-in-out 0.4s; }
   </style>
 </head>
-<body class="bg-omegle-dark text-slate-100 font-sans h-screen w-screen flex flex-col overflow-hidden select-none">
+<body>
 
-  <!-- Header -->
-  <header class="h-14 border-b border-omegle-border bg-omegle-surface px-4 flex items-center justify-between shrink-0 z-30">
-    <div class="flex items-center gap-3">
-      <div class="flex items-center gap-1.5 cursor-pointer" onclick="resetApp()">
-        <span class="text-2xl font-black tracking-tight text-omegle-blue">omegle</span>
-        <span class="text-xs px-2 py-0.5 rounded font-mono font-semibold bg-blue-500/20 text-blue-400 border border-blue-500/30">LIVE</span>
+  <!-- Top Header -->
+  <header>
+    <div class="brand">
+      <div class="logo">
+        Web TV <span class="logo-badge">555</span>
       </div>
-      <div class="hidden sm:flex items-center text-xs text-slate-400 bg-black/40 px-3 py-1.5 rounded-full border border-slate-800">
-        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse mr-2"></span>
-        <span id="onlineCountText">41,208</span>&nbsp;online now
+      <div class="online-counter">
+        <span class="online-dot"></span>
+        <span id="userCount">42,810</span> online
       </div>
     </div>
-
-    <!-- Right Controls -->
-    <div class="flex items-center gap-2">
-      <!-- Media Permission Request Button -->
-      <button id="enableMediaBtn" onclick="requestMediaPermissions()" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition flex items-center gap-1.5 shadow-sm">
-        <i class="fa-solid fa-video" id="mediaStateIcon"></i>
-        <span id="mediaBtnText">Enable Camera & Mic</span>
-      </button>
-
-      <!-- Audio Mute Switch -->
-      <button onclick="toggleAudioFx()" id="audioToggleBtn" title="Sound Effects" class="p-2 text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 rounded-lg border border-slate-700 text-xs transition">
-        <i class="fa-solid fa-volume-high" id="audioToggleIcon"></i>
-      </button>
-
-      <!-- Safety Rules -->
-      <button onclick="toggleModal('safetyModal', true)" title="Rules" class="p-2 text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 rounded-lg border border-slate-700 text-xs transition">
-        <i class="fa-solid fa-shield-halved text-emerald-400"></i>
-      </button>
+    <div class="header-actions">
+      <button class="cam-btn" id="btnToggleHardware">📹 Enable Camera & Mic</button>
     </div>
   </header>
 
-  <!-- Main Split Body -->
-  <main class="flex-1 flex flex-col md:flex-row overflow-hidden relative">
-
-    <!-- LEFT: Video Screens Container -->
-    <section class="flex-1 flex flex-col p-2.5 gap-2 bg-black min-h-[300px] md:min-h-0 relative">
-      
-      <!-- Split Video Canvas / Streams -->
-      <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-2.5 h-full relative">
-        
-        <!-- Remote Stranger Screen -->
-        <div id="remoteBox" class="relative bg-slate-950 rounded-xl overflow-hidden border border-slate-800 flex items-center justify-center">
-          <canvas id="remoteCanvas" class="w-full h-full object-cover"></canvas>
-          <div class="absolute inset-0 scanlines pointer-events-none opacity-30"></div>
-
-          <!-- Remote Status Badge -->
-          <div class="absolute top-3 left-3 flex items-center gap-2 bg-black/70 backdrop-blur-md px-3 py-1 rounded-full text-xs font-medium border border-white/10 z-10">
-            <span id="remoteDot" class="w-2 h-2 rounded-full bg-slate-500"></span>
-            <span id="remoteStatusText" class="text-slate-300">Disconnected</span>
-          </div>
-
-          <!-- Location Badge -->
-          <div id="strangerTagBadge" class="hidden absolute top-3 right-3 bg-black/70 backdrop-blur-md px-3 py-1 rounded-full text-xs border border-white/10 text-slate-300 z-10 flex items-center gap-1.5">
-            <i class="fa-solid fa-earth-americas text-blue-400"></i>
-            <span id="strangerLocation">Stranger (United States)</span>
-          </div>
-
-          <!-- Loading Spinner -->
-          <div id="remoteSearchingLoader" class="hidden absolute inset-0 bg-slate-950/85 backdrop-blur-sm flex flex-col items-center justify-center gap-3 z-20">
-            <div class="w-12 h-12 rounded-full border-4 border-blue-500/20 border-t-blue-500 animate-spin"></div>
-            <p class="text-sm font-medium text-slate-200 animate-pulse">Connecting to a random stranger...</p>
-          </div>
+  <!-- Video & Chat Layout -->
+  <main>
+    <div class="video-section">
+      <!-- Stranger Video / Simulated Partner -->
+      <div class="video-card">
+        <div class="video-badge">
+          <span class="badge-dot" id="strangerDot"></span>
+          <span id="strangerLabel">Disconnected</span>
         </div>
-
-        <!-- Local User Screen -->
-        <div id="localBox" class="relative bg-slate-950 rounded-xl overflow-hidden border border-slate-800 flex items-center justify-center">
-          <!-- Real Webcam Video Feed -->
-          <video id="localVideo" autoplay playsinline muted class="w-full h-full object-cover hidden -scale-x-100"></video>
-          <!-- Static Avatar Fallback when camera is off/denied -->
-          <canvas id="localCanvas" class="w-full h-full object-cover"></canvas>
-
-          <!-- Local Status Badge -->
-          <div class="absolute top-3 left-3 flex items-center gap-2 bg-black/70 backdrop-blur-md px-3 py-1 rounded-full text-xs font-medium border border-white/10 z-10">
-            <span id="localCamDot" class="w-2 h-2 rounded-full bg-amber-500"></span>
-            <span id="localCamStatus" class="text-slate-300">You (Avatar Mode)</span>
-          </div>
-
-          <!-- Media Control Buttons Overlay -->
-          <div class="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex items-center gap-2 bg-black/75 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/15 z-10">
-            <button id="toggleMicBtn" onclick="toggleLocalAudio()" title="Mute/Unmute Mic" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-xs text-slate-200 transition">
-              <i class="fa-solid fa-microphone" id="micIcon"></i>
-            </button>
-            <button id="toggleCamBtn" onclick="toggleLocalVideo()" title="Camera On/Off" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-xs text-slate-200 transition">
-              <i class="fa-solid fa-video" id="camIcon"></i>
-            </button>
-            <button onclick="flipLocalCamera()" title="Mirror Feed" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-xs text-slate-200 transition">
-              <i class="fa-solid fa-arrows-rotate"></i>
-            </button>
-          </div>
-        </div>
-
+        <canvas id="strangerCanvas"></canvas>
       </div>
 
-      <!-- Action Panel -->
-      <div class="h-16 bg-omegle-surface rounded-xl border border-omegle-border px-3.5 flex items-center justify-between gap-3 shrink-0">
-        <div class="flex items-center gap-2">
-          <!-- Main Action Button -->
-          <button id="mainActionBtn" onclick="handleMainAction()" class="h-11 px-6 rounded-lg font-bold text-sm bg-omegle-blue hover:bg-blue-600 active:scale-95 text-white transition flex items-center gap-2 shadow-lg shadow-blue-500/20">
-            <i class="fa-solid fa-play" id="mainActionIcon"></i>
-            <span id="mainActionText">Start Chat</span>
-          </button>
-
-          <span id="escPromptText" class="text-xs text-slate-400 font-mono hidden sm:inline ml-2">
-            Press <kbd class="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-slate-200">Esc</kbd> to skip
-          </span>
+      <!-- Local User Video / Avatar -->
+      <div class="video-card">
+        <div class="video-badge">
+          <span class="badge-dot" id="localDot"></span>
+          <span id="localLabel">You (Avatar Mode)</span>
         </div>
+        <video id="localVideo" autoplay playsinline muted style="display: none;"></video>
+        <canvas id="localCanvas"></canvas>
 
-        <!-- Interest Tags Input -->
-        <div class="flex-1 max-w-sm hidden lg:flex items-center gap-1.5 bg-black/40 border border-slate-800 rounded-lg px-3 py-1.5">
-          <i class="fa-solid fa-hashtag text-slate-500 text-xs"></i>
-          <div id="tagsList" class="flex items-center gap-1 overflow-x-auto whitespace-nowrap">
-            <span class="inline-flex items-center gap-1 text-[11px] bg-blue-500/20 text-blue-300 border border-blue-500/30 px-2 py-0.5 rounded-full">
-              chatting <button onclick="removeTag('chatting')" class="hover:text-white">&times;</button>
-            </span>
-          </div>
-          <input id="tagInput" type="text" placeholder="Add interest..." class="bg-transparent text-xs text-slate-200 placeholder-slate-500 focus:outline-none flex-1 min-w-[70px]" onkeydown="handleTagKey(event)">
-        </div>
-
-        <button onclick="clearChatLog()" title="Clear Chat History" class="h-10 px-3 rounded-lg border border-slate-700 hover:bg-slate-800 text-slate-300 text-xs transition flex items-center gap-1.5">
-          <i class="fa-solid fa-trash-can"></i>
-          <span class="hidden sm:inline">Clear</span>
-        </button>
-      </div>
-
-    </section>
-
-    <!-- RIGHT: Live Chat Sidebar -->
-    <section class="w-full md:w-96 lg:w-[420px] bg-omegle-panel border-t md:border-t-0 md:border-l border-omegle-border flex flex-col h-72 md:h-auto shrink-0 select-text">
-      
-      <!-- Chat Topbar -->
-      <div class="h-12 px-4 border-b border-omegle-border bg-omegle-surface flex items-center justify-between text-xs text-slate-300 shrink-0 select-none">
-        <div class="flex items-center gap-2">
-          <i class="fa-regular fa-comments text-blue-400 text-sm"></i>
-          <span class="font-semibold text-slate-200">Text Chat</span>
-        </div>
-        <div id="commonInterestBadge" class="hidden text-[11px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-medium">
-          Matches on: <span id="commonInterestName" class="font-bold">#chatting</span>
+        <div class="media-floating-controls" id="floatingControls" style="display: none;">
+          <button id="btnMuteAudio" title="Mute Mic">🎤</button>
+          <button id="btnMuteVideo" title="Stop Video">📷</button>
         </div>
       </div>
+    </div>
 
-      <!-- Messages Scrollable Box -->
-      <div id="chatMessages" class="flex-1 overflow-y-auto p-3.5 space-y-3 text-xs leading-relaxed">
-        <div class="bg-blue-950/40 border border-blue-900/50 rounded-lg p-3 text-blue-200 text-xs">
-          <p class="font-semibold mb-1 flex items-center gap-1.5 text-blue-300">
-            <i class="fa-solid fa-circle-info"></i> Welcome to Omegle Web!
-          </p>
-          Click <strong>Start Chat</strong> to connect with a random stranger. Always follow community rules.
-        </div>
+    <!-- Right Side Chat Box -->
+    <div class="chat-section">
+      <div class="chat-header">
+        <span>💬 Conversation</span>
+        <span style="font-size: 0.75rem; color: var(--text-muted);">Encrypted P2P</span>
       </div>
 
-      <!-- Typing Indicator -->
-      <div id="typingBar" class="h-6 px-4 flex items-center gap-2 text-xs text-slate-400 italic hidden shrink-0 select-none">
-        <span>Stranger is typing</span>
-        <div class="flex items-center gap-1">
-          <span class="w-1.5 h-1.5 bg-slate-400 rounded-full dot-1"></span>
-          <span class="w-1.5 h-1.5 bg-slate-400 rounded-full dot-2"></span>
-          <span class="w-1.5 h-1.5 bg-slate-400 rounded-full dot-3"></span>
-        </div>
+      <div class="messages-container" id="chatContainer">
+        <div class="message system">Welcome to Web TV 555! Click Start Chat to connect.</div>
       </div>
 
-      <!-- Quick Canned Messages Bar -->
-      <div class="px-3 py-1.5 border-t border-omegle-border/60 bg-omegle-surface flex items-center gap-1.5 overflow-x-auto whitespace-nowrap text-xs shrink-0 select-none">
-        <span class="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Quick:</span>
-        <button onclick="sendPreset('Hey! How are you?')" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] transition">👋 Hey</button>
-        <button onclick="sendPreset('Where are you from?')" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] transition">🌍 ASL?</button>
-        <button onclick="sendPreset('What are your hobbies?')" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] transition">🎮 Hobbies</button>
-        <button onclick="sendPreset('Nice meeting you!')" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] transition">😊 Nice</button>
+      <div class="chat-input-area">
+        <input type="text" id="chatInput" placeholder="Type a message..." disabled autocomplete="off" />
+        <button id="btnSendMessage" disabled>Send</button>
       </div>
-
-      <!-- Chat Input Form -->
-      <form id="chatForm" onsubmit="submitChatMessage(event)" class="p-2.5 bg-omegle-surface border-t border-omegle-border flex items-center gap-2 shrink-0 select-none">
-        <input 
-          id="chatInput" 
-          type="text" 
-          disabled
-          autocomplete="off" 
-          placeholder="Click 'Start Chat' to talk..." 
-          class="flex-1 bg-black/40 border border-slate-700 focus:border-blue-500 rounded-lg px-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none transition disabled:opacity-50 disabled:cursor-not-allowed"
-        />
-        <button 
-          id="sendBtn" 
-          type="submit" 
-          disabled
-          class="w-10 h-9 rounded-lg bg-omegle-blue hover:bg-blue-600 disabled:opacity-40 disabled:hover:bg-omegle-blue text-white flex items-center justify-center transition active:scale-95 shrink-0"
-        >
-          <i class="fa-solid fa-paper-plane text-xs"></i>
-        </button>
-      </form>
-
-    </section>
-
+    </div>
   </main>
 
-  <!-- MODAL: Safety Rules -->
-  <div id="safetyModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-omegle-panel border border-omegle-border rounded-xl max-w-sm w-full p-5 shadow-2xl">
-      <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
-        <i class="fa-solid fa-shield-halved text-emerald-400"></i> Safety Guidelines
-      </h3>
-      <div class="space-y-2.5 text-xs text-slate-300 leading-relaxed mb-4">
-        <p>• You must be 18+ to use video chat.</p>
-        <p>• Never share private details: password, address, or financial info.</p>
-        <p>• Explicit adult behavior or harassment is strictly prohibited.</p>
-      </div>
-      <button onclick="toggleModal('safetyModal', false)" class="w-full py-2 rounded-lg bg-omegle-blue hover:bg-blue-600 text-white font-semibold text-xs transition">
-        I Understand
-      </button>
-    </div>
-  </div>
-
-  <!-- Toast Notification -->
-  <div id="toast" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-slate-900 text-slate-200 border border-slate-700 text-xs px-4 py-2 rounded-full shadow-2xl opacity-0 transition-opacity pointer-events-none z-50">
-    Notification
-  </div>
+  <!-- Footer Controls -->
+  <footer>
+    <button class="btn-main-action" id="btnMainAction">▶ Start Chat</button>
+    <span class="status-text" id="statusHelp">Press <b>Esc</b> to skip stranger</span>
+  </footer>
 
   <script>
-    /* -------------------------------------------------------------
-     * Global State Machine
-     * states: 'IDLE' | 'SEARCHING' | 'CONNECTED'
-     * ------------------------------------------------------------- */
-    let appState = 'IDLE';
-    let userInterests = ['chatting', 'music'];
+    // --- State Variables ---
+    let isConnected = false;
+    let isSearching = false;
     let localStream = null;
-    let isMicMuted = false;
-    let isVideoMuted = false;
-    let isMirrored = true;
-    let audioFxEnabled = true;
+    let micMuted = false;
+    let camDisabled = false;
+    let partnerAnimationTimer = null;
+    let botDialogueTimeout = null;
+
+    // --- Stranger Simulation Profiles ---
+    const strangerProfiles = [
+      { name: "Alex (Canada)", skin: "#f6d5b8", hair: "#3e2723", shirt: "#3b82f6" },
+      { name: "Sofia (Spain)", skin: "#f1c27d", hair: "#212121", shirt: "#ef4444" },
+      { name: "Kenji (Japan)", skin: "#f7d8b5", hair: "#1c1917", shirt: "#10b981" },
+      { name: "Maya (Brazil)", skin: "#c68642", hair: "#261c14", shirt: "#8b5cf6" }
+    ];
     let currentStranger = null;
-    let strangerAnimId = null;
-    let strangerReplyTimer = null;
-    let isStrangerTalking = false;
-    let simulatedOnline = 41208;
 
-    // Web Audio synthesizer for system sound effects
-    let audioCtx = null;
-    function getAudioCtx() {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
-      return audioCtx;
-    }
+    // --- DOM Elements ---
+    const btnToggleHardware = document.getElementById("btnToggleHardware");
+    const localVideo = document.getElementById("localVideo");
+    const localCanvas = document.getElementById("localCanvas");
+    const strangerCanvas = document.getElementById("strangerCanvas");
+    const localDot = document.getElementById("localDot");
+    const localLabel = document.getElementById("localLabel");
+    const strangerDot = document.getElementById("strangerDot");
+    const strangerLabel = document.getElementById("strangerLabel");
+    const btnMainAction = document.getElementById("btnMainAction");
+    const chatContainer = document.getElementById("chatContainer");
+    const chatInput = document.getElementById("chatInput");
+    const btnSendMessage = document.getElementById("btnSendMessage");
+    const floatingControls = document.getElementById("floatingControls");
+    const btnMuteAudio = document.getElementById("btnMuteAudio");
+    const btnMuteVideo = document.getElementById("btnMuteVideo");
 
-    function playSound(type) {
-      if (!audioFxEnabled) return;
-      try {
-        const ctx = getAudioCtx();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        const t = ctx.currentTime;
-
-        if (type === 'connect') {
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(400, t);
-          osc.frequency.exponentialRampToValueAtTime(800, t + 0.15);
-          gain.gain.setValueAtTime(0.08, t);
-          gain.gain.linearRampToValueAtTime(0, t + 0.3);
-          osc.start(t);
-          osc.stop(t + 0.3);
-        } else if (type === 'disconnect') {
-          osc.type = 'sawtooth';
-          osc.frequency.setValueAtTime(350, t);
-          osc.frequency.linearRampToValueAtTime(150, t + 0.2);
-          gain.gain.setValueAtTime(0.08, t);
-          gain.gain.linearRampToValueAtTime(0, t + 0.22);
-          osc.start(t);
-          osc.stop(t + 0.22);
-        } else if (type === 'message') {
-          osc.type = 'triangle';
-          osc.frequency.setValueAtTime(650, t);
-          gain.gain.setValueAtTime(0.04, t);
-          gain.gain.linearRampToValueAtTime(0, t + 0.08);
-          osc.start(t);
-          osc.stop(t + 0.08);
+    // --- 1. Canvas Dimensions & Resizing ---
+    function syncCanvasSizes() {
+      [localCanvas, strangerCanvas].forEach(c => {
+        if (!c) return;
+        const rect = c.getBoundingClientRect();
+        if (c.width !== rect.width || c.height !== rect.height) {
+          c.width = rect.width;
+          c.height = rect.height;
         }
-      } catch (e) {
-        console.warn('Audio effect failed', e);
-      }
+      });
+    }
+    window.addEventListener("resize", syncCanvasSizes);
+    setTimeout(syncCanvasSizes, 100);
+
+    // --- 2. Fallback Fixed-Size Avatar Renderer ---
+    function drawNeutralAvatar(canvas, ctx) {
+      if (!canvas || !ctx) return;
+      const w = canvas.width;
+      const h = canvas.height;
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = "#0c1322";
+      ctx.fillRect(0, 0, w, h);
+
+      const cx = w / 2;
+      const cy = h * 0.44;
+      const headRadius = Math.min(w, h) * 0.18; // Constant, never scales with chat
+
+      // Head
+      ctx.fillStyle = "#3b82f6";
+      ctx.beginPath();
+      ctx.arc(cx, cy, headRadius, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Body / Shoulders
+      ctx.beginPath();
+      const shoulderRadius = Math.min(w, h) * 0.38;
+      ctx.arc(cx, h + (shoulderRadius * 0.45), shoulderRadius, 0, Math.PI * 2);
+      ctx.fill();
     }
 
-    function toggleAudioFx() {
-      audioFxEnabled = !audioFxEnabled;
-      const icon = document.getElementById('audioToggleIcon');
-      if (audioFxEnabled) {
-        icon.className = 'fa-solid fa-volume-high';
-        showToast('Sound effects ON');
-      } else {
-        icon.className = 'fa-solid fa-volume-xmark text-red-400';
-        showToast('Sound effects MUTED');
+    // --- 3. Animated Stranger Canvas Renderer ---
+    let frameStep = 0;
+    function renderStrangerFrame() {
+      if (!strangerCanvas) return;
+      const ctx = strangerCanvas.getContext("2d");
+      const w = strangerCanvas.width;
+      const h = strangerCanvas.height;
+
+      ctx.clearRect(0, 0, w, h);
+
+      if (!isConnected || !currentStranger) {
+        ctx.fillStyle = "#000000";
+        ctx.fillRect(0, 0, w, h);
+        return;
       }
+
+      frameStep += 0.05;
+      const breath = Math.sin(frameStep) * 3;
+
+      ctx.fillStyle = "#1e293b";
+      ctx.fillRect(0, 0, w, h);
+
+      const cx = w / 2;
+      const cy = h * 0.42 + breath;
+      const headRadius = Math.min(w, h) * 0.17;
+
+      // Shirt / Torso
+      ctx.fillStyle = currentStranger.shirt;
+      ctx.beginPath();
+      ctx.arc(cx, h + (headRadius * 1.5) + breath, headRadius * 2, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Head
+      ctx.fillStyle = currentStranger.skin;
+      ctx.beginPath();
+      ctx.arc(cx, cy, headRadius, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Hair
+      ctx.fillStyle = currentStranger.hair;
+      ctx.beginPath();
+      ctx.arc(cx, cy - (headRadius * 0.25), headRadius * 0.95, Math.PI, Math.PI * 2);
+      ctx.fill();
+
+      // Eyes
+      ctx.fillStyle = "#111827";
+      const eyeOffset = headRadius * 0.35;
+      const blink = Math.sin(frameStep * 0.5) > 0.97 ? 1 : 4;
+      ctx.fillRect(cx - eyeOffset - 3, cy - 4, 6, blink);
+      ctx.fillRect(cx + eyeOffset - 3, cy - 4, 6, blink);
+
+      // Friendly smile
+      ctx.strokeStyle = "#475569";
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.arc(cx, cy + (headRadius * 0.25), headRadius * 0.25, 0.1 * Math.PI, 0.9 * Math.PI);
+      ctx.stroke();
+
+      partnerAnimationTimer = requestAnimationFrame(renderStrangerFrame);
     }
 
-    /* -------------------------------------------------------------
-     * STREAMING_CHUNK:Implementing Camera and Microphone Access...
-     * ------------------------------------------------------------- */
-    async function requestMediaPermissions() {
+    // Initialize local neutral canvas
+    function initLocalAvatar() {
+      syncCanvasSizes();
+      const ctx = localCanvas.getContext("2d");
+      drawNeutralAvatar(localCanvas, ctx);
+    }
+    initLocalAvatar();
+
+    // --- 4. Camera & Microphone Setup ---
+    async function startHardwareCamera() {
       try {
-        showToast('Requesting Camera & Mic access...');
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: "user" },
+          video: { width: { ideal: 1280 }, height: { ideal: 720 } },
           audio: true
         });
 
         localStream = stream;
-        const video = document.getElementById('localVideo');
-        video.srcObject = stream;
-        video.classList.remove('hidden');
-        document.getElementById('localCanvas').classList.add('hidden');
+        localVideo.srcObject = stream;
+        localVideo.style.display = "block";
+        localCanvas.style.display = "none";
+        floatingControls.style.display = "flex";
 
-        // Update UI Badges
-        document.getElementById('localCamDot').className = 'w-2 h-2 rounded-full bg-emerald-500';
-        document.getElementById('localCamStatus').innerText = 'You (Live WebCam)';
-
-        const enableBtn = document.getElementById('enableMediaBtn');
-        enableBtn.className = 'text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-800 text-emerald-400 border border-emerald-500/30 transition flex items-center gap-1.5 shadow-sm';
-        document.getElementById('mediaBtnText').innerText = 'Camera Connected';
-        document.getElementById('mediaStateIcon').className = 'fa-solid fa-circle-check text-emerald-400';
-
-        showToast('Camera and Microphone enabled!');
+        localDot.classList.add("connected");
+        localLabel.textContent = "You (Live WebCam)";
+        btnToggleHardware.style.background = "#2563eb";
+        btnToggleHardware.textContent = "✔ Camera Active";
       } catch (err) {
-        console.error('Camera access failed or denied:', err);
-        showToast('Camera access denied or unavailable. Fallback avatar active.');
-        drawLocalAvatarFallback();
+        console.warn("Hardware camera failed or denied:", err);
+        alert("Camera/Mic access was denied or no device was detected. Avatar fallback remains active.");
       }
     }
+    btnToggleHardware.addEventListener("click", startHardwareCamera);
 
-    function toggleLocalAudio() {
-      if (!localStream) {
-        showToast('Enable camera & mic first.');
-        return;
-      }
-      isMicMuted = !isMicMuted;
-      localStream.getAudioTracks().forEach(track => track.enabled = !isMicMuted);
-      const icon = document.getElementById('micIcon');
-      const btn = document.getElementById('toggleMicBtn');
-      if (isMicMuted) {
-        icon.className = 'fa-solid fa-microphone-slash text-red-400';
-        btn.classList.add('bg-red-950/80');
-        showToast('Microphone muted');
+    // Camera mute toggles
+    btnMuteAudio.addEventListener("click", () => {
+      if (!localStream) return;
+      micMuted = !micMuted;
+      localStream.getAudioTracks().forEach(t => (t.enabled = !micMuted));
+      btnMuteAudio.textContent = micMuted ? "🔇" : "🎤";
+    });
+
+    btnMuteVideo.addEventListener("click", () => {
+      if (!localStream) return;
+      camDisabled = !camDisabled;
+      localStream.getVideoTracks().forEach(t => (t.enabled = !camDisabled));
+      localVideo.style.opacity = camDisabled ? "0.1" : "1";
+    });
+
+    // --- 5. Chat Auto-Scroll and Message Injection ---
+    function appendMessage(sender, text, type = "stranger") {
+      const now = new Date();
+      const timeStr = now.getHours().toString().padStart(2, "0") + ":" + now.getMinutes().toString().padStart(2, "0");
+
+      const msgDiv = document.createElement("div");
+      msgDiv.className = `message ${type}`;
+
+      if (type === "system") {
+        msgDiv.textContent = text;
       } else {
-        icon.className = 'fa-solid fa-microphone text-slate-200';
-        btn.classList.remove('bg-red-950/80');
-        showToast('Microphone unmuted');
-      }
-    }
-
-    function toggleLocalVideo() {
-      if (!localStream) {
-        showToast('Enable camera & mic first.');
-        return;
-      }
-      isVideoMuted = !isVideoMuted;
-      localStream.getVideoTracks().forEach(track => track.enabled = !isVideoMuted);
-      const icon = document.getElementById('camIcon');
-      const btn = document.getElementById('toggleCamBtn');
-      const video = document.getElementById('localVideo');
-      const canvas = document.getElementById('localCanvas');
-
-      if (isVideoMuted) {
-        icon.className = 'fa-solid fa-video-slash text-red-400';
-        btn.classList.add('bg-red-950/80');
-        video.classList.add('hidden');
-        canvas.classList.remove('hidden');
-        drawLocalAvatarFallback();
-        showToast('Camera video disabled');
-      } else {
-        icon.className = 'fa-solid fa-video text-slate-200';
-        btn.classList.remove('bg-red-950/80');
-        video.classList.remove('hidden');
-        canvas.classList.add('hidden');
-        showToast('Camera video enabled');
-      }
-    }
-
-    function flipLocalCamera() {
-      isMirrored = !isMirrored;
-      const video = document.getElementById('localVideo');
-      video.style.transform = isMirrored ? 'scaleX(-1)' : 'scaleX(1)';
-      showToast(isMirrored ? 'Mirror active' : 'True perspective active');
-    }
-
-    /* -------------------------------------------------------------
-     * STREAMING_CHUNK:Fixing Avatar Scaling and Rendering Canvas Safely...
-     * Strict width/height locking and clearRect prevention of size growth
-     * ------------------------------------------------------------- */
-    function drawLocalAvatarFallback() {
-      const canvas = document.getElementById('localCanvas');
-      const ctx = canvas.getContext('2d');
-      // Set fixed internal buffer dimensions
-      canvas.width = 400;
-      canvas.height = 300;
-
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = '#0f172a';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      const cx = 200;
-      const cy = 140;
-
-      // Head
-      ctx.fillStyle = '#3b82f6';
-      ctx.beginPath();
-      ctx.arc(cx, cy, 45, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Torso
-      ctx.beginPath();
-      ctx.ellipse(cx, cy + 120, 80, 60, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Text label
-      ctx.fillStyle = '#64748b';
-      ctx.font = '12px Inter, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('Camera Disabled (Local Avatar)', cx, 280);
-    }
-
-    const strangerPersonas = [
-      {
-        name: "Jordan",
-        country: "United States",
-        color: "#6366f1",
-        interests: ["chatting", "gaming", "coding"],
-        dialogues: [
-          "hey there! what's up?",
-          "nice to connect with someone! where are you from?",
-          "i was just playing some games on my pc",
-          "totally agree with that!",
-          "what kind of music or hobbies do you enjoy?",
-          "haha sweet! good meeting you 👋"
-        ]
-      },
-      {
-        name: "Sophie",
-        country: "United Kingdom",
-        color: "#ec4899",
-        interests: ["music", "movies", "travel"],
-        dialogues: [
-          "hello! how are you today?",
-          "watching movies and relaxing right now 🍿",
-          "london has been super rainy all week haha",
-          "that is so cool!",
-          "have you watched anything good lately?",
-          "nice chatting with you!"
-        ]
-      },
-      {
-        name: "Kenji",
-        country: "Japan",
-        color: "#10b981",
-        interests: ["anime", "gaming", "music"],
-        dialogues: [
-          "Konnichiwa! Hey!",
-          "Cool that we matched! How is your day going?",
-          "Just listening to some city pop and lofi beats 🎧",
-          "Yes! Exactly!",
-          "Do you play any games or watch anime?",
-          "Take care my friend!"
-        ]
-      }
-    ];
-
-    function startStrangerSimulation(stranger) {
-      const canvas = document.getElementById('remoteCanvas');
-      const ctx = canvas.getContext('2d');
-      canvas.width = 640;
-      canvas.height = 480;
-
-      let tick = 0;
-      if (strangerAnimId) cancelAnimationFrame(strangerAnimId);
-
-      function renderFrame() {
-        if (appState !== 'CONNECTED') return;
-        tick += 0.04;
-
-        // 1. CLEAR FRAME COMPLETELY (Prevents growth bug)
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        // 2. Background Room
-        const bg = ctx.createRadialGradient(320, 240, 20, 320, 240, 340);
-        bg.addColorStop(0, '#1c2331');
-        bg.addColorStop(1, '#080a0f');
-        ctx.fillStyle = bg;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // 3. Ambient LED Glow
-        ctx.fillStyle = stranger.color;
-        ctx.globalAlpha = 0.12;
-        ctx.beginPath();
-        ctx.arc(160, 140, 160, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.globalAlpha = 1.0;
-
-        // 4. Fixed scale with subtle breathing bob
-        const headX = 320;
-        const headY = 220 + Math.sin(tick) * 3; // Fixed displacement only, no scaling accumulation
-
-        // Torso
-        ctx.fillStyle = stranger.color;
-        ctx.beginPath();
-        ctx.ellipse(headX, headY + 180, 140, 100, 0, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Neck
-        ctx.fillStyle = '#e2b397';
-        ctx.fillRect(headX - 22, headY + 60, 44, 45);
-
-        // Head (Strict fixed radius: 68px)
-        ctx.beginPath();
-        ctx.arc(headX, headY, 68, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Hair
-        ctx.fillStyle = '#1e1b18';
-        ctx.beginPath();
-        ctx.arc(headX, headY - 10, 72, Math.PI, Math.PI * 2);
-        ctx.fill();
-
-        // Blinking Eyes
-        const isBlinking = (Math.sin(tick * 1.5) > 0.95);
-        ctx.fillStyle = '#1e293b';
-        if (isBlinking) {
-          ctx.lineWidth = 3;
-          ctx.strokeStyle = '#1e293b';
-          ctx.beginPath();
-          ctx.moveTo(headX - 32, headY + 2);
-          ctx.lineTo(headX - 16, headY + 2);
-          ctx.moveTo(headX + 16, headY + 2);
-          ctx.lineTo(headX + 32, headY + 2);
-          ctx.stroke();
-        } else {
-          ctx.beginPath();
-          ctx.arc(headX - 24, headY, 6, 0, Math.PI * 2);
-          ctx.arc(headX + 24, headY, 6, 0, Math.PI * 2);
-          ctx.fill();
-        }
-
-        // Talking mouth or resting smile
-        ctx.strokeStyle = '#78350f';
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        if (isStrangerTalking) {
-          // Open talking mouth
-          const mouthOpen = 6 + Math.abs(Math.sin(tick * 8)) * 8;
-          ctx.fillStyle = '#78350f';
-          ctx.ellipse(headX, headY + 28, 12, mouthOpen, 0, 0, Math.PI * 2);
-          ctx.fill();
-        } else {
-          // Resting smile
-          ctx.arc(headX, headY + 26, 14, 0.1, Math.PI - 0.1);
-          ctx.stroke();
-        }
-
-        strangerAnimId = requestAnimationFrame(renderFrame);
+        msgDiv.innerHTML = `<span class="time">${timeStr}</span><span class="sender">${sender}:</span> ${escapeHTML(text)}`;
       }
 
-      renderFrame();
+      chatContainer.appendChild(msgDiv);
+      // Strict auto-scroll to the absolute bottom
+      chatContainer.scrollTop = chatContainer.scrollHeight;
     }
 
-    function clearStrangerScreen() {
-      if (strangerAnimId) cancelAnimationFrame(strangerAnimId);
-      const canvas = document.getElementById('remoteCanvas');
-      const ctx = canvas.getContext('2d');
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = '#080a0f';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }
-
-    /* -------------------------------------------------------------
-     * STREAMING_CHUNK:Matchmaking and State Machine Logic...
-     * ------------------------------------------------------------- */
-    function handleMainAction() {
-      if (appState === 'IDLE') {
-        startMatchmaking();
-      } else if (appState === 'SEARCHING') {
-        disconnectChat(true);
-      } else if (appState === 'CONNECTED') {
-        disconnectChat(true);
-      }
-    }
-
-    function startMatchmaking() {
-      appState = 'SEARCHING';
-      updateUI();
-      playSound('connect');
-
-      document.getElementById('remoteSearchingLoader').classList.remove('hidden');
-      document.getElementById('strangerTagBadge').classList.add('hidden');
-      document.getElementById('commonInterestBadge').classList.add('hidden');
-
-      appendSystemNote("Looking for someone you can chat with...");
-
-      // Simulate network matching latency
-      setTimeout(() => {
-        if (appState !== 'SEARCHING') return; // User stopped early
-        connectWithStranger();
-      }, 1200 + Math.random() * 1000);
-    }
-
-    function connectWithStranger() {
-      appState = 'CONNECTED';
-      updateUI();
-      playSound('connect');
-
-      document.getElementById('remoteSearchingLoader').classList.add('hidden');
-
-      // Pick random persona
-      currentStranger = strangerPersonas[Math.floor(Math.random() * strangerPersonas.length)];
-
-      // Check common interest
-      const shared = userInterests.find(t => currentStranger.interests.includes(t));
-      
-      document.getElementById('strangerTagBadge').classList.remove('hidden');
-      document.getElementById('strangerLocation').innerText = `${currentStranger.name} (${currentStranger.country})`;
-
-      if (shared) {
-        document.getElementById('commonInterestBadge').classList.remove('hidden');
-        document.getElementById('commonInterestName').innerText = `#${shared}`;
-      }
-
-      // Start the animated canvas stranger
-      startStrangerSimulation(currentStranger);
-
-      appendSystemNote("You're now chatting with a random stranger. Say hi!");
-      if (shared) {
-        appendSystemNote(`You both like <strong class="text-blue-400">#${shared}</strong>.`);
-      }
-
-      // Schedule stranger first message
-      triggerStrangerResponse(currentStranger.dialogues[0], 1200);
-    }
-
-    function disconnectChat(isUserTriggered) {
-      if (appState === 'IDLE') return;
-
-      playSound('disconnect');
-      if (strangerReplyTimer) clearTimeout(strangerReplyTimer);
-      isStrangerTalking = false;
-      clearStrangerScreen();
-
-      document.getElementById('remoteSearchingLoader').classList.add('hidden');
-      document.getElementById('strangerTagBadge').classList.add('hidden');
-      document.getElementById('commonInterestBadge').classList.add('hidden');
-      document.getElementById('typingBar').classList.add('hidden');
-
-      appendSystemNote(isUserTriggered ? "You have disconnected." : "Stranger has disconnected.");
-
-      appState = 'IDLE';
-      currentStranger = null;
-      updateUI();
-    }
-
-    function updateUI() {
-      const btn = document.getElementById('mainActionBtn');
-      const text = document.getElementById('mainActionText');
-      const icon = document.getElementById('mainActionIcon');
-      const input = document.getElementById('chatInput');
-      const sendBtn = document.getElementById('sendBtn');
-      const rDot = document.getElementById('remoteDot');
-      const rStatus = document.getElementById('remoteStatusText');
-      const escPrompt = document.getElementById('escPromptText');
-
-      if (appState === 'IDLE') {
-        btn.className = "h-11 px-6 rounded-lg font-bold text-sm bg-omegle-blue hover:bg-blue-600 active:scale-95 text-white transition flex items-center gap-2 shadow-lg shadow-blue-500/20";
-        icon.className = "fa-solid fa-play";
-        text.innerText = "Start Chat";
-        input.disabled = true;
-        sendBtn.disabled = true;
-        input.placeholder = "Click 'Start Chat' to talk...";
-        rDot.className = "w-2 h-2 rounded-full bg-slate-500";
-        rStatus.innerText = "Disconnected";
-        escPrompt.classList.add('hidden');
-      } else if (appState === 'SEARCHING') {
-        btn.className = "h-11 px-6 rounded-lg font-bold text-sm bg-amber-600 hover:bg-amber-500 active:scale-95 text-white transition flex items-center gap-2";
-        icon.className = "fa-solid fa-spinner animate-spin";
-        text.innerText = "Stop";
-        input.disabled = true;
-        sendBtn.disabled = true;
-        rDot.className = "w-2 h-2 rounded-full bg-amber-500 animate-pulse";
-        rStatus.innerText = "Searching...";
-        escPrompt.classList.remove('hidden');
-      } else if (appState === 'CONNECTED') {
-        btn.className = "h-11 px-6 rounded-lg font-bold text-sm bg-red-600 hover:bg-red-500 active:scale-95 text-white transition flex items-center gap-2 shadow-lg shadow-red-500/20";
-        icon.className = "fa-solid fa-stop";
-        text.innerText = "Next (Esc)";
-        input.disabled = false;
-        sendBtn.disabled = false;
-        input.placeholder = "Type your message here...";
-        input.focus();
-        rDot.className = "w-2 h-2 rounded-full bg-emerald-500";
-        rStatus.innerText = "Connected";
-        escPrompt.classList.remove('hidden');
-      }
-    }
-
-    /* -------------------------------------------------------------
-     * STREAMING_CHUNK:Implementing Chat Messaging and Strict Auto-Scrolling...
-     * ------------------------------------------------------------- */
-    function submitChatMessage(e) {
-      if (e) e.preventDefault();
-      const input = document.getElementById('chatInput');
-      const msg = input.value.trim();
-      if (!msg || appState !== 'CONNECTED') return;
-
-      appendChatMessage('You', msg, 'text-omegle-blue font-bold');
-      input.value = '';
-      playSound('message');
-
-      // Generate intelligent contextual response
-      generateBotReply(msg);
-    }
-
-    function sendPreset(text) {
-      if (appState !== 'CONNECTED') {
-        showToast('Connect with a stranger first.');
-        return;
-      }
-      appendChatMessage('You', text, 'text-omegle-blue font-bold');
-      playSound('message');
-      generateBotReply(text);
-    }
-
-    function generateBotReply(userText) {
-      if (appState !== 'CONNECTED' || !currentStranger) return;
-
-      const lower = userText.toLowerCase();
-      let reply = "";
-
-      if (lower.includes('hey') || lower.includes('hello') || lower.includes('hi')) {
-        reply = "Hey! How's your day going?";
-      } else if (lower.includes('asl') || lower.includes('where') || lower.includes('from')) {
-        reply = `I'm from ${currentStranger.country}! What about you?`;
-      } else if (lower.includes('game') || lower.includes('play')) {
-        reply = "I've been playing lots of games lately. Any favorites?";
-      } else if (lower.includes('music') || lower.includes('song')) {
-        reply = "I love discovering new songs! What do you listen to?";
-      } else {
-        const pool = currentStranger.dialogues;
-        reply = pool[Math.floor(Math.random() * pool.length)];
-      }
-
-      triggerStrangerResponse(reply, 1000 + Math.random() * 800);
-    }
-
-    function triggerStrangerResponse(text, delayMs) {
-      strangerReplyTimer = setTimeout(() => {
-        if (appState !== 'CONNECTED') return;
-
-        // Show typing indicator
-        document.getElementById('typingBar').classList.remove('hidden');
-        isStrangerTalking = true;
-
-        setTimeout(() => {
-          if (appState !== 'CONNECTED') return;
-          document.getElementById('typingBar').classList.add('hidden');
-          isStrangerTalking = false;
-
-          appendChatMessage('Stranger', text, 'text-omegle-stranger font-bold');
-          playSound('message');
-        }, 1200);
-
-      }, delayMs);
-    }
-
-    function appendChatMessage(sender, text, labelClass) {
-      const container = document.getElementById('chatMessages');
-      const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-      const msgEl = document.createElement('div');
-      msgEl.className = 'py-0.5 break-words';
-      msgEl.innerHTML = `
-        <span class="text-[10px] text-slate-500 mr-1 select-none">${time}</span>
-        <span class="${labelClass}">${sender}:</span>
-        <span class="text-slate-200 ml-1 font-normal">${escapeHtml(text)}</span>
-      `;
-
-      container.appendChild(msgEl);
-
-      // GUARANTEED CHAT AUTO-SCROLL
-      container.scrollTop = container.scrollHeight;
-    }
-
-    function appendSystemNote(text) {
-      const container = document.getElementById('chatMessages');
-      const note = document.createElement('div');
-      note.className = 'text-[11px] text-slate-400 italic py-1 border-l-2 border-slate-700 pl-2 my-0.5';
-      note.innerHTML = text;
-      container.appendChild(note);
-
-      // Scroll after system messages too
-      container.scrollTop = container.scrollHeight;
-    }
-
-    function clearChatLog() {
-      const container = document.getElementById('chatMessages');
-      container.innerHTML = `
-        <div class="bg-blue-950/40 border border-blue-900/50 rounded-lg p-3 text-blue-200 text-xs">
-          <p class="font-semibold mb-1 flex items-center gap-1.5 text-blue-300">
-            <i class="fa-solid fa-broom"></i> Chat Cleared
-          </p>
-          Messages history reset.
-        </div>
-      `;
-    }
-
-    function escapeHtml(str) {
+    function escapeHTML(str) {
       return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
 
-    /* -------------------------------------------------------------
-     * STREAMING_CHUNK:Adding Interest Tags, Shortcuts, and LifeCycle...
-     * ------------------------------------------------------------- */
-    function handleTagKey(e) {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        const input = document.getElementById('tagInput');
-        const tag = input.value.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
-        if (tag && !userInterests.includes(tag)) {
-          userInterests.push(tag);
-          renderTags();
-          input.value = '';
-          showToast(`Interest #${tag} added`);
-        }
+    // --- 6. Stranger Connection & Interaction Simulation ---
+    function startSearching() {
+      if (partnerAnimationTimer) cancelAnimationFrame(partnerAnimationTimer);
+      clearTimeout(botDialogueTimeout);
+
+      isSearching = true;
+      isConnected = false;
+      currentStranger = null;
+
+      strangerDot.classList.remove("connected");
+      strangerLabel.textContent = "Connecting...";
+      btnMainAction.textContent = "⏹ Stop";
+      btnMainAction.classList.add("stop");
+
+      chatInput.disabled = true;
+      btnSendMessage.disabled = true;
+
+      appendMessage("", "Looking for someone you can chat with...", "system");
+
+      // Clear stranger canvas
+      const ctx = strangerCanvas.getContext("2d");
+      ctx.fillStyle = "#000";
+      ctx.fillRect(0, 0, strangerCanvas.width, strangerCanvas.height);
+
+      // Connect after brief random delay
+      setTimeout(() => {
+        if (!isSearching) return;
+        connectStranger();
+      }, 1400);
+    }
+
+    function connectStranger() {
+      isSearching = false;
+      isConnected = true;
+
+      currentStranger = strangerProfiles[Math.floor(Math.random() * strangerProfiles.length)];
+      strangerDot.classList.add("connected");
+      strangerLabel.textContent = currentStranger.name;
+      btnMainAction.textContent = "⏹ Next (Esc)";
+
+      chatInput.disabled = false;
+      btnSendMessage.disabled = false;
+      chatInput.focus();
+
+      appendMessage("", "You're now chatting with a random stranger. Say hi!", "system");
+      renderStrangerFrame();
+
+      // Bot conversation opening
+      botDialogueTimeout = setTimeout(() => {
+        if (!isConnected) return;
+        const intros = ["Hey! How's your day going?", "Hello from the other side!", "What's up?", "Greetings!"];
+        appendMessage("Stranger", intros[Math.floor(Math.random() * intros.length)], "stranger");
+      }, 1200);
+    }
+
+    function disconnectStranger() {
+      if (partnerAnimationTimer) cancelAnimationFrame(partnerAnimationTimer);
+      clearTimeout(botDialogueTimeout);
+
+      isConnected = false;
+      isSearching = false;
+      currentStranger = null;
+
+      strangerDot.classList.remove("connected");
+      strangerLabel.textContent = "Disconnected";
+
+      btnMainAction.textContent = "▶ Start Chat";
+      btnMainAction.classList.remove("stop");
+
+      chatInput.disabled = true;
+      btnSendMessage.disabled = true;
+
+      appendMessage("", "You have disconnected.", "system");
+
+      const ctx = strangerCanvas.getContext("2d");
+      ctx.fillStyle = "#000";
+      ctx.fillRect(0, 0, strangerCanvas.width, strangerCanvas.height);
+    }
+
+    // Button & Hotkey Handling
+    btnMainAction.addEventListener("click", () => {
+      if (isConnected || isSearching) {
+        disconnectStranger();
+      } else {
+        startSearching();
       }
-    }
+    });
 
-    function removeTag(tag) {
-      userInterests = userInterests.filter(t => t !== tag);
-      renderTags();
-    }
-
-    function renderTags() {
-      const container = document.getElementById('tagsList');
-      container.innerHTML = userInterests.map(tag => `
-        <span class="inline-flex items-center gap-1 text-[11px] bg-blue-500/20 text-blue-300 border border-blue-500/30 px-2 py-0.5 rounded-full">
-          #${tag} <button onclick="removeTag('${tag}')" class="hover:text-white">&times;</button>
-        </span>
-      `).join('');
-    }
-
-    // Classic Omegle Escape key behavior (Esc once to disconnect, Esc twice to skip)
-    let escPressCount = 0;
-    let escTimer = null;
-    window.addEventListener('keydown', (e) => {
-      if (e.target.tagName === 'INPUT') return; // Don't interrupt typing
-
-      if (e.key === 'Escape') {
-        escPressCount++;
-        if (escPressCount === 1) {
-          if (appState === 'CONNECTED') {
-            disconnectChat(true);
-            showToast('Press Esc again to find next stranger');
-          } else if (appState === 'SEARCHING') {
-            disconnectChat(true);
-          }
-          escTimer = setTimeout(() => { escPressCount = 0; }, 700);
-        } else if (escPressCount >= 2) {
-          clearTimeout(escTimer);
-          escPressCount = 0;
-          startMatchmaking();
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        if (isConnected || isSearching) {
+          disconnectStranger();
+          setTimeout(startSearching, 300);
+        } else {
+          startSearching();
         }
       }
     });
 
-    function showToast(msg) {
-      const toast = document.getElementById('toast');
-      toast.innerText = msg;
-      toast.style.opacity = '1';
-      setTimeout(() => { toast.style.opacity = '0'; }, 2200);
+    // Send Message
+    function handleSend() {
+      const msg = chatInput.value.trim();
+      if (!msg || !isConnected) return;
+
+      appendMessage("You", msg, "you");
+      chatInput.value = "";
+
+      // Stranger replies intelligently
+      clearTimeout(botDialogueTimeout);
+      botDialogueTimeout = setTimeout(() => {
+        if (!isConnected) return;
+        const replies = [
+          "That's interesting!",
+          "Haha totally agree",
+          "Where are you chatting from?",
+          "Cool! I'm just listening to music here.",
+          "Nice meeting you!"
+        ];
+        appendMessage("Stranger", replies[Math.floor(Math.random() * replies.length)], "stranger");
+      }, 1000 + Math.random() * 800);
     }
 
-    function toggleModal(id, show) {
-      const el = document.getElementById(id);
-      if (show) el.classList.remove('hidden');
-      else el.classList.add('hidden');
-    }
-
-    function resetApp() {
-      disconnectChat(true);
-      showToast('Welcome to Omegle Web');
-    }
-
-    // Online count fluktuations
-    setInterval(() => {
-      simulatedOnline += Math.floor(Math.random() * 9) - 4;
-      document.getElementById('onlineCountText').innerText = simulatedOnline.toLocaleString();
-    }, 4000);
-
-    // Initial load
-    window.addEventListener('DOMContentLoaded', () => {
-      drawLocalAvatarFallback();
-      clearStrangerScreen();
-      renderTags();
-      updateUI();
+    btnSendMessage.addEventListener("click", handleSend);
+    chatInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") handleSend();
     });
   </script>
 </body>
