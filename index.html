@@ -179,6 +179,21 @@
       background: var(--success);
     }
 
+    .video-match-tag {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(16, 185, 129, 0.2);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #34d399;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      z-index: 10;
+      display: none;
+    }
+
     /* Video & Canvas Elements */
     video {
       width: 100%;
@@ -296,6 +311,43 @@
       margin: 4px 0;
     }
 
+    /* Quick Reply Chips */
+    .quick-replies {
+      padding: 6px 12px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      gap: 6px;
+      background: #0e1524;
+      overflow-x: auto;
+      align-items: center;
+    }
+
+    .quick-chip-label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      margin-right: 2px;
+      flex-shrink: 0;
+    }
+
+    .quick-chip {
+      background: #1e293b;
+      color: #94a3b8;
+      border: 1px solid #334155;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s;
+    }
+
+    .quick-chip:hover {
+      background: #334155;
+      color: #fff;
+    }
+
     .chat-input-area {
       padding: 10px 14px;
       border-top: 1px solid var(--border-color);
@@ -372,9 +424,31 @@
       background: var(--primary-hover);
     }
 
+    .interests-box {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #0b0f19;
+      border: 1px solid var(--border-color);
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+
+    .tag-badge {
+      background: #1e3a8a;
+      color: #93c5fd;
+      font-size: 0.74rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
     .status-text {
       font-size: 0.83rem;
       color: var(--text-muted);
+      margin-left: auto;
     }
 
     @media (max-width: 900px) {
@@ -387,6 +461,9 @@
       .chat-section {
         max-width: none;
         flex: 1;
+      }
+      .status-text {
+        display: none;
       }
     }
   </style>
@@ -427,6 +504,7 @@
           <span class="badge-dot" id="strangerDot"></span>
           <span id="strangerLabel">Disconnected</span>
         </div>
+        <div class="video-match-tag" id="strangerTag">Matched on: #music</div>
         <canvas id="strangerCanvas"></canvas>
       </div>
 
@@ -441,7 +519,7 @@
 
         <!-- Media Controls (Includes Mirror Toggle) -->
         <div class="media-floating-controls" id="floatingControls" style="display: none;">
-          <button id="btnToggleMirror" title="Flip Mirror">🪞 Mirror</button>
+          <button id="btnToggleMirror" title="Flip Mirror">🪞 Mirror (On)</button>
           <button id="btnMuteAudio" title="Mute Mic">🎤 Mute</button>
           <button id="btnMuteVideo" title="Stop Video">📷 Cam</button>
         </div>
@@ -451,12 +529,21 @@
     <!-- Right Side Chat Box -->
     <div class="chat-section">
       <div class="chat-header">
-        <span>💬 Conversation</span>
+        <span>💬 Text Chat</span>
         <span style="font-size: 0.75rem; color: var(--text-muted);">Encrypted P2P</span>
       </div>
 
       <div class="messages-container" id="chatContainer">
-        <div class="message system">Welcome to Web TV 555! Click Start Chat to connect.</div>
+        <div class="message system">Welcome to Web TV 555! Click Start Chat to connect with a random stranger.</div>
+      </div>
+
+      <!-- Quick Reply Chips -->
+      <div class="quick-replies">
+        <span class="quick-chip-label">Quick:</span>
+        <button class="quick-chip" data-msg="Hey!">👋 Hey</button>
+        <button class="quick-chip" data-msg="ASL?">📍 ASL?</button>
+        <button class="quick-chip" data-msg="What are your hobbies?">🎮 Hobbies</button>
+        <button class="quick-chip" data-msg="Nice meeting you!">😄 Nice</button>
       </div>
 
       <div class="chat-input-area">
@@ -469,6 +556,12 @@
   <!-- Footer Controls -->
   <footer>
     <button class="btn-main-action" id="btnMainAction">▶ Start Chat</button>
+
+    <div class="interests-box">
+      <span class="tag-badge">#chatting</span>
+      <span class="tag-badge">#music</span>
+    </div>
+
     <span class="status-text" id="statusHelp">Press <b>Esc</b> to skip stranger</span>
   </footer>
 
@@ -483,12 +576,30 @@
     let partnerAnimationTimer = null;
     let botDialogueTimeout = null;
 
-    // --- Original Stranger Simulation Profiles ---
+    // --- Sound Effects Synthesizer ---
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playBeep(frequency, duration) {
+      try {
+        if (audioCtx.state === "suspended") audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {}
+    }
+
+    // --- Stranger Simulation Profiles ---
     const strangerProfiles = [
-      { name: "Sofia (Spain)", skin: "#f6d5b8", hair: "#1c1917", shirt: "#ef4444" },
-      { name: "Alex (Canada)", skin: "#fbd3b2", hair: "#3e2723", shirt: "#3b82f6" },
-      { name: "Kenji (Japan)", skin: "#f4cca4", hair: "#111827", shirt: "#10b981" },
-      { name: "Maya (Brazil)", skin: "#c68642", hair: "#1e1b18", shirt: "#8b5cf6" }
+      { name: "Sofia (Spain)", skin: "#f6d5b8", hair: "#1c1917", shirt: "#ef4444", tag: "#music" },
+      { name: "Alex (Canada)", skin: "#fbd3b2", hair: "#3e2723", shirt: "#3b82f6", tag: "#gaming" },
+      { name: "Kenji (Japan)", skin: "#f4cca4", hair: "#111827", shirt: "#10b981", tag: "#music" },
+      { name: "Maya (Brazil)", skin: "#c68642", hair: "#1e1b18", shirt: "#8b5cf6", tag: "#art" }
     ];
     let currentStranger = null;
 
@@ -502,6 +613,7 @@
     const localLabel = document.getElementById("localLabel");
     const strangerDot = document.getElementById("strangerDot");
     const strangerLabel = document.getElementById("strangerLabel");
+    const strangerTag = document.getElementById("strangerTag");
     const btnMainAction = document.getElementById("btnMainAction");
     const chatContainer = document.getElementById("chatContainer");
     const chatInput = document.getElementById("chatInput");
@@ -510,6 +622,7 @@
     const btnToggleMirror = document.getElementById("btnToggleMirror");
     const btnMuteAudio = document.getElementById("btnMuteAudio");
     const btnMuteVideo = document.getElementById("btnMuteVideo");
+    const quickChips = document.querySelectorAll(".quick-chip");
 
     // --- 1. Canvas Dimensions & Resizing ---
     function syncCanvasSizes() {
@@ -552,7 +665,7 @@
       ctx.fill();
     }
 
-    // --- 3. Original Proportional Stranger Avatar ---
+    // --- 3. Perfectly Proportioned Stranger Avatar ---
     let frameStep = 0;
     function renderStrangerFrame() {
       if (!strangerCanvas) return;
@@ -569,50 +682,60 @@
       }
 
       frameStep += 0.04;
-      const breath = Math.sin(frameStep) * 2.5;
+      const breath = Math.sin(frameStep) * 2;
 
-      ctx.fillStyle = "#0f172a";
+      // Card Background
+      ctx.fillStyle = "#0c1322";
       ctx.fillRect(0, 0, w, h);
 
       const cx = w / 2;
-      const headRadius = Math.min(w, h) * 0.22;
-      const cy = h * 0.48 + breath;
+      const headRadius = Math.min(w, h) * 0.19; 
+      const cy = h * 0.38 + breath; // Placed at upper-center
 
-      // Shoulders / Shirt
+      // 1. Shoulders / Chest (Broad, natural curve anchored to bottom)
       ctx.fillStyle = currentStranger.shirt;
       ctx.beginPath();
-      ctx.arc(cx, h + (headRadius * 0.8) + breath, headRadius * 1.5, 0, Math.PI * 2);
+      ctx.ellipse(cx, h * 0.95 + breath, w * 0.42, h * 0.38, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      // Neck (Short and natural)
+      // 2. Neck
       ctx.fillStyle = currentStranger.skin;
-      ctx.fillRect(cx - (headRadius * 0.22), cy + (headRadius * 0.5), headRadius * 0.44, headRadius * 0.5);
+      const neckWidth = headRadius * 0.48;
+      const neckHeight = headRadius * 0.55;
+      ctx.fillRect(cx - (neckWidth / 2), cy + (headRadius * 0.65), neckWidth, neckHeight);
 
-      // Head (Original Round Shape)
+      // 3. Head (Full circle)
       ctx.beginPath();
       ctx.arc(cx, cy, headRadius, 0, Math.PI * 2);
       ctx.fill();
 
-      // Hair (Classic curved fringe)
+      // 4. Hair (Neat rounded cap)
       ctx.fillStyle = currentStranger.hair;
       ctx.beginPath();
-      ctx.arc(cx, cy - (headRadius * 0.15), headRadius * 1.02, Math.PI, Math.PI * 2);
+      ctx.arc(cx, cy - (headRadius * 0.05), headRadius * 1.02, Math.PI, Math.PI * 2);
       ctx.fill();
 
-      // Eyes
+      // 5. Eyes (Blinking animation)
       ctx.fillStyle = "#111827";
-      const eyeOffset = headRadius * 0.35;
-      const blink = Math.sin(frameStep * 0.5) > 0.96 ? 1 : 5;
-      ctx.beginPath();
-      ctx.arc(cx - eyeOffset, cy, 4, 0, Math.PI * 2);
-      ctx.arc(cx + eyeOffset, cy, 4, 0, Math.PI * 2);
-      ctx.fill();
+      const eyeOffset = headRadius * 0.36;
+      const isBlinking = Math.sin(frameStep * 0.5) > 0.96;
+      
+      if (isBlinking) {
+        ctx.fillRect(cx - eyeOffset - 4, cy - 1, 8, 2);
+        ctx.fillRect(cx + eyeOffset - 4, cy - 1, 8, 2);
+      } else {
+        ctx.beginPath();
+        ctx.arc(cx - eyeOffset, cy, headRadius * 0.07, 0, Math.PI * 2);
+        ctx.arc(cx + eyeOffset, cy, headRadius * 0.07, 0, Math.PI * 2);
+        ctx.fill();
+      }
 
-      // Smile
-      ctx.strokeStyle = "#7c2d12";
+      // 6. Smile
+      ctx.strokeStyle = "#4b2d18";
       ctx.lineWidth = 3;
+      ctx.lineCap = "round";
       ctx.beginPath();
-      ctx.arc(cx, cy + (headRadius * 0.2), headRadius * 0.28, 0.15 * Math.PI, 0.85 * Math.PI);
+      ctx.arc(cx, cy + (headRadius * 0.18), headRadius * 0.28, 0.15 * Math.PI, 0.85 * Math.PI);
       ctx.stroke();
 
       partnerAnimationTimer = requestAnimationFrame(renderStrangerFrame);
@@ -696,6 +819,7 @@
         msgDiv.textContent = text;
       } else {
         msgDiv.innerHTML = `<span class="time">${timeStr}</span><span class="sender">${sender}:</span> ${escapeHTML(text)}`;
+        if (type === "stranger") playBeep(520, 0.08);
       }
 
       chatContainer.appendChild(msgDiv);
@@ -717,6 +841,7 @@
 
       strangerDot.classList.remove("connected");
       strangerLabel.textContent = "Connecting...";
+      strangerTag.style.display = "none";
       btnMainAction.textContent = "⏹ Stop";
       btnMainAction.classList.add("stop");
 
@@ -742,18 +867,22 @@
       currentStranger = strangerProfiles[Math.floor(Math.random() * strangerProfiles.length)];
       strangerDot.classList.add("connected");
       strangerLabel.textContent = currentStranger.name;
+      strangerTag.textContent = `Matched on: ${currentStranger.tag}`;
+      strangerTag.style.display = "block";
       btnMainAction.textContent = "⏹ Next (Esc)";
 
       chatInput.disabled = false;
       btnSendMessage.disabled = false;
       chatInput.focus();
 
+      playBeep(880, 0.12);
       appendMessage("", "You're now chatting with a random stranger. Say hi!", "system");
+      appendMessage("", `You both like ${currentStranger.tag}.`, "system");
       renderStrangerFrame();
 
       botDialogueTimeout = setTimeout(() => {
         if (!isConnected) return;
-        const intros = ["Hey! How's your day going?", "Hello from the other side!", "What's up?", "Greetings!"];
+        const intros = ["Hey! How's your day going?", "Hello from the other side!", "What's up?", "Konnichiwa! Hey!"];
         appendMessage("Stranger", intros[Math.floor(Math.random() * intros.length)], "stranger");
       }, 1200);
     }
@@ -768,6 +897,7 @@
 
       strangerDot.classList.remove("connected");
       strangerLabel.textContent = "Disconnected";
+      strangerTag.style.display = "none";
 
       btnMainAction.textContent = "▶ Start Chat";
       btnMainAction.classList.remove("stop");
@@ -775,6 +905,7 @@
       chatInput.disabled = true;
       btnSendMessage.disabled = true;
 
+      playBeep(280, 0.15);
       appendMessage("", "You have disconnected.", "system");
 
       const ctx = strangerCanvas.getContext("2d");
@@ -803,8 +934,8 @@
     });
 
     // Chat Send
-    function handleSend() {
-      const msg = chatInput.value.trim();
+    function handleSend(customText = null) {
+      const msg = customText || chatInput.value.trim();
       if (!msg || !isConnected) return;
 
       appendMessage("You", msg, "you");
@@ -814,19 +945,30 @@
       botDialogueTimeout = setTimeout(() => {
         if (!isConnected) return;
         const replies = [
-          "That's interesting!",
-          "Haha totally agree",
+          "That is so cool!",
+          "Haha totally agree with you!",
           "Where are you chatting from?",
-          "Cool! I'm just listening to music here.",
-          "Nice meeting you!"
+          "Just listening to some city pop and lofi beats 🎧",
+          "Do you play any games or watch anime?",
+          "Nice meeting you!",
+          "Take care my friend!"
         ];
         appendMessage("Stranger", replies[Math.floor(Math.random() * replies.length)], "stranger");
       }, 1000 + Math.random() * 800);
     }
 
-    btnSendMessage.addEventListener("click", handleSend);
+    btnSendMessage.addEventListener("click", () => handleSend());
     chatInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter") handleSend();
+    });
+
+    // Quick Chips Click Event
+    quickChips.forEach(chip => {
+      chip.addEventListener("click", () => {
+        if (!isConnected) return;
+        const msg = chip.getAttribute("data-msg");
+        handleSend(msg);
+      });
     });
   </script>
 </body>
