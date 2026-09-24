@@ -49,7 +49,7 @@
     .brand {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
     }
 
     .logo {
@@ -91,6 +91,17 @@
       display: flex;
       align-items: center;
       gap: 10px;
+    }
+
+    .filter-select {
+      background: #1f2937;
+      color: #fff;
+      border: 1px solid #374151;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      outline: none;
+      cursor: pointer;
     }
 
     .cam-btn {
@@ -168,11 +179,16 @@
       background: var(--success);
     }
 
+    /* Video & Canvas Elements */
     video {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transform: scaleX(-1); /* Mirror local feed */
+      transition: filter 0.3s ease;
+    }
+
+    .mirrored {
+      transform: scaleX(-1);
     }
 
     canvas {
@@ -189,11 +205,12 @@
       transform: translateX(-50%);
       background: rgba(17, 24, 39, 0.85);
       backdrop-filter: blur(6px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.15);
       border-radius: 20px;
-      padding: 4px 10px;
+      padding: 5px 12px;
       display: flex;
-      gap: 8px;
+      align-items: center;
+      gap: 10px;
       z-index: 10;
     }
 
@@ -201,13 +218,14 @@
       background: none;
       border: none;
       color: #fff;
-      padding: 6px;
+      padding: 6px 8px;
       cursor: pointer;
-      font-size: 0.85rem;
-      border-radius: 50%;
+      font-size: 0.82rem;
+      border-radius: 6px;
       display: flex;
       align-items: center;
-      justify-content: center;
+      gap: 4px;
+      transition: background 0.2s;
     }
 
     .media-floating-controls button:hover {
@@ -387,6 +405,15 @@
       </div>
     </div>
     <div class="header-actions">
+      <!-- Live Video Filters -->
+      <select id="filterSelect" class="filter-select" title="Camera Filter">
+        <option value="none">✨ Filter: Normal</option>
+        <option value="grayscale(100%)">Noir (B&W)</option>
+        <option value="sepia(60%) contrast(110%)">Warm Vintage</option>
+        <option value="hue-rotate(180deg) saturate(180%)">Cyberpunk</option>
+        <option value="brightness(110%) contrast(120%)">Soft Glow</option>
+        <option value="invert(100%)">Invert</option>
+      </select>
       <button class="cam-btn" id="btnToggleHardware">📹 Enable Camera & Mic</button>
     </div>
   </header>
@@ -409,12 +436,14 @@
           <span class="badge-dot" id="localDot"></span>
           <span id="localLabel">You (Avatar Mode)</span>
         </div>
-        <video id="localVideo" autoplay playsinline muted style="display: none;"></video>
+        <video id="localVideo" class="mirrored" autoplay playsinline muted style="display: none;"></video>
         <canvas id="localCanvas"></canvas>
 
+        <!-- Media Controls (Includes Mirror Toggle) -->
         <div class="media-floating-controls" id="floatingControls" style="display: none;">
-          <button id="btnMuteAudio" title="Mute Mic">🎤</button>
-          <button id="btnMuteVideo" title="Stop Video">📷</button>
+          <button id="btnToggleMirror" title="Flip Mirror">🪞 Mirror</button>
+          <button id="btnMuteAudio" title="Mute Mic">🎤 Mute</button>
+          <button id="btnMuteVideo" title="Stop Video">📷 Cam</button>
         </div>
       </div>
     </div>
@@ -448,21 +477,23 @@
     let isConnected = false;
     let isSearching = false;
     let localStream = null;
+    let isMirrored = true;
     let micMuted = false;
     let camDisabled = false;
     let partnerAnimationTimer = null;
     let botDialogueTimeout = null;
 
-    // --- Stranger Simulation Profiles ---
+    // --- Original Stranger Simulation Profiles ---
     const strangerProfiles = [
-      { name: "Alex (Canada)", skin: "#f6d5b8", hair: "#3e2723", shirt: "#3b82f6" },
-      { name: "Sofia (Spain)", skin: "#f1c27d", hair: "#212121", shirt: "#ef4444" },
-      { name: "Kenji (Japan)", skin: "#f7d8b5", hair: "#1c1917", shirt: "#10b981" },
-      { name: "Maya (Brazil)", skin: "#c68642", hair: "#261c14", shirt: "#8b5cf6" }
+      { name: "Sofia (Spain)", skin: "#f6d5b8", hair: "#1c1917", shirt: "#ef4444" },
+      { name: "Alex (Canada)", skin: "#fbd3b2", hair: "#3e2723", shirt: "#3b82f6" },
+      { name: "Kenji (Japan)", skin: "#f4cca4", hair: "#111827", shirt: "#10b981" },
+      { name: "Maya (Brazil)", skin: "#c68642", hair: "#1e1b18", shirt: "#8b5cf6" }
     ];
     let currentStranger = null;
 
     // --- DOM Elements ---
+    const filterSelect = document.getElementById("filterSelect");
     const btnToggleHardware = document.getElementById("btnToggleHardware");
     const localVideo = document.getElementById("localVideo");
     const localCanvas = document.getElementById("localCanvas");
@@ -476,6 +507,7 @@
     const chatInput = document.getElementById("chatInput");
     const btnSendMessage = document.getElementById("btnSendMessage");
     const floatingControls = document.getElementById("floatingControls");
+    const btnToggleMirror = document.getElementById("btnToggleMirror");
     const btnMuteAudio = document.getElementById("btnMuteAudio");
     const btnMuteVideo = document.getElementById("btnMuteVideo");
 
@@ -493,7 +525,7 @@
     window.addEventListener("resize", syncCanvasSizes);
     setTimeout(syncCanvasSizes, 100);
 
-    // --- 2. Fallback Fixed-Size Avatar Renderer ---
+    // --- 2. Fallback Neutral Avatar (Local) ---
     function drawNeutralAvatar(canvas, ctx) {
       if (!canvas || !ctx) return;
       const w = canvas.width;
@@ -505,7 +537,7 @@
 
       const cx = w / 2;
       const cy = h * 0.44;
-      const headRadius = Math.min(w, h) * 0.18; // Constant, never scales with chat
+      const headRadius = Math.min(w, h) * 0.18;
 
       // Head
       ctx.fillStyle = "#3b82f6";
@@ -513,14 +545,14 @@
       ctx.arc(cx, cy, headRadius, 0, Math.PI * 2);
       ctx.fill();
 
-      // Body / Shoulders
+      // Torso / Shoulders
       ctx.beginPath();
       const shoulderRadius = Math.min(w, h) * 0.38;
       ctx.arc(cx, h + (shoulderRadius * 0.45), shoulderRadius, 0, Math.PI * 2);
       ctx.fill();
     }
 
-    // --- 3. Animated Stranger Canvas Renderer ---
+    // --- 3. Original Proportional Stranger Avatar ---
     let frameStep = 0;
     function renderStrangerFrame() {
       if (!strangerCanvas) return;
@@ -536,46 +568,51 @@
         return;
       }
 
-      frameStep += 0.05;
-      const breath = Math.sin(frameStep) * 3;
+      frameStep += 0.04;
+      const breath = Math.sin(frameStep) * 2.5;
 
-      ctx.fillStyle = "#1e293b";
+      ctx.fillStyle = "#0f172a";
       ctx.fillRect(0, 0, w, h);
 
       const cx = w / 2;
-      const cy = h * 0.42 + breath;
-      const headRadius = Math.min(w, h) * 0.17;
+      const headRadius = Math.min(w, h) * 0.22;
+      const cy = h * 0.48 + breath;
 
-      // Shirt / Torso
+      // Shoulders / Shirt
       ctx.fillStyle = currentStranger.shirt;
       ctx.beginPath();
-      ctx.arc(cx, h + (headRadius * 1.5) + breath, headRadius * 2, 0, Math.PI * 2);
+      ctx.arc(cx, h + (headRadius * 0.8) + breath, headRadius * 1.5, 0, Math.PI * 2);
       ctx.fill();
 
-      // Head
+      // Neck (Short and natural)
       ctx.fillStyle = currentStranger.skin;
+      ctx.fillRect(cx - (headRadius * 0.22), cy + (headRadius * 0.5), headRadius * 0.44, headRadius * 0.5);
+
+      // Head (Original Round Shape)
       ctx.beginPath();
       ctx.arc(cx, cy, headRadius, 0, Math.PI * 2);
       ctx.fill();
 
-      // Hair
+      // Hair (Classic curved fringe)
       ctx.fillStyle = currentStranger.hair;
       ctx.beginPath();
-      ctx.arc(cx, cy - (headRadius * 0.25), headRadius * 0.95, Math.PI, Math.PI * 2);
+      ctx.arc(cx, cy - (headRadius * 0.15), headRadius * 1.02, Math.PI, Math.PI * 2);
       ctx.fill();
 
       // Eyes
       ctx.fillStyle = "#111827";
       const eyeOffset = headRadius * 0.35;
-      const blink = Math.sin(frameStep * 0.5) > 0.97 ? 1 : 4;
-      ctx.fillRect(cx - eyeOffset - 3, cy - 4, 6, blink);
-      ctx.fillRect(cx + eyeOffset - 3, cy - 4, 6, blink);
-
-      // Friendly smile
-      ctx.strokeStyle = "#475569";
-      ctx.lineWidth = 2.5;
+      const blink = Math.sin(frameStep * 0.5) > 0.96 ? 1 : 5;
       ctx.beginPath();
-      ctx.arc(cx, cy + (headRadius * 0.25), headRadius * 0.25, 0.1 * Math.PI, 0.9 * Math.PI);
+      ctx.arc(cx - eyeOffset, cy, 4, 0, Math.PI * 2);
+      ctx.arc(cx + eyeOffset, cy, 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Smile
+      ctx.strokeStyle = "#7c2d12";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(cx, cy + (headRadius * 0.2), headRadius * 0.28, 0.15 * Math.PI, 0.85 * Math.PI);
       ctx.stroke();
 
       partnerAnimationTimer = requestAnimationFrame(renderStrangerFrame);
@@ -589,7 +626,7 @@
     }
     initLocalAvatar();
 
-    // --- 4. Camera & Microphone Setup ---
+    // --- 4. Camera, Mic, Mirror, and Filter Features ---
     async function startHardwareCamera() {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
@@ -614,12 +651,30 @@
     }
     btnToggleHardware.addEventListener("click", startHardwareCamera);
 
-    // Camera mute toggles
+    // Mirror Toggle
+    btnToggleMirror.addEventListener("click", () => {
+      isMirrored = !isMirrored;
+      if (isMirrored) {
+        localVideo.classList.add("mirrored");
+        btnToggleMirror.textContent = "🪞 Mirror (On)";
+      } else {
+        localVideo.classList.remove("mirrored");
+        btnToggleMirror.textContent = "🪞 Mirror (Off)";
+      }
+    });
+
+    // Filter Change
+    filterSelect.addEventListener("change", (e) => {
+      const selectedFilter = e.target.value;
+      localVideo.style.filter = selectedFilter === "none" ? "none" : selectedFilter;
+    });
+
+    // Mute Toggles
     btnMuteAudio.addEventListener("click", () => {
       if (!localStream) return;
       micMuted = !micMuted;
       localStream.getAudioTracks().forEach(t => (t.enabled = !micMuted));
-      btnMuteAudio.textContent = micMuted ? "🔇" : "🎤";
+      btnMuteAudio.textContent = micMuted ? "🔇 Unmute" : "🎤 Mute";
     });
 
     btnMuteVideo.addEventListener("click", () => {
@@ -644,7 +699,6 @@
       }
 
       chatContainer.appendChild(msgDiv);
-      // Strict auto-scroll to the absolute bottom
       chatContainer.scrollTop = chatContainer.scrollHeight;
     }
 
@@ -671,12 +725,10 @@
 
       appendMessage("", "Looking for someone you can chat with...", "system");
 
-      // Clear stranger canvas
       const ctx = strangerCanvas.getContext("2d");
       ctx.fillStyle = "#000";
       ctx.fillRect(0, 0, strangerCanvas.width, strangerCanvas.height);
 
-      // Connect after brief random delay
       setTimeout(() => {
         if (!isSearching) return;
         connectStranger();
@@ -699,7 +751,6 @@
       appendMessage("", "You're now chatting with a random stranger. Say hi!", "system");
       renderStrangerFrame();
 
-      // Bot conversation opening
       botDialogueTimeout = setTimeout(() => {
         if (!isConnected) return;
         const intros = ["Hey! How's your day going?", "Hello from the other side!", "What's up?", "Greetings!"];
@@ -731,7 +782,7 @@
       ctx.fillRect(0, 0, strangerCanvas.width, strangerCanvas.height);
     }
 
-    // Button & Hotkey Handling
+    // Controls and Hotkey
     btnMainAction.addEventListener("click", () => {
       if (isConnected || isSearching) {
         disconnectStranger();
@@ -751,7 +802,7 @@
       }
     });
 
-    // Send Message
+    // Chat Send
     function handleSend() {
       const msg = chatInput.value.trim();
       if (!msg || !isConnected) return;
@@ -759,7 +810,6 @@
       appendMessage("You", msg, "you");
       chatInput.value = "";
 
-      // Stranger replies intelligently
       clearTimeout(botDialogueTimeout);
       botDialogueTimeout = setTimeout(() => {
         if (!isConnected) return;
