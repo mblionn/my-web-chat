@@ -179,6 +179,10 @@
       background: var(--success);
     }
 
+    .badge-dot.paused {
+      background: #f59e0b;
+    }
+
     .video-match-tag {
       position: absolute;
       top: 10px;
@@ -517,7 +521,7 @@
         <video id="localVideo" class="mirrored" autoplay playsinline muted style="display: none;"></video>
         <canvas id="localCanvas"></canvas>
 
-        <!-- Media Controls (Includes Mirror Toggle) -->
+        <!-- Media Controls (Includes Mirror & Cam Toggle) -->
         <div class="media-floating-controls" id="floatingControls" style="display: none;">
           <button id="btnToggleMirror" title="Flip Mirror">🪞 Mirror (On)</button>
           <button id="btnMuteAudio" title="Mute Mic">🎤 Mute</button>
@@ -634,6 +638,8 @@
           c.height = rect.height;
         }
       });
+      // Always re-render local avatar on resize
+      drawNeutralAvatar(localCanvas, localCanvas.getContext("2d"));
     }
     window.addEventListener("resize", syncCanvasSizes);
     setTimeout(syncCanvasSizes, 100);
@@ -649,19 +655,24 @@
       ctx.fillRect(0, 0, w, h);
 
       const cx = w / 2;
-      const cy = h * 0.44;
-      const headRadius = Math.min(w, h) * 0.18;
+      const headRadius = Math.min(w, h) * 0.19;
+      const cy = h * 0.38;
 
-      // Head
+      // 1. Shoulders / Chest
       ctx.fillStyle = "#3b82f6";
       ctx.beginPath();
-      ctx.arc(cx, cy, headRadius, 0, Math.PI * 2);
+      ctx.ellipse(cx, h * 0.95, w * 0.42, h * 0.38, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      // Torso / Shoulders
+      // 2. Neck
+      ctx.fillStyle = "#2563eb";
+      const neckWidth = headRadius * 0.48;
+      const neckHeight = headRadius * 0.55;
+      ctx.fillRect(cx - (neckWidth / 2), cy + (headRadius * 0.65), neckWidth, neckHeight);
+
+      // 3. Head
       ctx.beginPath();
-      const shoulderRadius = Math.min(w, h) * 0.38;
-      ctx.arc(cx, h + (shoulderRadius * 0.45), shoulderRadius, 0, Math.PI * 2);
+      ctx.arc(cx, cy, headRadius, 0, Math.PI * 2);
       ctx.fill();
     }
 
@@ -690,9 +701,9 @@
 
       const cx = w / 2;
       const headRadius = Math.min(w, h) * 0.19; 
-      const cy = h * 0.38 + breath; // Placed at upper-center
+      const cy = h * 0.38 + breath;
 
-      // 1. Shoulders / Chest (Broad, natural curve anchored to bottom)
+      // 1. Shoulders / Chest
       ctx.fillStyle = currentStranger.shirt;
       ctx.beginPath();
       ctx.ellipse(cx, h * 0.95 + breath, w * 0.42, h * 0.38, 0, 0, Math.PI * 2);
@@ -704,18 +715,18 @@
       const neckHeight = headRadius * 0.55;
       ctx.fillRect(cx - (neckWidth / 2), cy + (headRadius * 0.65), neckWidth, neckHeight);
 
-      // 3. Head (Full circle)
+      // 3. Head
       ctx.beginPath();
       ctx.arc(cx, cy, headRadius, 0, Math.PI * 2);
       ctx.fill();
 
-      // 4. Hair (Neat rounded cap)
+      // 4. Hair
       ctx.fillStyle = currentStranger.hair;
       ctx.beginPath();
       ctx.arc(cx, cy - (headRadius * 0.05), headRadius * 1.02, Math.PI, Math.PI * 2);
       ctx.fill();
 
-      // 5. Eyes (Blinking animation)
+      // 5. Eyes
       ctx.fillStyle = "#111827";
       const eyeOffset = headRadius * 0.36;
       const isBlinking = Math.sin(frameStep * 0.5) > 0.96;
@@ -749,7 +760,7 @@
     }
     initLocalAvatar();
 
-    // --- 4. Camera, Mic, Mirror, and Filter Features ---
+    // --- 4. Camera, Mic, Mirror, and Fallback Toggle ---
     async function startHardwareCamera() {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
@@ -763,7 +774,7 @@
         localCanvas.style.display = "none";
         floatingControls.style.display = "flex";
 
-        localDot.classList.add("connected");
+        localDot.className = "badge-dot connected";
         localLabel.textContent = "You (Live WebCam)";
         btnToggleHardware.style.background = "#2563eb";
         btnToggleHardware.textContent = "✔ Camera Active";
@@ -792,7 +803,7 @@
       localVideo.style.filter = selectedFilter === "none" ? "none" : selectedFilter;
     });
 
-    // Mute Toggles
+    // Mute Microphone
     btnMuteAudio.addEventListener("click", () => {
       if (!localStream) return;
       micMuted = !micMuted;
@@ -800,11 +811,32 @@
       btnMuteAudio.textContent = micMuted ? "🔇 Unmute" : "🎤 Mute";
     });
 
+    // Toggle Camera (With Instant Avatar Fallback)
     btnMuteVideo.addEventListener("click", () => {
       if (!localStream) return;
       camDisabled = !camDisabled;
+      
+      // Enable or disable local video track
       localStream.getVideoTracks().forEach(t => (t.enabled = !camDisabled));
-      localVideo.style.opacity = camDisabled ? "0.1" : "1";
+
+      if (camDisabled) {
+        // Camera is OFF -> Switch to Avatar
+        localVideo.style.display = "none";
+        localCanvas.style.display = "block";
+        drawNeutralAvatar(localCanvas, localCanvas.getContext("2d"));
+
+        localDot.className = "badge-dot paused";
+        localLabel.textContent = "You (Camera Paused)";
+        btnMuteVideo.textContent = "📷 Start Cam";
+      } else {
+        // Camera is ON -> Switch to Live Video
+        localVideo.style.display = "block";
+        localCanvas.style.display = "none";
+
+        localDot.className = "badge-dot connected";
+        localLabel.textContent = "You (Live WebCam)";
+        btnMuteVideo.textContent = "📷 Cam";
+      }
     });
 
     // --- 5. Chat Auto-Scroll and Message Injection ---
@@ -839,7 +871,7 @@
       isConnected = false;
       currentStranger = null;
 
-      strangerDot.classList.remove("connected");
+      strangerDot.className = "badge-dot";
       strangerLabel.textContent = "Connecting...";
       strangerTag.style.display = "none";
       btnMainAction.textContent = "⏹ Stop";
@@ -865,7 +897,7 @@
       isConnected = true;
 
       currentStranger = strangerProfiles[Math.floor(Math.random() * strangerProfiles.length)];
-      strangerDot.classList.add("connected");
+      strangerDot.className = "badge-dot connected";
       strangerLabel.textContent = currentStranger.name;
       strangerTag.textContent = `Matched on: ${currentStranger.tag}`;
       strangerTag.style.display = "block";
@@ -895,7 +927,7 @@
       isSearching = false;
       currentStranger = null;
 
-      strangerDot.classList.remove("connected");
+      strangerDot.className = "badge-dot";
       strangerLabel.textContent = "Disconnected";
       strangerTag.style.display = "none";
 
