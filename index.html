@@ -397,7 +397,7 @@
       display: flex;
       align-items: center;
       padding: 0 16px;
-      gap: 14px;
+      gap: 12px;
       flex-shrink: 0;
     }
 
@@ -426,6 +426,32 @@
 
     .btn-main-action:hover {
       background: var(--primary-hover);
+    }
+
+    .gender-picker-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #0b0f19;
+      border: 1px solid var(--border-color);
+      padding: 5px 10px;
+      border-radius: 6px;
+    }
+
+    .gender-picker-wrap label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .gender-select {
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 0.8rem;
+      outline: none;
+      cursor: pointer;
+      font-weight: 600;
     }
 
     .interests-box {
@@ -512,7 +538,7 @@
         <canvas id="strangerCanvas"></canvas>
       </div>
 
-      <!-- Local User Video / Avatar -->
+      <!-- Local User Video / Person Avatar -->
       <div class="video-card">
         <div class="video-badge">
           <span class="badge-dot" id="localDot"></span>
@@ -561,6 +587,16 @@
   <footer>
     <button class="btn-main-action" id="btnMainAction">▶ Start Chat</button>
 
+    <!-- Gender Selector Feature -->
+    <div class="gender-picker-wrap">
+      <label for="genderSelect">Match With:</label>
+      <select id="genderSelect" class="gender-select">
+        <option value="both">👥 Both / Random</option>
+        <option value="female">👩 Female Only</option>
+        <option value="male">👨 Male Only</option>
+      </select>
+    </div>
+
     <div class="interests-box">
       <span class="tag-badge">#chatting</span>
       <span class="tag-badge">#music</span>
@@ -578,6 +614,7 @@
     let micMuted = false;
     let camDisabled = false;
     let partnerAnimationTimer = null;
+    let localAvatarTimer = null;
     let botDialogueTimeout = null;
 
     // --- Sound Effects Synthesizer ---
@@ -598,17 +635,20 @@
       } catch (e) {}
     }
 
-    // --- Stranger Simulation Profiles ---
+    // --- Stranger Profiles with Gender Tags ---
     const strangerProfiles = [
-      { name: "Sofia (Spain)", skin: "#f6d5b8", hair: "#1c1917", shirt: "#ef4444", tag: "#music" },
-      { name: "Alex (Canada)", skin: "#fbd3b2", hair: "#3e2723", shirt: "#3b82f6", tag: "#gaming" },
-      { name: "Kenji (Japan)", skin: "#f4cca4", hair: "#111827", shirt: "#10b981", tag: "#music" },
-      { name: "Maya (Brazil)", skin: "#c68642", hair: "#1e1b18", shirt: "#8b5cf6", tag: "#art" }
+      { name: "Sofia (Spain)", gender: "female", skin: "#f6d5b8", hair: "#1c1917", shirt: "#ef4444", tag: "#music" },
+      { name: "Alex (Canada)", gender: "male", skin: "#fbd3b2", hair: "#3e2723", shirt: "#3b82f6", tag: "#gaming" },
+      { name: "Kenji (Japan)", gender: "male", skin: "#f4cca4", hair: "#111827", shirt: "#10b981", tag: "#music" },
+      { name: "Maya (Brazil)", gender: "female", skin: "#c68642", hair: "#1e1b18", shirt: "#8b5cf6", tag: "#art" },
+      { name: "Emma (UK)", gender: "female", skin: "#ffe0bd", hair: "#b55239", shirt: "#ec4899", tag: "#chatting" },
+      { name: "Lucas (France)", gender: "male", skin: "#f5d0b5", hair: "#4a3728", shirt: "#0284c7", tag: "#movies" }
     ];
     let currentStranger = null;
 
     // --- DOM Elements ---
     const filterSelect = document.getElementById("filterSelect");
+    const genderSelect = document.getElementById("genderSelect");
     const btnToggleHardware = document.getElementById("btnToggleHardware");
     const localVideo = document.getElementById("localVideo");
     const localCanvas = document.getElementById("localCanvas");
@@ -638,43 +678,97 @@
           c.height = rect.height;
         }
       });
-      // Always re-render local avatar on resize
-      drawNeutralAvatar(localCanvas, localCanvas.getContext("2d"));
     }
     window.addEventListener("resize", syncCanvasSizes);
     setTimeout(syncCanvasSizes, 100);
 
-    // --- 2. Fallback Neutral Avatar (Local) ---
-    function drawNeutralAvatar(canvas, ctx) {
-      if (!canvas || !ctx) return;
-      const w = canvas.width;
-      const h = canvas.height;
+    // --- 2. Realistic Local Person Avatar (Replacing Plain Silhouette) ---
+    let localFrameStep = 0;
+    function renderLocalPerson() {
+      if (!localCanvas) return;
+      const ctx = localCanvas.getContext("2d");
+      const w = localCanvas.width;
+      const h = localCanvas.height;
 
       ctx.clearRect(0, 0, w, h);
+
+      // Only draw when video is hidden
+      if (localVideo.style.display !== "none") {
+        return;
+      }
+
+      localFrameStep += 0.035;
+      const breath = Math.sin(localFrameStep) * 2;
+
+      // Dark card background
       ctx.fillStyle = "#0c1322";
       ctx.fillRect(0, 0, w, h);
 
       const cx = w / 2;
-      const headRadius = Math.min(w, h) * 0.19;
-      const cy = h * 0.38;
+      const headRadius = Math.min(w, h) * 0.19; 
+      const cy = h * 0.38 + breath;
 
-      // 1. Shoulders / Chest
-      ctx.fillStyle = "#3b82f6";
+      // 1. Shoulders / Casual Shirt
+      ctx.fillStyle = "#2563eb";
       ctx.beginPath();
-      ctx.ellipse(cx, h * 0.95, w * 0.42, h * 0.38, 0, 0, Math.PI * 2);
+      ctx.ellipse(cx, h * 0.95 + breath, w * 0.42, h * 0.38, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Shirt Collar Accent
+      ctx.fillStyle = "#1d4ed8";
+      ctx.beginPath();
+      ctx.moveTo(cx - (headRadius * 0.35), h * 0.65 + breath);
+      ctx.lineTo(cx, h * 0.76 + breath);
+      ctx.lineTo(cx + (headRadius * 0.35), h * 0.65 + breath);
       ctx.fill();
 
       // 2. Neck
-      ctx.fillStyle = "#2563eb";
-      const neckWidth = headRadius * 0.48;
+      ctx.fillStyle = "#e0ac69";
+      const neckWidth = headRadius * 0.46;
       const neckHeight = headRadius * 0.55;
       ctx.fillRect(cx - (neckWidth / 2), cy + (headRadius * 0.65), neckWidth, neckHeight);
 
       // 3. Head
+      ctx.fillStyle = "#f1c27d";
       ctx.beginPath();
       ctx.arc(cx, cy, headRadius, 0, Math.PI * 2);
       ctx.fill();
+
+      // 4. Hair (Styled haircut)
+      ctx.fillStyle = "#18181b";
+      ctx.beginPath();
+      ctx.arc(cx, cy - (headRadius * 0.1), headRadius * 1.02, Math.PI, Math.PI * 2);
+      ctx.fill();
+
+      // 5. Eyes with Blinking
+      ctx.fillStyle = "#09090b";
+      const eyeOffset = headRadius * 0.36;
+      const isBlinking = Math.sin(localFrameStep * 0.45) > 0.96;
+      
+      if (isBlinking) {
+        ctx.fillRect(cx - eyeOffset - 4, cy - 1, 8, 2);
+        ctx.fillRect(cx + eyeOffset - 4, cy - 1, 8, 2);
+      } else {
+        ctx.beginPath();
+        ctx.arc(cx - eyeOffset, cy, headRadius * 0.07, 0, Math.PI * 2);
+        ctx.arc(cx + eyeOffset, cy, headRadius * 0.07, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // 6. Friendly Smile
+      ctx.strokeStyle = "#78350f";
+      ctx.lineWidth = 3;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.arc(cx, cy + (headRadius * 0.18), headRadius * 0.28, 0.15 * Math.PI, 0.85 * Math.PI);
+      ctx.stroke();
+
+      localAvatarTimer = requestAnimationFrame(renderLocalPerson);
     }
+
+    // Start local avatar rendering loop
+    syncCanvasSizes();
+    renderLocalPerson();
 
     // --- 3. Perfectly Proportioned Stranger Avatar ---
     let frameStep = 0;
@@ -726,7 +820,7 @@
       ctx.arc(cx, cy - (headRadius * 0.05), headRadius * 1.02, Math.PI, Math.PI * 2);
       ctx.fill();
 
-      // 5. Eyes
+      // 5. Eyes with Blinking
       ctx.fillStyle = "#111827";
       const eyeOffset = headRadius * 0.36;
       const isBlinking = Math.sin(frameStep * 0.5) > 0.96;
@@ -752,14 +846,6 @@
       partnerAnimationTimer = requestAnimationFrame(renderStrangerFrame);
     }
 
-    // Initialize local neutral canvas
-    function initLocalAvatar() {
-      syncCanvasSizes();
-      const ctx = localCanvas.getContext("2d");
-      drawNeutralAvatar(localCanvas, ctx);
-    }
-    initLocalAvatar();
-
     // --- 4. Camera, Mic, Mirror, and Fallback Toggle ---
     async function startHardwareCamera() {
       try {
@@ -780,7 +866,7 @@
         btnToggleHardware.textContent = "✔ Camera Active";
       } catch (err) {
         console.warn("Hardware camera failed or denied:", err);
-        alert("Camera/Mic access was denied or no device was detected. Avatar fallback remains active.");
+        alert("Camera/Mic access was denied or no device was detected. Person avatar fallback active.");
       }
     }
     btnToggleHardware.addEventListener("click", startHardwareCamera);
@@ -811,19 +897,18 @@
       btnMuteAudio.textContent = micMuted ? "🔇 Unmute" : "🎤 Mute";
     });
 
-    // Toggle Camera (With Instant Avatar Fallback)
+    // Toggle Camera (With Instant Person Avatar Fallback)
     btnMuteVideo.addEventListener("click", () => {
       if (!localStream) return;
       camDisabled = !camDisabled;
       
-      // Enable or disable local video track
       localStream.getVideoTracks().forEach(t => (t.enabled = !camDisabled));
 
       if (camDisabled) {
-        // Camera is OFF -> Switch to Avatar
+        // Camera is OFF -> Switch to Person Avatar
         localVideo.style.display = "none";
         localCanvas.style.display = "block";
-        drawNeutralAvatar(localCanvas, localCanvas.getContext("2d"));
+        renderLocalPerson();
 
         localDot.className = "badge-dot paused";
         localLabel.textContent = "You (Camera Paused)";
@@ -862,7 +947,7 @@
       return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
 
-    // --- 6. Stranger Connection & Interaction Simulation ---
+    // --- 6. Stranger Connection & Gender Matching ---
     function startSearching() {
       if (partnerAnimationTimer) cancelAnimationFrame(partnerAnimationTimer);
       clearTimeout(botDialogueTimeout);
@@ -880,7 +965,9 @@
       chatInput.disabled = true;
       btnSendMessage.disabled = true;
 
-      appendMessage("", "Looking for someone you can chat with...", "system");
+      const pref = genderSelect.value;
+      const prefText = pref === "both" ? "someone" : `a ${pref} stranger`;
+      appendMessage("", `Looking for ${prefText} you can chat with...`, "system");
 
       const ctx = strangerCanvas.getContext("2d");
       ctx.fillStyle = "#000";
@@ -896,7 +983,14 @@
       isSearching = false;
       isConnected = true;
 
-      currentStranger = strangerProfiles[Math.floor(Math.random() * strangerProfiles.length)];
+      // Filter candidates based on selected gender preference
+      const pref = genderSelect.value;
+      let pool = strangerProfiles;
+      if (pref !== "both") {
+        pool = strangerProfiles.filter(p => p.gender === pref);
+      }
+
+      currentStranger = pool[Math.floor(Math.random() * pool.length)];
       strangerDot.className = "badge-dot connected";
       strangerLabel.textContent = currentStranger.name;
       strangerTag.textContent = `Matched on: ${currentStranger.tag}`;
