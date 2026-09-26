@@ -457,89 +457,151 @@
       font-weight: 600;
     }
 
-    /* Editable Interests Container */
+    /* Dropdown Options Color Fix: Forced Black/Red Text */
+    .gender-select option,
+    .filter-select option {
+      color: #111827 !important; /* Force readable black text in Chrome popup */
+      background-color: #ffffff !important;
+      font-weight: 600;
+    }
+
+    .gender-select option:checked {
+      color: #ef4444 !important; /* Red accent on selected item */
+      font-weight: 700;
+    }
+
+    /* Modern Glowing Tags Carousel */
     .interests-container {
+      position: relative;
       display: flex;
       align-items: center;
-      gap: 6px;
-      background: #0b0f19;
-      border: 1px solid #2d3748;
-      padding: 4px 8px;
-      border-radius: 6px;
-      min-width: 250px;
-      max-width: 480px;
+      gap: 8px;
+      background: rgba(11, 15, 25, 0.7);
+      border: 1px solid rgba(59, 130, 246, 0.25);
+      box-shadow: 0 0 15px rgba(59, 130, 246, 0.08) inset;
+      padding: 5px 10px;
+      border-radius: 20px;
+      min-width: 260px;
+      max-width: 440px;
       overflow-x: auto;
+      cursor: grab;
+      user-select: none;
+      scroll-behavior: smooth;
       flex-shrink: 0;
+    }
+
+    .interests-container:active {
+      cursor: grabbing;
+    }
+
+    .interests-container::-webkit-scrollbar {
+      height: 4px;
+    }
+    .interests-container::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+      border-radius: 4px;
+    }
+    .interests-container::-webkit-scrollbar-thumb {
+      background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+      border-radius: 4px;
+      box-shadow: 0 0 6px rgba(139, 92, 246, 0.6);
     }
 
     .tags-list {
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 6px;
     }
 
     .tag-badge {
-      background: #1e3a8a;
-      color: #93c5fd;
-      font-size: 0.76rem;
-      padding: 3px 7px;
-      border-radius: 4px;
+      background: linear-gradient(135deg, rgba(30, 58, 138, 0.8), rgba(67, 56, 202, 0.6));
+      border: 1px solid rgba(96, 165, 250, 0.35);
+      color: #bfdbfe;
+      font-size: 0.74rem;
+      font-weight: 600;
+      padding: 3px 9px;
+      border-radius: 14px;
       display: inline-flex;
       align-items: center;
-      gap: 5px;
+      gap: 6px;
       white-space: nowrap;
-      user-select: none;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    }
+
+    .tag-badge:hover {
+      transform: translateY(-1px) scale(1.03);
+      border-color: #60a5fa;
+      color: #ffffff;
+      box-shadow: 0 4px 10px rgba(59, 130, 246, 0.35);
+    }
+
+    .tag-badge .tag-text {
+      max-width: 110px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .tag-badge .remove-tag {
-      cursor: pointer;
-      font-weight: 800;
+      width: 14px;
+      height: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      font-size: 0.7rem;
       color: #93c5fd;
-      font-size: 0.85rem;
-      line-height: 1;
-      padding: 0 2px;
+      cursor: pointer;
+      transition: all 0.15s ease;
     }
 
     .tag-badge .remove-tag:hover {
-      color: #f87171;
+      background: #ef4444;
+      color: #fff;
+      transform: scale(1.15);
     }
 
     .tag-input-wrap {
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 6px;
       flex: 1;
-      min-width: 130px;
+      min-width: 120px;
     }
 
     .tag-input {
       background: transparent;
       border: none;
-      color: #fff;
-      font-size: 0.8rem;
+      color: #f1f5f9;
+      font-size: 0.78rem;
       outline: none;
       width: 100%;
     }
 
     .tag-input::placeholder {
-      color: #64748b;
+      color: #475569;
+      font-style: italic;
     }
 
     .btn-add-tag {
-      background: #334155;
-      color: #cbd5e1;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      color: #ffffff;
       border: none;
-      border-radius: 4px;
-      font-size: 0.72rem;
+      border-radius: 12px;
+      font-size: 0.7rem;
       font-weight: 700;
-      padding: 2px 6px;
+      padding: 3px 8px;
       cursor: pointer;
       white-space: nowrap;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.4);
     }
 
     .btn-add-tag:hover {
-      background: var(--primary);
-      color: #fff;
+      transform: scale(1.05);
+      box-shadow: 0 3px 10px rgba(124, 58, 237, 0.5);
     }
 
     .status-text {
@@ -672,11 +734,11 @@
       </select>
     </div>
 
-    <!-- 3. Dynamic Interests Box -->
-    <div class="interests-container" id="interestsContainer">
+    <!-- 3. Dynamic Glowing Tag Carousel -->
+    <div class="interests-container" id="interestsContainer" title="Scroll or drag to see more tags">
       <div class="tags-list" id="tagsList"></div>
       <div class="tag-input-wrap">
-        <input type="text" id="tagInput" class="tag-input" placeholder="+ Add interest..." autocomplete="off" />
+        <input type="text" id="tagInput" class="tag-input" placeholder="+ Add topic..." autocomplete="off" />
         <button class="btn-add-tag" id="btnAddTag">+ Add</button>
       </div>
     </div>
@@ -750,26 +812,35 @@
     const btnMuteAudio = document.getElementById("btnMuteAudio");
     const btnMuteVideo = document.getElementById("btnMuteVideo");
     const quickChips = document.querySelectorAll(".quick-chip");
+    const interestsContainer = document.getElementById("interestsContainer");
     const tagsList = document.getElementById("tagsList");
     const tagInput = document.getElementById("tagInput");
     const btnAddTag = document.getElementById("btnAddTag");
 
-    // --- 0. Dynamic Tag Management ---
+    // --- 0. Dynamic Tag Management & Slider Controls ---
     function renderTags() {
       tagsList.innerHTML = "";
       userTags.forEach(tag => {
         const badge = document.createElement("span");
         badge.className = "tag-badge";
-        badge.innerHTML = `#${escapeHTML(tag)} <span class="remove-tag" data-tag="${escapeHTML(tag)}" title="Remove tag">&times;</span>`;
+        const cleanTag = escapeHTML(tag).replace(/^https?:\/\//, "");
+        badge.innerHTML = `
+          <span class="tag-text">#${cleanTag}</span>
+          <span class="remove-tag" data-tag="${escapeHTML(tag)}" title="Remove tag">&times;</span>
+        `;
         tagsList.appendChild(badge);
       });
     }
 
     function addTagFromInput() {
       let val = tagInput.value.trim().toLowerCase().replace(/^[#,\s]+/, "");
+      val = val.replace(/^https?:\/\/[^\/]+\/?/, "").slice(0, 20);
       if (val && !userTags.includes(val)) {
         userTags.push(val);
         renderTags();
+        setTimeout(() => {
+          interestsContainer.scrollLeft = interestsContainer.scrollWidth;
+        }, 50);
       }
       tagInput.value = "";
     }
@@ -794,7 +865,32 @@
       }
     });
 
-    // Initialize tags on boot
+    // Horizontal wheel scroll & drag
+    interestsContainer.addEventListener("wheel", (e) => {
+      if (e.deltaY !== 0) {
+        e.preventDefault();
+        interestsContainer.scrollLeft += e.deltaY;
+      }
+    });
+
+    let isDown = false;
+    let startX, scrollLeft;
+    interestsContainer.addEventListener("mousedown", (e) => {
+      if (e.target.tagName === "INPUT" || e.target.tagName === "BUTTON") return;
+      isDown = true;
+      startX = e.pageX - interestsContainer.offsetLeft;
+      scrollLeft = interestsContainer.scrollLeft;
+    });
+
+    window.addEventListener("mouseup", () => { isDown = false; });
+    interestsContainer.addEventListener("mousemove", (e) => {
+      if (!isDown) return;
+      e.preventDefault();
+      const x = e.pageX - interestsContainer.offsetLeft;
+      const walk = (x - startX) * 1.5;
+      interestsContainer.scrollLeft = scrollLeft - walk;
+    });
+
     renderTags();
 
     // --- 1. Canvas Dimensions & Resizing ---
@@ -1044,7 +1140,6 @@
     btnMuteVideo.addEventListener("click", () => {
       if (!localStream) return;
       camDisabled = !camDisabled;
-      
       localStream.getVideoTracks().forEach(t => (t.enabled = !camDisabled));
 
       if (camDisabled) {
@@ -1125,14 +1220,12 @@
       isSearching = false;
       isConnected = true;
 
-      // 1. Gender Filter
       const pref = genderSelect.value;
       let pool = strangerProfiles;
       if (pref !== "both") {
         pool = strangerProfiles.filter(p => p.gender === pref);
       }
 
-      // 2. Prioritize candidates based on active interests
       let matchedTag = "chatting";
       let prioritized = pool.filter(p => p.tags.some(t => userTags.includes(t)));
       
