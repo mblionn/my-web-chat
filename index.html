@@ -3,83 +3,602 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>Web TV 555 - Live Video Chat</title>
+  <title>Web TV 555 - Live Random Video Chat</title>
   
-  <!-- PeerJS for WebRTC Audio, Video & Data channels -->
+  <!-- Socket.io for High-Performance Atomic Backend Matchmaking -->
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <!-- PeerJS for WebRTC Direct P2P Video, Audio & Encrypted Chat -->
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-  
-  <!-- MQTT.js for Real-Time Presence & Heartbeat Tracking -->
-  <script src="https://unpkg.com/mqtt@5.3.5/dist/mqtt.min.js"></script>
-
-  <!-- Tailwind CSS for utility classes -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            brand: {
-              dark: '#07090e',
-              card: '#0e1422',
-              panel: '#131b2e',
-              border: '#1e293d',
-              accent: '#3b82f6',
-              danger: '#ef4444',
-              success: '#10b981'
-            }
-          }
-        }
-      }
-    };
-  </script>
 
   <style>
     :root {
       --bg-dark: #07090e;
-      --card-bg: #0e1422;
-      --border-color: #1e293d;
+      --card-bg: #0f172a;
+      --card-inner: #111827;
+      --border-color: #1e293b;
+      --border-hover: #334155;
       --primary: #3b82f6;
       --primary-hover: #2563eb;
+      --primary-glow: rgba(59, 130, 246, 0.35);
       --danger: #ef4444;
       --danger-hover: #dc2626;
       --success: #10b981;
-      --app-height: 100dvh;
+      --warning: #f59e0b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
     }
 
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
       -webkit-tap-highlight-color: transparent;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     }
 
     html, body {
+      width: 100%;
+      height: 100%;
       height: 100vh;
       height: 100dvh;
       background-color: var(--bg-dark);
-      color: #f8fafc;
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
       overflow: hidden;
-      position: fixed;
-      width: 100%;
+      padding-bottom: env(safe-area-inset-bottom, 0px);
     }
 
-    /* Video element mirror styling */
-    .mirrored {
-      transform: scaleX(-1);
+    /* ==========================================================================
+       Top Navigation Bar
+       ========================================================================== */
+    header {
+      height: 56px;
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      flex-shrink: 0;
+      z-index: 30;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
     }
 
-    /* Dropdown text contrast fix across all platforms */
-    select option {
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo {
+      font-size: 1.25rem;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      user-select: none;
+    }
+
+    .logo-badge {
+      background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+      color: #ffffff;
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      border-radius: 5px;
+      font-weight: 800;
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.4);
+    }
+
+    .online-counter-badge {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      background: rgba(15, 23, 42, 0.8);
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      user-select: none;
+    }
+
+    .online-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--success);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--success);
+      animation: pulseGreen 2s infinite ease-in-out;
+    }
+
+    @keyframes pulseGreen {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.2); opacity: 0.7; }
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .filter-select {
+      background: #1e293b;
+      color: #f8fafc;
+      border: 1px solid #334155;
+      padding: 6px 10px;
+      border-radius: 7px;
+      font-size: 0.82rem;
+      outline: none;
+      cursor: pointer;
+      font-weight: 600;
+      transition: border-color 0.2s;
+    }
+
+    .filter-select:hover {
+      border-color: #475569;
+    }
+
+    .filter-select option {
       color: #0f172a !important;
       background-color: #ffffff !important;
       font-weight: 600;
     }
 
-    select option:checked {
-      color: #ef4444 !important;
-      background-color: #e2e8f0 !important;
+    .cam-btn {
+      background: var(--success);
+      color: #fff;
+      border: none;
+      padding: 7px 14px;
+      border-radius: 7px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);
+    }
+
+    .cam-btn:hover {
+      opacity: 0.92;
+      transform: translateY(-1px);
+    }
+
+    .cam-btn.active {
+      background: #2563eb;
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+    }
+
+    /* ==========================================================================
+       Main Workspace Layout
+       ========================================================================== */
+    main {
+      flex: 1;
+      display: flex;
+      padding: 12px;
+      gap: 12px;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    /* Video Hero Arena (Hero Stranger + Corner PiP) */
+    .video-stage-container {
+      flex: 7;
+      position: relative;
+      background: #000;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    .remote-video-wrap {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #090d16;
+    }
+
+    video#remoteVideo {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;
+    }
+
+    canvas#remoteCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .video-badge {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(8px);
+      padding: 5px 12px;
+      border-radius: 7px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      user-select: none;
+    }
+
+    .badge-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--danger);
+    }
+
+    .badge-dot.connected {
+      background: var(--success);
+      box-shadow: 0 0 8px var(--success);
+    }
+
+    .badge-dot.waiting {
+      background: var(--warning);
+      box-shadow: 0 0 8px var(--warning);
+      animation: pulseGreen 1.5s infinite;
+    }
+
+    .video-match-tag {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #34d399;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      z-index: 10;
+      display: none;
+      backdrop-filter: blur(4px);
+    }
+
+    /* Picture-In-Picture Floating Card */
+    .local-pip-card {
+      position: absolute;
+      bottom: 14px;
+      right: 14px;
+      width: 190px;
+      height: 142px;
+      background: #111827;
+      border-radius: 10px;
+      border: 2px solid rgba(59, 130, 246, 0.45);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.7);
+      overflow: hidden;
+      z-index: 20;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .local-pip-card:hover {
+      border-color: #60a5fa;
+      transform: scale(1.02);
+    }
+
+    video#localVideo {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;
+      transition: filter 0.3s ease;
+    }
+
+    .mirrored {
+      transform: scaleX(-1);
+    }
+
+    canvas#localCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .local-pip-badge {
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      z-index: 5;
+      user-select: none;
+    }
+
+    .pip-controls {
+      position: absolute;
+      bottom: 6px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(6px);
+      border-radius: 20px;
+      padding: 3px 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      z-index: 5;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .pip-controls button {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 0.8rem;
+      cursor: pointer;
+      padding: 3px 5px;
+      border-radius: 5px;
+      transition: background 0.15s;
+    }
+
+    .pip-controls button:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* ==========================================================================
+       Right-Side Chat Section
+       ========================================================================== */
+    .chat-section {
+      flex: 3;
+      min-width: 300px;
+      max-width: 400px;
+      background: var(--card-bg);
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      height: 100%;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    .chat-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 0.88rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      user-select: none;
+    }
+
+    .messages-container {
+      flex: 1;
+      padding: 14px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      scroll-behavior: smooth;
+    }
+
+    .messages-container::-webkit-scrollbar {
+      width: 5px;
+    }
+    .messages-container::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+
+    .message {
+      font-size: 0.86rem;
+      line-height: 1.45;
+      word-break: break-word;
+    }
+
+    .message .time {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-right: 6px;
+    }
+
+    .message.stranger .sender {
+      color: var(--danger);
+      font-weight: 800;
+    }
+
+    .message.you .sender {
+      color: var(--primary);
+      font-weight: 800;
+    }
+
+    .message.system {
+      color: var(--text-muted);
+      font-style: italic;
+      font-size: 0.8rem;
+      text-align: center;
+      margin: 4px 0;
+      padding: 2px 6px;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 4px;
+    }
+
+    .quick-replies {
+      padding: 6px 12px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      gap: 6px;
+      background: #0b1120;
+      overflow-x: auto;
+      align-items: center;
+    }
+
+    .quick-replies::-webkit-scrollbar {
+      height: 3px;
+    }
+    .quick-replies::-webkit-scrollbar-thumb {
+      background: #1e293b;
+    }
+
+    .quick-chip {
+      background: #1e293b;
+      color: #94a3b8;
+      border: 1px solid #334155;
+      padding: 4px 9px;
+      border-radius: 12px;
+      font-size: 0.74rem;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+      font-weight: 600;
+    }
+
+    .quick-chip:hover {
+      background: #334155;
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+
+    .chat-input-area {
+      padding: 10px 14px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      gap: 8px;
+      background: #0f172a;
+    }
+
+    .chat-input-area input {
+      flex: 1;
+      background: #07090e;
+      border: 1px solid var(--border-color);
+      border-radius: 7px;
+      padding: 8px 12px;
+      color: #ffffff;
+      font-size: 0.84rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .chat-input-area input:focus {
+      border-color: var(--primary);
+    }
+
+    .chat-input-area button {
+      background: var(--primary);
+      color: #ffffff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 7px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: background 0.2s;
+    }
+
+    .chat-input-area button:hover:not(:disabled) {
+      background: var(--primary-hover);
+    }
+
+    .chat-input-area button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* ==========================================================================
+       Bottom Footer Controls & Tag Carousel
+       ========================================================================== */
+    footer {
+      height: 64px;
+      background: var(--card-bg);
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 12px;
+      flex-shrink: 0;
+      overflow-x: auto;
+      z-index: 25;
+    }
+
+    footer::-webkit-scrollbar {
+      height: 3px;
+    }
+
+    .btn-main-action {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 10px 22px;
+      border-radius: 7px;
+      font-weight: 800;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+      transition: all 0.2s;
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.35);
+    }
+
+    .btn-main-action:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-main-action.stop {
+      background: var(--danger);
+      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.35);
+    }
+
+    .btn-main-action.stop:hover {
+      background: var(--danger-hover);
+    }
+
+    .gender-picker-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #07090e;
+      border: 1px solid var(--border-color);
+      padding: 5px 10px;
+      border-radius: 7px;
+      flex-shrink: 0;
+    }
+
+    .gender-picker-wrap label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .gender-select {
+      background: transparent;
+      border: none;
+      color: #ffffff;
+      font-size: 0.8rem;
+      outline: none;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .gender-select option {
+      color: #0f172a !important;
+      background-color: #ffffff !important;
       font-weight: 700;
     }
 
@@ -88,19 +607,18 @@
       position: relative;
       display: flex;
       align-items: center;
-      gap: 6px;
-      background: rgba(7, 9, 14, 0.9);
+      gap: 8px;
+      background: rgba(7, 9, 14, 0.8);
       border: 1px solid rgba(59, 130, 246, 0.3);
-      box-shadow: 0 0 14px rgba(59, 130, 246, 0.08) inset;
-      padding: 4px 10px;
+      padding: 5px 10px;
       border-radius: 20px;
-      min-width: 180px;
-      max-width: 380px;
+      min-width: 250px;
+      max-width: 420px;
       overflow-x: auto;
       cursor: grab;
       user-select: none;
-      scroll-behavior: smooth;
       flex-shrink: 0;
+      box-shadow: 0 0 12px rgba(59, 130, 246, 0.08) inset;
     }
 
     .interests-container:active {
@@ -108,93 +626,166 @@
     }
 
     .interests-container::-webkit-scrollbar {
-      height: 3px;
+      height: 4px;
     }
     .interests-container::-webkit-scrollbar-track {
-      background: rgba(15, 23, 42, 0.4);
+      background: rgba(15, 23, 42, 0.6);
+      border-radius: 4px;
     }
     .interests-container::-webkit-scrollbar-thumb {
       background: linear-gradient(90deg, #3b82f6, #8b5cf6);
-      border-radius: 3px;
+      border-radius: 4px;
+      box-shadow: 0 0 6px rgba(139, 92, 246, 0.6);
+    }
+
+    .tags-list {
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
     .tag-badge {
-      background: linear-gradient(135deg, rgba(30, 58, 138, 0.85), rgba(67, 56, 202, 0.65));
+      background: linear-gradient(135deg, rgba(30, 58, 138, 0.85), rgba(67, 56, 202, 0.7));
       border: 1px solid rgba(96, 165, 250, 0.4);
       color: #bfdbfe;
-      font-size: 0.72rem;
-      font-weight: 600;
-      padding: 2px 7px;
-      border-radius: 12px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 14px;
       display: inline-flex;
       align-items: center;
-      gap: 5px;
+      gap: 6px;
       white-space: nowrap;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .tag-badge:hover {
-      transform: translateY(-1px) scale(1.02);
       border-color: #60a5fa;
       color: #ffffff;
+      transform: translateY(-1px) scale(1.03);
     }
 
     .tag-badge .remove-tag {
+      cursor: pointer;
+      color: #93c5fd;
+      font-weight: 800;
+      font-size: 0.76rem;
       width: 14px;
       height: 14px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       border-radius: 50%;
-      background: rgba(255, 255, 255, 0.12);
-      font-size: 0.75rem;
-      color: #93c5fd;
-      cursor: pointer;
+      background: rgba(255, 255, 255, 0.1);
+      transition: all 0.15s ease;
     }
 
     .tag-badge .remove-tag:hover {
       background: #ef4444;
-      color: #fff;
+      color: #ffffff;
+      transform: scale(1.15);
     }
 
-    /* Modal Backdrop */
-    .modal-backdrop {
-      background: rgba(0, 0, 0, 0.75);
-      backdrop-filter: blur(4px);
+    .tag-input-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex: 1;
+      min-width: 110px;
     }
 
-    /* Safe Area insets for modern mobile notched devices */
-    .safe-pb {
-      padding-bottom: max(env(safe-area-inset-bottom, 0px), 8px);
+    .tag-input {
+      background: transparent;
+      border: none;
+      color: #ffffff;
+      font-size: 0.78rem;
+      outline: none;
+      width: 100%;
     }
-    .safe-pt {
-      padding-top: max(env(safe-area-inset-top, 0px), 0px);
+
+    .tag-input::placeholder {
+      color: #64748b;
+      font-style: italic;
+    }
+
+    .btn-add-tag {
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      color: #ffffff;
+      border: none;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 3px 8px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: transform 0.15s;
+    }
+
+    .btn-add-tag:hover {
+      transform: scale(1.05);
+    }
+
+    .status-text {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-left: auto;
+      white-space: nowrap;
+      user-select: none;
+    }
+
+    /* ==========================================================================
+       Mobile-Native Split Rules
+       ========================================================================== */
+    @media (max-width: 880px) {
+      main {
+        flex-direction: column;
+        padding: 8px;
+        gap: 8px;
+      }
+      .video-stage-container {
+        flex: 1;
+        min-height: 48%;
+      }
+      .local-pip-card {
+        width: 130px;
+        height: 98px;
+        bottom: 10px;
+        right: 10px;
+      }
+      .chat-section {
+        flex: 1;
+        max-width: 100%;
+        min-width: 0;
+        min-height: 44%;
+      }
+      .status-text {
+        display: none;
+      }
+      footer {
+        height: 56px;
+        padding: 0 10px;
+        gap: 8px;
+      }
     }
   </style>
 </head>
+<body>
 
-
-<body class="bg-[#07090e] text-slate-100 flex flex-col h-full overflow-hidden select-none">
-  
-  <!-- Global Top Navbar -->
-  <header class="h-13 sm:h-14 bg-[#0e1422] border-b border-[#1e293d] flex items-center justify-between px-3 sm:px-4 shrink-0 z-30 safe-pt">
-    <div class="flex items-center gap-2.5">
-      <div class="flex items-center gap-1.5 text-lg sm:text-xl font-black tracking-tight text-white">
-        Web TV <span class="bg-gradient-to-r from-blue-600 to-purple-600 text-white text-[11px] sm:text-xs px-2 py-0.5 rounded font-bold shadow-md shadow-blue-500/30">555</span>
+  <!-- Top Navigation Header -->
+  <header>
+    <div class="brand-group">
+      <div class="logo">
+        Web TV <span class="logo-badge">555</span>
       </div>
-      
-      <!-- Genuine Real-Time Presence Counter -->
-      <div class="flex items-center gap-1.5 text-[11px] sm:text-xs text-slate-400 bg-black/40 px-2 sm:px-2.5 py-1 rounded-full border border-[#1e293d]" title="Real-time WebSocket presence count across all active visitors">
-        <span id="presencePulseDot" class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_6px_#10b981] animate-pulse"></span>
-        <span id="userCount" class="font-semibold text-emerald-400">1 Stranger</span> online
+      <div class="online-counter-badge">
+        <span class="online-dot"></span>
+        <span id="userCount">1</span> online
       </div>
     </div>
-
-    <!-- Actions & Quick Settings -->
-    <div class="flex items-center gap-1.5 sm:gap-2">
-      <!-- Live Video Filter Dropdown -->
-      <select id="filterSelect" class="bg-[#192237] text-white border border-[#2d3a54] px-2 py-1 sm:py-1.5 rounded-lg text-xs outline-none cursor-pointer">
+    
+    <div class="header-actions">
+      <!-- Live Video Filter Switcher -->
+      <select id="filterSelect" class="filter-select" title="Camera Filter">
         <option value="none">✨ Filter: Normal</option>
         <option value="grayscale(100%)">Noir (B&W)</option>
         <option value="sepia(60%) contrast(110%)">Warm Vintage</option>
@@ -202,551 +793,518 @@
         <option value="brightness(110%) contrast(120%)">Soft Glow</option>
         <option value="invert(100%)">Invert</option>
       </select>
-
-      <!-- Hardware Camera/Mic Enabler -->
-      <button id="btnToggleHardware" class="bg-emerald-600 hover:bg-emerald-500 text-white px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 shadow-md shadow-emerald-500/20 transition">
-        <span>📹</span> <span id="btnHardwareText" class="hidden sm:inline">Enable Cam</span>
-      </button>
-
-      <!-- Direct Room Connect Modal Trigger -->
-      <button id="btnOpenDirectConnect" title="Direct Room Connection" class="bg-[#192237] hover:bg-[#2d3a54] border border-[#2d3a54] text-slate-200 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 transition">
-        <span>🔗</span> <span class="hidden md:inline">Direct Room</span>
-      </button>
+      <button class="cam-btn" id="btnToggleHardware">📹 Enable Camera & Mic</button>
     </div>
   </header>
 
-
-  <!-- Main View Area (Desktop: 2 Columns / Mobile: Stacked with keyboard clearance) -->
-  <main class="flex-1 flex flex-col md:flex-row p-2 sm:p-3 gap-2 sm:gap-3 overflow-hidden min-h-0 relative">
-    
-    <!-- LEFT / HERO STAGE: Dominant Stranger Screen with Bottom-Right Floating PiP Local Screen -->
-    <section class="flex-1 flex flex-col h-[52%] md:h-full relative min-h-0 bg-black rounded-xl sm:rounded-2xl border border-[#1e293d] overflow-hidden shadow-2xl">
-      
-      <!-- Dominant Stranger View (Hero Screen) -->
-      <div class="relative w-full h-full flex items-center justify-center bg-black overflow-hidden">
-        
-        <!-- Stranger Status Badge -->
-        <div class="absolute top-2.5 left-2.5 bg-black/70 backdrop-blur-md px-2.5 py-1 rounded-md text-[11px] sm:text-xs font-semibold z-20 flex items-center gap-2 border border-white/10 shadow-lg">
-          <span id="strangerDot" class="w-2 h-2 rounded-full bg-red-500"></span>
+  <!-- Main Split Layout -->
+  <main>
+    <!-- Stranger Hero Video Stage + Corner PiP -->
+    <div class="video-stage-container">
+      <div class="remote-video-wrap">
+        <div class="video-badge">
+          <span class="badge-dot" id="strangerDot"></span>
           <span id="strangerLabel">Disconnected</span>
         </div>
-
-        <!-- Matched Tag Badge -->
-        <div id="strangerTag" class="hidden absolute top-2.5 right-2.5 bg-emerald-500/25 border border-emerald-500/50 text-emerald-400 px-2.5 py-0.5 rounded text-[11px] sm:text-xs font-bold z-20 backdrop-blur-md">
-          Matched on: #chatting
-        </div>
-
-        <!-- Real WebRTC Remote Video Stream -->
-        <video id="remoteVideo" autoplay playsinline class="w-full h-full object-cover hidden"></video>
-        
-        <!-- Stranger Fallback / Standby Canvas Avatar -->
-        <canvas id="strangerCanvas" class="w-full h-full block"></canvas>
-
-        <!-- Connecting Spinner Overlay -->
-        <div id="strangerLoader" class="hidden absolute inset-0 bg-black/70 backdrop-blur-sm flex flex-col items-center justify-center gap-3 z-20">
-          <div class="w-10 h-10 border-3 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-          <span id="strangerLoadingText" class="text-xs text-blue-400 font-semibold tracking-wide">Looking for strangers...</span>
-        </div>
-
-        <!-- FLOATING BOTTOM-RIGHT PiP (You / Local Screen) -->
-        <div id="localPipContainer" class="absolute bottom-2.5 right-2.5 w-28 sm:w-44 md:w-52 aspect-[3/4] sm:aspect-video bg-[#0e1422] rounded-lg sm:rounded-xl border-2 border-blue-500/40 shadow-2xl overflow-hidden z-30 transition-all duration-300 hover:border-blue-400 group">
-          
-          <!-- PiP Badge -->
-          <div class="absolute top-1.5 left-1.5 bg-black/70 backdrop-blur-sm px-1.5 py-0.5 rounded text-[9px] sm:text-[10px] font-bold z-10 flex items-center gap-1 border border-white/10 text-white">
-            <span id="localDot" class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-            <span id="localLabel" class="truncate max-w-[80px] sm:max-w-none">You (Avatar)</span>
-          </div>
-
-          <!-- Real Local Camera Video -->
-          <video id="localVideo" autoplay playsinline muted class="w-full h-full object-cover mirrored hidden"></video>
-          
-          <!-- Local Person Fallback Avatar -->
-          <canvas id="localCanvas" class="w-full h-full block"></canvas>
-
-          <!-- PiP Quick Controls Overlay (Mobile & Desktop) -->
-          <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent p-1 sm:p-1.5 flex items-center justify-center gap-1 opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity z-20">
-            <!-- Front / Back Camera Switch for Mobile -->
-            <button id="btnSwitchCamera" title="Switch Front/Rear Camera" class="bg-white/15 hover:bg-white/30 text-white text-[10px] sm:text-xs p-1 sm:p-1.5 rounded-md backdrop-blur-md transition">
-              🔄
-            </button>
-            <!-- Mirror Toggle -->
-            <button id="btnToggleMirror" title="Flip Mirror" class="bg-white/15 hover:bg-white/30 text-white text-[10px] sm:text-xs p-1 sm:p-1.5 rounded-md backdrop-blur-md transition">
-              🪞
-            </button>
-            <!-- Mic Mute Toggle -->
-            <button id="btnMuteAudio" title="Mute Mic" class="bg-white/15 hover:bg-white/30 text-white text-[10px] sm:text-xs p-1 sm:p-1.5 rounded-md backdrop-blur-md transition">
-              🎤
-            </button>
-            <!-- Camera Toggle -->
-            <button id="btnMuteVideo" title="Toggle Cam" class="bg-white/15 hover:bg-white/30 text-white text-[10px] sm:text-xs p-1 sm:p-1.5 rounded-md backdrop-blur-md transition">
-              📷
-            </button>
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- RIGHT / CHAT STAGE: Real-Time Encrypted Messages & Inputs with Virtual Keyboard Clearance -->
-    <aside class="w-full md:w-80 lg:w-96 flex-1 md:flex-none flex flex-col bg-[#0e1422] rounded-xl sm:rounded-2xl border border-[#1e293d] overflow-hidden shadow-2xl min-h-0">
-      
-      <div class="px-3 sm:px-4 py-2 sm:py-2.5 border-b border-[#1e293d] text-xs sm:text-sm font-bold flex items-center justify-between bg-black/20 shrink-0">
-        <span class="flex items-center gap-1.5 text-white">
-          <span>💬</span> WebRTC Text Chat
-        </span>
-        <span class="text-[10px] sm:text-[11px] text-emerald-400 font-mono flex items-center gap-1">
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Encrypted
-        </span>
+        <div class="video-match-tag" id="strangerTag">Matched on: #music</div>
+        <video id="remoteVideo" autoplay playsinline></video>
+        <canvas id="remoteCanvas"></canvas>
       </div>
 
-      <!-- Messages Scrollable Body -->
-      <div id="chatContainer" class="flex-1 p-2.5 sm:p-3 overflow-y-auto flex flex-col gap-2 text-xs sm:text-sm scroll-smooth min-h-0">
-        <div class="message system text-[11px] sm:text-xs text-slate-400 italic text-center bg-white/[0.03] py-1.5 px-2.5 rounded-lg border border-white/5">
-          Welcome to Web TV 555! Click <b>Start Chat</b> below to connect with a live stranger.
+      <!-- Local Picture-in-Picture Card -->
+      <div class="local-pip-card">
+        <div class="local-pip-badge" id="localLabel">You</div>
+        <video id="localVideo" class="mirrored" autoplay playsinline muted></video>
+        <canvas id="localCanvas"></canvas>
+
+        <div class="pip-controls">
+          <button id="btnSwitchCamera" title="Switch Front/Rear Camera">🔄</button>
+          <button id="btnToggleMirror" title="Flip Mirror">🪞</button>
+          <button id="btnMuteAudio" title="Mute Microphone">🎤</button>
+          <button id="btnMuteVideo" title="Stop Video">📷</button>
         </div>
       </div>
+    </div>
 
-      <!-- Quick Canned Message Chips -->
-      <div class="px-2.5 py-1.5 border-t border-[#1e293d] flex gap-1.5 bg-[#090d16] overflow-x-auto items-center no-scrollbar shrink-0">
-        <span class="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase shrink-0">Quick:</span>
-        <button class="quick-chip bg-[#172033] hover:bg-[#253352] text-slate-300 text-[11px] px-2 py-0.5 rounded-full border border-[#23304c] whitespace-nowrap transition" data-msg="Hey! How are you?">👋 Hey</button>
-        <button class="quick-chip bg-[#172033] hover:bg-[#253352] text-slate-300 text-[11px] px-2 py-0.5 rounded-full border border-[#23304c] whitespace-nowrap transition" data-msg="Where are you from?">📍 ASL?</button>
-        <button class="quick-chip bg-[#172033] hover:bg-[#253352] text-slate-300 text-[11px] px-2 py-0.5 rounded-full border border-[#23304c] whitespace-nowrap transition" data-msg="What are your hobbies?">🎮 Hobbies</button>
-        <button class="quick-chip bg-[#172033] hover:bg-[#253352] text-slate-300 text-[11px] px-2 py-0.5 rounded-full border border-[#23304c] whitespace-nowrap transition" data-msg="Nice meeting you!">😄 Nice</button>
+    <!-- Right-Hand Text Chat -->
+    <div class="chat-section">
+      <div class="chat-header">
+        <span>💬 Text Conversation</span>
+        <span id="p2pStatus" style="font-size: 0.74rem; color: var(--text-muted);">Backend: Initializing...</span>
       </div>
 
-      <!-- Chat Input Field -->
-      <div class="p-2 sm:p-2.5 border-t border-[#1e293d] flex gap-1.5 sm:gap-2 bg-[#0e1422] shrink-0">
-        <input type="text" id="chatInput" placeholder="Type a message..." disabled autocomplete="off" class="flex-1 bg-[#07090e] border border-[#1e293d] rounded-lg px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition disabled:opacity-50 disabled:cursor-not-allowed" />
-        <button id="btnSendMessage" disabled class="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs font-bold transition flex items-center gap-1">
-          <span>Send</span>
-        </button>
+      <div class="messages-container" id="chatContainer">
+        <div class="message system">Welcome to Web TV 555! Click Start Chat to connect with a real stranger.</div>
       </div>
-    </aside>
+
+      <div class="quick-replies">
+        <button class="quick-chip" data-msg="Hey!">👋 Hey</button>
+        <button class="quick-chip" data-msg="ASL?">📍 ASL?</button>
+        <button class="quick-chip" data-msg="What are your hobbies?">🎮 Hobbies</button>
+        <button class="quick-chip" data-msg="Nice meeting you!">😄 Nice</button>
+      </div>
+
+      <div class="chat-input-area">
+        <input type="text" id="chatInput" placeholder="Type a message..." disabled autocomplete="off" />
+        <button id="btnSendMessage" disabled>Send</button>
+      </div>
+    </div>
   </main>
 
+  <!-- Bottom Control Bar -->
+  <footer>
+    <button class="btn-main-action" id="btnMainAction">▶ Start Chat</button>
 
-  <!-- Bottom Control Bar (Mobile & Desktop Responsive) -->
-  <footer class="bg-[#0e1422] border-t border-[#1e293d] flex items-center px-3 sm:px-4 gap-2 sm:gap-3 shrink-0 overflow-x-auto z-30 safe-pb h-14 sm:h-16">
-    
-    <!-- Primary Start / Next Action -->
-    <button id="btnMainAction" class="bg-blue-600 hover:bg-blue-500 text-white font-black text-xs sm:text-sm px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg flex items-center gap-1.5 whitespace-nowrap shadow-lg shadow-blue-600/30 transition shrink-0 active:scale-95">
-      ▶ Start Chat
-    </button>
-
-    <!-- Gender of Local User -->
-    <div class="flex items-center gap-1 bg-[#07090e] border border-[#1e293d] px-2 sm:px-2.5 py-1.5 rounded-lg shrink-0">
-      <label for="myGenderSelect" class="text-[11px] sm:text-xs text-slate-400 font-semibold whitespace-nowrap">I am:</label>
-      <select id="myGenderSelect" class="bg-transparent text-white text-[11px] sm:text-xs outline-none cursor-pointer font-bold">
+    <!-- Your Gender Picker -->
+    <div class="gender-picker-wrap">
+      <label for="myGenderSelect">I am:</label>
+      <select id="myGenderSelect" class="gender-select">
         <option value="male">👨 Male</option>
         <option value="female">👩 Female</option>
       </select>
     </div>
 
-    <!-- Match Gender Preference -->
-    <div class="flex items-center gap-1 bg-[#07090e] border border-[#1e293d] px-2 sm:px-2.5 py-1.5 rounded-lg shrink-0">
-      <label for="genderSelect" class="text-[11px] sm:text-xs text-slate-400 font-semibold whitespace-nowrap">Match:</label>
-      <select id="genderSelect" class="bg-transparent text-white text-[11px] sm:text-xs outline-none cursor-pointer font-bold">
-        <option value="both">👥 Both / All</option>
+    <!-- Match Preference Picker -->
+    <div class="gender-picker-wrap">
+      <label for="genderSelect">Match With:</label>
+      <select id="genderSelect" class="gender-select">
+        <option value="both">👥 Both / Random</option>
         <option value="female">👩 Female Only</option>
         <option value="male">👨 Male Only</option>
       </select>
     </div>
 
-    <!-- Dynamic Glowing Interest Carousel Slider -->
-    <div class="interests-container" id="interestsContainer" title="Drag or scroll to navigate topics">
-      <div class="flex items-center gap-1" id="tagsList"></div>
-      <div class="flex items-center gap-1 shrink-0 min-w-[120px]">
-        <input type="text" id="tagInput" placeholder="+ Topic..." autocomplete="off" class="bg-transparent text-white text-[11px] outline-none w-full placeholder-slate-500" />
-        <button id="btnAddTag" class="bg-gradient-to-r from-blue-600 to-purple-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded hover:scale-105 transition shadow-sm">+ Add</button>
+    <!-- Glowing Dynamic Tag Carousel -->
+    <div class="interests-container" id="interestsContainer" title="Scroll or drag sideways to see topics">
+      <div class="tags-list" id="tagsList"></div>
+      <div class="tag-input-wrap">
+        <input type="text" id="tagInput" class="tag-input" placeholder="+ Add topic..." autocomplete="off" />
+        <button class="btn-add-tag" id="btnAddTag">+ Add</button>
       </div>
     </div>
 
-    <span class="text-[11px] text-slate-400 ml-auto whitespace-nowrap hidden lg:inline">
-      Press <kbd class="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-slate-300 font-mono text-[10px]">Esc</kbd> to skip
-    </span>
+    <span class="status-text">Press <b>Esc</b> to skip</span>
   </footer>
 
-  <!-- Direct Peer Connect / Room Modal -->
-  <div id="directModal" class="fixed inset-0 modal-backdrop hidden items-center justify-center p-4 z-50">
-    <div class="bg-[#0e1422] border border-[#1e293d] rounded-2xl max-w-md w-full p-5 sm:p-6 shadow-2xl relative">
-      <h3 class="text-base sm:text-lg font-bold text-white mb-2 flex items-center gap-2">
-        <span>🔗</span> Direct Room Connection
-      </h3>
-      <p class="text-xs text-slate-400 mb-4">
-        Share your Peer ID with a friend, or paste your friend's Peer ID below to start an instant 1-on-1 private video & text session.
-      </p>
-
-      <div class="mb-3 sm:mb-4">
-        <label class="text-[10px] sm:text-[11px] uppercase tracking-wider text-slate-400 font-bold block mb-1">Your Peer ID</label>
-        <div class="flex gap-2">
-          <input type="text" id="modalMyPeerId" readonly class="flex-1 bg-[#07090e] border border-[#1e293d] rounded-lg px-2.5 py-1.5 sm:py-2 text-xs font-mono text-emerald-400 focus:outline-none" />
-          <button id="btnCopyMyPeerId" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 sm:py-2 rounded-lg text-xs font-bold transition">Copy</button>
-        </div>
-      </div>
-
-      <div class="mb-4 sm:mb-5">
-        <label class="text-[10px] sm:text-[11px] uppercase tracking-wider text-slate-400 font-bold block mb-1">Friend's / Stranger's Peer ID</label>
-        <input type="text" id="targetPeerIdInput" placeholder="e.g. webtv555-xxxx" class="w-full bg-[#07090e] border border-[#1e293d] rounded-lg px-2.5 py-1.5 sm:py-2 text-xs font-mono text-white placeholder-slate-600 focus:border-blue-500 outline-none" />
-      </div>
-
-      <div class="flex justify-end gap-2">
-        <button id="btnCloseModal" class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs font-semibold text-slate-300 hover:bg-slate-800 transition">Cancel</button>
-        <button id="btnConnectDirectPeer" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs font-bold transition shadow-lg shadow-emerald-600/30">Connect Now</button>
-      </div>
-    </div>
-  </div>
-
-
   <script>
-    // --- Application State ---
-    let localStream = null;
+    // =========================================================================
+    // 1. CONFIGURATION & RENDER SERVER CONNECTION
+    // =========================================================================
+    const BACKEND_URL = "https://my-web-chat-3lm8.onrender.com";
+
+    const socket = io(BACKEND_URL, {
+      transports: ["websocket", "polling"],
+      reconnectionAttempts: 10,
+      timeout: 10000
+    });
+
     let peer = null;
     let myPeerId = null;
-    let activeMediaCall = null;
-    let activeDataConn = null;
-    let remoteStream = null;
+    let activeCall = null;
+    let activeDataConnection = null;
+    let localStream = null;
 
     let isSearching = false;
     let isConnected = false;
     let isMirrored = true;
     let micMuted = false;
     let camDisabled = false;
-    let currentFacingMode = "user"; // 'user' (front) or 'environment' (back)
+    let currentFacingMode = "user"; // "user" (front) or "environment" (rear)
 
-    let searchInterval = null;
-    let currentLobbyIndex = 0;
     let userTags = ["chatting", "music"];
 
-    // Canvas Sandbox & Network Environment Detection
-    let isWebSocketRestricted = false;
-    let simulatedPartnerTimer = null;
-    let simulatedDialogueTimer = null;
-    let simulatedStrangerData = null;
-
-    // Global guard against uncaught sandbox SecurityErrors in Canvas
-    window.addEventListener("error", (e) => {
-      if (e.message && e.message.includes("WebSocket connection")) {
-        isWebSocketRestricted = true;
-        e.preventDefault();
-      }
-    });
-
-    window.addEventListener("unhandledrejection", (e) => {
-      if (e.reason && (e.reason.name === "SecurityError" || String(e.reason).includes("WebSocket"))) {
-        isWebSocketRestricted = true;
-        e.preventDefault();
-      }
-    });
-
-    // Web Audio Synthesizer for Connection Cues
-    let audioCtx = null;
-    function getAudioContext() {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
-      if (audioCtx.state === "suspended") {
-        audioCtx.resume();
-      }
-      return audioCtx;
-    }
-
-    function playBeep(frequency, duration) {
+    // Web Audio Synthesizer for System Chimes
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playTone(freq, type, duration) {
       try {
-        const ctx = getAudioContext();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = "sine";
-        osc.frequency.setValueAtTime(frequency, ctx.currentTime);
-        gain.gain.setValueAtTime(0.04, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+        if (audioCtx.state === "suspended") audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
         osc.connect(gain);
-        gain.connect(ctx.destination);
+        gain.connect(audioCtx.destination);
         osc.start();
-        osc.stop(ctx.currentTime + duration);
+        osc.stop(audioCtx.currentTime + duration);
       } catch (err) {}
     }
 
-    // --- Genuine Real-Time Presence System via Secure MQTT WebSocket ---
-    const presenceClientId = 'wtv_' + Math.random().toString(36).substring(2, 10);
-    const activeVisitors = new Map();
-    const PRESENCE_TOPIC = 'webtv555/v2/presence/+';
-    const MY_PRESENCE_TOPIC = `webtv555/v2/presence/${presenceClientId}`;
-    const HEARTBEAT_INTERVAL_MS = 4000;
-    const VISITOR_TIMEOUT_MS = 9000;
-
-    const userCountEl = document.getElementById("userCount");
-
-    function updateLiveVisitorCount() {
-      const now = Date.now();
-      for (const [id, lastSeen] of activeVisitors.entries()) {
-        if (now - lastSeen > VISITOR_TIMEOUT_MS) {
-          activeVisitors.delete(id);
-        }
-      }
-      const count = Math.max(1, activeVisitors.size);
-      if (userCountEl) {
-        userCountEl.textContent = count === 1 ? '1 Stranger' : `${count} Strangers`;
-      }
-    }
-
-    // BroadcastChannel support for genuine tab presence even inside sandbox
-    let localBroadcast = null;
-    try {
-      if ("BroadcastChannel" in window) {
-        localBroadcast = new BroadcastChannel("webtv555_sandbox_presence");
-        localBroadcast.onmessage = (ev) => {
-          if (ev.data && ev.data.id) {
-            activeVisitors.set(ev.data.id, Date.now());
-            updateLiveVisitorCount();
-          }
-        };
-        setInterval(() => {
-          localBroadcast.postMessage({ id: presenceClientId, ts: Date.now() });
-          activeVisitors.set(presenceClientId, Date.now());
-          updateLiveVisitorCount();
-        }, 3000);
-      }
-    } catch (e) {}
-
-    function initRealPresenceBroker() {
-      activeVisitors.set(presenceClientId, Date.now());
-      updateLiveVisitorCount();
-
-      // Test whether WebSockets are permitted before attempting broker connection
-      try {
-        if (typeof mqtt === "undefined") return;
-        const mqttClient = mqtt.connect('wss://broker.emqx.io:8084/mqtt', {
-          clientId: presenceClientId,
-          clean: true,
-          keepalive: 30,
-          connectTimeout: 4000,
-          will: {
-            topic: MY_PRESENCE_TOPIC,
-            payload: JSON.stringify({ state: 'offline' }),
-            qos: 0,
-            retain: false
-          }
-        });
-
-        mqttClient.on('connect', () => {
-          activeVisitors.set(presenceClientId, Date.now());
-          updateLiveVisitorCount();
-
-          mqttClient.subscribe(PRESENCE_TOPIC, (err) => {
-            if (!err) {
-              mqttClient.publish(MY_PRESENCE_TOPIC, JSON.stringify({ state: 'online', ts: Date.now() }));
-            }
-          });
-
-          setInterval(() => {
-            if (mqttClient.connected) {
-              mqttClient.publish(MY_PRESENCE_TOPIC, JSON.stringify({ state: 'online', ts: Date.now() }));
-              activeVisitors.set(presenceClientId, Date.now());
-              updateLiveVisitorCount();
-            }
-          }, HEARTBEAT_INTERVAL_MS);
-        });
-
-        mqttClient.on('message', (topic, message) => {
-          try {
-            const senderId = topic.split('/').pop();
-            const data = JSON.parse(message.toString());
-            if (data.state === 'online') {
-              activeVisitors.set(senderId, Date.now());
-            } else if (data.state === 'offline') {
-              activeVisitors.delete(senderId);
-            }
-            updateLiveVisitorCount();
-          } catch (e) {}
-        });
-
-        mqttClient.on('error', () => {
-          isWebSocketRestricted = true;
-        });
-
-        window.addEventListener('beforeunload', () => {
-          if (mqttClient && mqttClient.connected) {
-            mqttClient.publish(MY_PRESENCE_TOPIC, JSON.stringify({ state: 'offline' }));
-          }
-        });
-
-        setInterval(updateLiveVisitorCount, 2500);
-      } catch (err) {
-        isWebSocketRestricted = true;
-      }
-    }
-
-    function initRealPresenceBroker() {
-      try {
-        const mqttClient = mqtt.connect('wss://broker.emqx.io:8084/mqtt', {
-          clientId: presenceClientId,
-          clean: true,
-          keepalive: 30,
-          will: {
-            topic: MY_PRESENCE_TOPIC,
-            payload: JSON.stringify({ state: 'offline' }),
-            qos: 0,
-            retain: false
-          }
-        });
-
-        mqttClient.on('connect', () => {
-          activeVisitors.set(presenceClientId, Date.now());
-          updateLiveVisitorCount();
-
-          mqttClient.subscribe(PRESENCE_TOPIC, (err) => {
-            if (!err) {
-              mqttClient.publish(MY_PRESENCE_TOPIC, JSON.stringify({ state: 'online', ts: Date.now() }));
-            }
-          });
-
-          setInterval(() => {
-            if (mqttClient.connected) {
-              mqttClient.publish(MY_PRESENCE_TOPIC, JSON.stringify({ state: 'online', ts: Date.now() }));
-              activeVisitors.set(presenceClientId, Date.now());
-              updateLiveVisitorCount();
-            }
-          }, HEARTBEAT_INTERVAL_MS);
-        });
-
-        mqttClient.on('message', (topic, message) => {
-          try {
-            const senderId = topic.split('/').pop();
-            const data = JSON.parse(message.toString());
-            if (data.state === 'online') {
-              activeVisitors.set(senderId, Date.now());
-            } else if (data.state === 'offline') {
-              activeVisitors.delete(senderId);
-            }
-            updateLiveVisitorCount();
-          } catch (e) {}
-        });
-
-        window.addEventListener('beforeunload', () => {
-          if (mqttClient && mqttClient.connected) {
-            mqttClient.publish(MY_PRESENCE_TOPIC, JSON.stringify({ state: 'offline' }));
-          }
-        });
-
-        setInterval(updateLiveVisitorCount, 2500);
-      } catch (err) {
-        console.warn('Presence fallback:', err);
-      }
-    }
-
-    // --- STREAMING_CHUNK:Configuring canvas avatar animations and proportional scaling ---
-
-    const localVideo = document.getElementById("localVideo");
-    const remoteVideo = document.getElementById("remoteVideo");
-    const localCanvas = document.getElementById("localCanvas");
-    const strangerCanvas = document.getElementById("strangerCanvas");
-    const localDot = document.getElementById("localDot");
-    const localLabel = document.getElementById("localLabel");
-    const strangerDot = document.getElementById("strangerDot");
-    const strangerLabel = document.getElementById("strangerLabel");
-    const strangerTag = document.getElementById("strangerTag");
-    const strangerLoader = document.getElementById("strangerLoader");
-    const strangerLoadingText = document.getElementById("strangerLoadingText");
-
-    const btnMainAction = document.getElementById("btnMainAction");
-    const btnToggleHardware = document.getElementById("btnToggleHardware");
-    const btnHardwareText = document.getElementById("btnHardwareText");
+    // =========================================================================
+    // 2. DOM ELEMENT CACHE
+    // =========================================================================
     const filterSelect = document.getElementById("filterSelect");
     const myGenderSelect = document.getElementById("myGenderSelect");
     const genderSelect = document.getElementById("genderSelect");
-
+    const btnToggleHardware = document.getElementById("btnToggleHardware");
+    const localVideo = document.getElementById("localVideo");
+    const remoteVideo = document.getElementById("remoteVideo");
+    const localCanvas = document.getElementById("localCanvas");
+    const remoteCanvas = document.getElementById("remoteCanvas");
+    const strangerDot = document.getElementById("strangerDot");
+    const strangerLabel = document.getElementById("strangerLabel");
+    const strangerTag = document.getElementById("strangerTag");
+    const localLabel = document.getElementById("localLabel");
+    const userCount = document.getElementById("userCount");
+    const btnMainAction = document.getElementById("btnMainAction");
     const chatContainer = document.getElementById("chatContainer");
     const chatInput = document.getElementById("chatInput");
     const btnSendMessage = document.getElementById("btnSendMessage");
-    const quickChips = document.querySelectorAll(".quick-chip");
-
+    const p2pStatus = document.getElementById("p2pStatus");
     const btnSwitchCamera = document.getElementById("btnSwitchCamera");
     const btnToggleMirror = document.getElementById("btnToggleMirror");
     const btnMuteAudio = document.getElementById("btnMuteAudio");
     const btnMuteVideo = document.getElementById("btnMuteVideo");
-
     const interestsContainer = document.getElementById("interestsContainer");
     const tagsList = document.getElementById("tagsList");
     const tagInput = document.getElementById("tagInput");
     const btnAddTag = document.getElementById("btnAddTag");
 
-    const directModal = document.getElementById("directModal");
-    const btnOpenDirectConnect = document.getElementById("btnOpenDirectConnect");
-    const btnCloseModal = document.getElementById("btnCloseModal");
-    const modalMyPeerId = document.getElementById("modalMyPeerId");
-    const btnCopyMyPeerId = document.getElementById("btnCopyMyPeerId");
-    const targetPeerIdInput = document.getElementById("targetPeerIdInput");
-    const btnConnectDirectPeer = document.getElementById("btnConnectDirectPeer");
+    // =========================================================================
+    // 3. WEBRTC ENGINE (PEERJS INITIALIZATION)
+    // =========================================================================
+    function initializePeer() {
+      peer = new Peer(undefined, {
+        config: {
+          iceServers: [
+            { urls: "stun:stun.l.google.com:19302" },
+            { urls: "stun:stun1.l.google.com:19302" },
+            { urls: "stun:global.stun.twilio.com:3478" }
+          ]
+        },
+        debug: 1
+      });
 
-    function syncCanvasSizes() {
-      [localCanvas, strangerCanvas].forEach(c => {
-        if (!c) return;
-        const rect = c.getBoundingClientRect();
-        if (c.width !== rect.width || c.height !== rect.height) {
-          c.width = rect.width;
-          c.height = rect.height;
-        }
+      peer.on("open", (id) => {
+        myPeerId = id;
+        p2pStatus.textContent = "Backend: Connected";
+      });
+
+      // Answer Incoming Calls
+      peer.on("call", (call) => {
+        const streamToSend = (localStream && !camDisabled) ? localStream : createFallbackStream();
+        call.answer(streamToSend);
+        bindCallEvents(call);
+      });
+
+      // Handle Data Connections for Text Chat
+      peer.on("connection", (conn) => {
+        bindDataEvents(conn);
+      });
+
+      peer.on("error", (err) => {
+        console.warn("PeerJS Notification:", err);
       });
     }
-    window.addEventListener("resize", syncCanvasSizes);
-    setTimeout(syncCanvasSizes, 150);
+    initializePeer();
 
-    // Illustrated Local Avatar (Person with accurate proportions)
-    let localFrameStep = 0;
-    function renderLocalPerson() {
-      if (!localCanvas) return;
-      const ctx = localCanvas.getContext("2d");
-      const w = localCanvas.width;
-      const h = localCanvas.height;
+    // =========================================================================
+    // 4. ATOMIC SOCKET.IO MATCHMAKING (RENDER BACKEND)
+    // =========================================================================
+    socket.on("connect", () => {
+      p2pStatus.textContent = "Server: Online";
+    });
 
-      ctx.clearRect(0, 0, w, h);
+    socket.on("disconnect", () => {
+      p2pStatus.textContent = "Server: Offline";
+    });
 
-      if (localVideo && localVideo.style.display !== "none" && !camDisabled) {
-        return;
+    // Genuine Real-Time Presence Count
+    socket.on("presence_count", (count) => {
+      userCount.textContent = count;
+    });
+
+    // 1-on-1 Match Pair Notification
+    socket.on("matched", (payload) => {
+      isSearching = false;
+      isConnected = true;
+
+      strangerDot.className = "badge-dot connected";
+      strangerLabel.textContent = `Stranger (${payload.partnerGender === "female" ? "Female" : "Male"})`;
+      btnMainAction.textContent = "⏹ Stop (Esc)";
+      btnMainAction.classList.add("stop");
+
+      chatInput.disabled = false;
+      btnSendMessage.disabled = false;
+      chatInput.focus();
+
+      if (payload.partnerTags && payload.partnerTags.length > 0) {
+        strangerTag.textContent = `Matched on: #${payload.partnerTags[0]}`;
+        strangerTag.style.display = "block";
       }
 
-      localFrameStep += 0.04;
-      const breath = Math.sin(localFrameStep) * 2;
-      const myGender = myGenderSelect.value;
+      playTone(880, "sine", 0.15);
+      appendMessage("", "Connected with a live stranger. Say hi!", "system");
 
+      // Initiator triggers WebRTC call
+      if (payload.isInitiator && myPeerId && payload.partnerPeerId) {
+        const streamToSend = (localStream && !camDisabled) ? localStream : createFallbackStream();
+        const call = peer.call(payload.partnerPeerId, streamToSend);
+        bindCallEvents(call);
+
+        const conn = peer.connect(payload.partnerPeerId);
+        bindDataEvents(conn);
+      }
+    });
+
+    function bindCallEvents(call) {
+      activeCall = call;
+      call.on("stream", (remoteMediaStream) => {
+        remoteVideo.srcObject = remoteMediaStream;
+        remoteVideo.style.display = "block";
+        remoteCanvas.style.display = "none";
+      });
+      call.on("close", () => {
+        handleStrangerLeft();
+      });
+      call.on("error", () => {
+        handleStrangerLeft();
+      });
+    }
+
+    function bindDataEvents(conn) {
+      activeDataConnection = conn;
+      conn.on("data", (data) => {
+        if (data.type === "chat") {
+          playTone(520, "triangle", 0.08);
+          appendMessage("Stranger", data.text, "stranger");
+        }
+      });
+      conn.on("close", () => {
+        handleStrangerLeft();
+      });
+    }
+
+    function handleStrangerLeft() {
+      if (!isConnected) return;
+      isConnected = false;
+      playTone(280, "sine", 0.2);
+      appendMessage("", "Stranger has disconnected.", "system");
+      disconnectStranger();
+    }
+
+    // =========================================================================
+    // 5. MATCHMAKING QUEUE ACTIONS
+    // =========================================================================
+    function startMatchmaking() {
+      if (!myPeerId) return;
+      isSearching = true;
+      isConnected = false;
+
+      strangerDot.className = "badge-dot waiting";
+      strangerLabel.textContent = "Looking for someone...";
+      strangerTag.style.display = "none";
+      btnMainAction.textContent = "⏹ Cancel";
+      btnMainAction.classList.add("stop");
+
+      remoteVideo.style.display = "none";
+      remoteCanvas.style.display = "block";
+
+      appendMessage("", "Looking for an active stranger...", "system");
+
+      // Register into Render's atomic queue
+      socket.emit("join_queue", {
+        peerId: myPeerId,
+        gender: myGenderSelect.value,
+        matchPref: genderSelect.value,
+        tags: userTags
+      });
+    }
+
+    function disconnectStranger() {
+      if (activeCall) {
+        activeCall.close();
+        activeCall = null;
+      }
+      if (activeDataConnection) {
+        activeDataConnection.close();
+        activeDataConnection = null;
+      }
+
+      socket.emit("leave_queue");
+
+      isConnected = false;
+      isSearching = false;
+
+      strangerDot.className = "badge-dot";
+      strangerLabel.textContent = "Disconnected";
+      strangerTag.style.display = "none";
+
+      btnMainAction.textContent = "▶ Start Chat";
+      btnMainAction.classList.remove("stop");
+
+      chatInput.disabled = true;
+      btnSendMessage.disabled = true;
+
+      remoteVideo.style.display = "none";
+      remoteCanvas.style.display = "block";
+    }
+
+    btnMainAction.addEventListener("click", () => {
+      if (isConnected || isSearching) {
+        disconnectStranger();
+      } else {
+        startMatchmaking();
+      }
+    });
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        if (isConnected || isSearching) {
+          disconnectStranger();
+        } else {
+          startMatchmaking();
+        }
+      }
+    });
+
+    // =========================================================================
+    // 6. HARDWARE CAMERA / MIC & PIP CONTROLS
+    // =========================================================================
+    async function activateCamera() {
+      try {
+        if (localStream) {
+          localStream.getTracks().forEach(t => t.stop());
+        }
+
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: currentFacingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
+          audio: true
+        });
+
+        localStream = stream;
+        localVideo.srcObject = stream;
+        localVideo.style.display = "block";
+        localCanvas.style.display = "none";
+
+        btnToggleHardware.classList.add("active");
+        btnToggleHardware.textContent = "✔ Camera Active";
+        localLabel.textContent = "You (Live)";
+
+        if (activeCall && activeCall.peerConnection) {
+          const videoTrack = stream.getVideoTracks()[0];
+          const sender = activeCall.peerConnection.getSenders().find(s => s.track && s.track.kind === "video");
+          if (sender) sender.replaceTrack(videoTrack);
+        }
+      } catch (err) {
+        console.warn("Camera access failed or was rejected:", err);
+        alert("Camera or Microphone permission was not granted. Illustrated avatar active.");
+      }
+    }
+    btnToggleHardware.addEventListener("click", activateCamera);
+
+    // Front/Rear Camera Switcher
+    btnSwitchCamera.addEventListener("click", () => {
+      currentFacingMode = currentFacingMode === "user" ? "environment" : "user";
+      activateCamera();
+    });
+
+    // Mirror Toggle
+    btnToggleMirror.addEventListener("click", () => {
+      isMirrored = !isMirrored;
+      localVideo.classList.toggle("mirrored", isMirrored);
+    });
+
+    // Filters
+    filterSelect.addEventListener("change", (e) => {
+      localVideo.style.filter = e.target.value;
+    });
+
+    // Audio & Video Mute
+    btnMuteAudio.addEventListener("click", () => {
+      if (!localStream) return;
+      micMuted = !micMuted;
+      localStream.getAudioTracks().forEach(t => (t.enabled = !micMuted));
+      btnMuteAudio.textContent = micMuted ? "🔇" : "🎤";
+    });
+
+    btnMuteVideo.addEventListener("click", () => {
+      if (!localStream) return;
+      camDisabled = !camDisabled;
+      localStream.getVideoTracks().forEach(t => (t.enabled = !camDisabled));
+      localVideo.style.display = camDisabled ? "none" : "block";
+      localCanvas.style.display = camDisabled ? "block" : "none";
+      localLabel.textContent = camDisabled ? "You (Paused)" : "You (Live)";
+    });
+
+    // Silent Fallback Stream when webcam is off
+    function createFallbackStream() {
+      const fallbackCanvas = document.createElement("canvas");
+      fallbackCanvas.width = 320;
+      fallbackCanvas.height = 240;
+      const ctx = fallbackCanvas.getContext("2d");
       ctx.fillStyle = "#0c1322";
+      ctx.fillRect(0, 0, 320, 240);
+      return fallbackCanvas.captureStream(10);
+    }
+
+    // =========================================================================
+    // 7. FULL PROCEDURAL CANVAS AVATAR ENGINE (BREATHING & BLINKING)
+    // =========================================================================
+    let animStep = 0;
+    function renderAvatarsLoop() {
+      animStep += 0.04;
+      const breath = Math.sin(animStep) * 2.2;
+      const isBlinking = Math.sin(animStep * 0.45) > 0.95;
+
+      // 1. Render Local Canvas Avatar if camera is paused/inactive
+      if (localCanvas && localVideo.style.display === "none") {
+        drawCharacter(localCanvas, myGenderSelect.value, breath, isBlinking, "#2563eb", "#e0ac69");
+      }
+
+      // 2. Render Remote Canvas Avatar if disconnected or waiting
+      if (remoteCanvas && remoteVideo.style.display === "none") {
+        const targetGender = genderSelect.value === "female" ? "female" : "male";
+        const accentColor = isSearching ? "#f59e0b" : "#475569";
+        drawCharacter(remoteCanvas, targetGender, breath, isBlinking, accentColor, "#f1c27d");
+      }
+
+      requestAnimationFrame(renderAvatarsLoop);
+    }
+
+    function drawCharacter(canvas, gender, breath, isBlinking, shirtColor, skinColor) {
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width;
+      const h = canvas.height;
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = "#090d16";
       ctx.fillRect(0, 0, w, h);
 
       const cx = w / 2;
-      const headRadius = Math.min(w, h) * 0.20; 
+      const headRadius = Math.min(w, h) * 0.19;
       const cy = h * 0.38 + breath;
 
-      // Shoulders & Shirt
-      ctx.fillStyle = myGender === "female" ? "#db2777" : "#2563eb";
+      // Torso / Shirt
+      ctx.fillStyle = gender === "female" ? "#ec4899" : shirtColor;
       ctx.beginPath();
-      ctx.ellipse(cx, h * 0.96 + breath, w * 0.44, h * 0.38, 0, 0, Math.PI * 2);
+      ctx.ellipse(cx, h * 0.95 + breath, w * 0.42, h * 0.38, 0, 0, Math.PI * 2);
       ctx.fill();
 
       // Shirt Collar Accent
-      ctx.fillStyle = myGender === "female" ? "#be185d" : "#1d4ed8";
+      ctx.fillStyle = gender === "female" ? "#db2777" : "#1d4ed8";
       ctx.beginPath();
       ctx.moveTo(cx - (headRadius * 0.35), h * 0.65 + breath);
-      ctx.lineTo(cx, h * 0.77 + breath);
+      ctx.lineTo(cx, h * 0.76 + breath);
       ctx.lineTo(cx + (headRadius * 0.35), h * 0.65 + breath);
       ctx.fill();
 
       // Neck
-      ctx.fillStyle = "#e0ac69";
-      const neckWidth = headRadius * 0.46;
-      const neckHeight = headRadius * 0.55;
-      ctx.fillRect(cx - (neckWidth / 2), cy + (headRadius * 0.65), neckWidth, neckHeight);
+      ctx.fillStyle = skinColor;
+      const neckW = headRadius * 0.46;
+      const neckH = headRadius * 0.55;
+      ctx.fillRect(cx - (neckW / 2), cy + (headRadius * 0.65), neckW, neckH);
 
       // Head
-      ctx.fillStyle = "#f1c27d";
       ctx.beginPath();
       ctx.arc(cx, cy, headRadius, 0, Math.PI * 2);
       ctx.fill();
 
       // Hair
-      ctx.fillStyle = myGender === "female" ? "#7c2d12" : "#18181b";
+      ctx.fillStyle = gender === "female" ? "#7c2d12" : "#18181b";
       ctx.beginPath();
-      if (myGender === "female") {
+      if (gender === "female") {
         ctx.arc(cx, cy - (headRadius * 0.15), headRadius * 1.08, Math.PI, Math.PI * 2);
         ctx.fillRect(cx - headRadius * 1.05, cy - (headRadius * 0.15), headRadius * 0.4, headRadius * 1.2);
         ctx.fillRect(cx + headRadius * 0.65, cy - (headRadius * 0.15), headRadius * 0.4, headRadius * 1.2);
@@ -755,11 +1313,9 @@
       }
       ctx.fill();
 
-      // Eyes with Blinking
+      // Eyes
       ctx.fillStyle = "#09090b";
       const eyeOffset = headRadius * 0.36;
-      const isBlinking = Math.sin(localFrameStep * 0.45) > 0.96;
-      
       if (isBlinking) {
         ctx.fillRect(cx - eyeOffset - 4, cy - 1, 8, 2);
         ctx.fillRect(cx + eyeOffset - 4, cy - 1, 8, 2);
@@ -771,212 +1327,31 @@
       }
 
       // Smile
-      ctx.strokeStyle = myGender === "female" ? "#be123c" : "#78350f";
-      ctx.lineWidth = Math.max(2, Math.min(w, h) * 0.02);
+      ctx.strokeStyle = gender === "female" ? "#be123c" : "#78350f";
+      ctx.lineWidth = 3;
       ctx.lineCap = "round";
       ctx.beginPath();
       ctx.arc(cx, cy + (headRadius * 0.18), headRadius * 0.28, 0.15 * Math.PI, 0.85 * Math.PI);
       ctx.stroke();
-
-      requestAnimationFrame(renderLocalPerson);
     }
 
-    // Illustrated Stranger Standby Avatar
-    let strangerFrameStep = 0;
-    function renderStrangerStandby() {
-      if (!strangerCanvas) return;
-      const ctx = strangerCanvas.getContext("2d");
-      const w = strangerCanvas.width;
-      const h = strangerCanvas.height;
-
-      ctx.clearRect(0, 0, w, h);
-
-      if (remoteVideo && remoteVideo.style.display !== "none" && !remoteVideo.paused && isConnected) {
-        return;
-      }
-
-      strangerFrameStep += 0.035;
-      const breath = Math.sin(strangerFrameStep) * 2;
-
-      ctx.fillStyle = "#07090e";
-      ctx.fillRect(0, 0, w, h);
-
-      const cx = w / 2;
-      const headRadius = Math.min(w, h) * 0.18; 
-      const cy = h * 0.38 + breath;
-
-      // Body / Shoulders
-      ctx.fillStyle = isConnected ? "#10b981" : "#334155";
-      ctx.beginPath();
-      ctx.ellipse(cx, h * 0.96 + breath, w * 0.42, h * 0.38, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Neck
-      ctx.fillStyle = isConnected ? "#f4cca4" : "#475569";
-      const neckWidth = headRadius * 0.46;
-      const neckHeight = headRadius * 0.55;
-      ctx.fillRect(cx - (neckWidth / 2), cy + (headRadius * 0.65), neckWidth, neckHeight);
-
-      // Head
-      ctx.fillStyle = isConnected ? "#fbd3b2" : "#64748b";
-      ctx.beginPath();
-      ctx.arc(cx, cy, headRadius, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Hair
-      ctx.fillStyle = "#1e293b";
-      ctx.beginPath();
-      ctx.arc(cx, cy - (headRadius * 0.08), headRadius * 1.02, Math.PI, Math.PI * 2);
-      ctx.fill();
-
-      // Eyes
-      ctx.fillStyle = "#0f172a";
-      const eyeOffset = headRadius * 0.36;
-      ctx.beginPath();
-      ctx.arc(cx - eyeOffset, cy, headRadius * 0.07, 0, Math.PI * 2);
-      ctx.arc(cx + eyeOffset, cy, headRadius * 0.07, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Mouth
-      ctx.strokeStyle = "#334155";
-      ctx.lineWidth = Math.max(2, Math.min(w, h) * 0.02);
-      ctx.beginPath();
-      if (isConnected) {
-        ctx.arc(cx, cy + (headRadius * 0.18), headRadius * 0.28, 0.15 * Math.PI, 0.85 * Math.PI);
-      } else {
-        ctx.moveTo(cx - 15, cy + headRadius * 0.28);
-        ctx.lineTo(cx + 15, cy + headRadius * 0.28);
-      }
-      ctx.stroke();
-
-      requestAnimationFrame(renderStrangerStandby);
-    }
-
-    syncCanvasSizes();
-    renderLocalPerson();
-    renderStrangerStandby();
-
-    myGenderSelect.addEventListener("change", () => {
-      if (localVideo.style.display === "none") renderLocalPerson();
-    });
-
-    // --- STREAMING_CHUNK:Setting up camera controls, mobile front/back switching, and mirror toggles ---
-
-    async function startHardwareCamera(preferredFacing = null) {
-      if (preferredFacing) currentFacingMode = preferredFacing;
-      
-      // Stop old tracks if switching
-      if (localStream) {
-        localStream.getTracks().forEach(t => t.stop());
-      }
-
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: { ideal: currentFacingMode },
-            width: { ideal: 1280 },
-            height: { ideal: 720 }
-          },
-          audio: true
-        });
-
-        localStream = stream;
-        localVideo.srcObject = stream;
-        localVideo.style.display = "block";
-        localCanvas.style.display = "none";
-
-        localDot.className = "w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_6px_#10b981]";
-        localLabel.textContent = "You (Live)";
-        btnToggleHardware.classList.replace("bg-emerald-600", "bg-blue-600");
-        btnHardwareText.textContent = "Active";
-
-        // Flip mirror automatically if back camera
-        if (currentFacingMode === "environment") {
-          localVideo.classList.remove("mirrored");
-          isMirrored = false;
-        } else {
-          localVideo.classList.add("mirrored");
-          isMirrored = true;
+    function syncCanvasDimensions() {
+      [localCanvas, remoteCanvas].forEach(c => {
+        if (!c) return;
+        const rect = c.getBoundingClientRect();
+        if (c.width !== rect.width || c.height !== rect.height) {
+          c.width = rect.width;
+          c.height = rect.height;
         }
-
-        // Live track replacement in active WebRTC call
-        if (activeMediaCall && activeMediaCall.peerConnection) {
-          const videoTrack = stream.getVideoTracks()[0];
-          const audioTrack = stream.getAudioTracks()[0];
-          const senders = activeMediaCall.peerConnection.getSenders();
-
-          senders.forEach(sender => {
-            if (sender.track && sender.track.kind === "video" && videoTrack) {
-              sender.replaceTrack(videoTrack);
-            }
-            if (sender.track && sender.track.kind === "audio" && audioTrack) {
-              sender.replaceTrack(audioTrack);
-            }
-          });
-        }
-      } catch (err) {
-        console.warn("Hardware camera acquisition failed:", err);
-        appendMessage("", "Camera/Microphone permission denied or no hardware found. Illustrated avatar active.", "system");
-      }
+      });
     }
-    btnToggleHardware.addEventListener("click", () => startHardwareCamera());
+    window.addEventListener("resize", syncCanvasDimensions);
+    setTimeout(syncCanvasDimensions, 100);
+    renderAvatarsLoop();
 
-    // Switch Front / Rear Camera (Mobile feature)
-    btnSwitchCamera.addEventListener("click", () => {
-      const nextFacing = currentFacingMode === "user" ? "environment" : "user";
-      startHardwareCamera(nextFacing);
-    });
-
-    // Mirror Flip Toggle
-    btnToggleMirror.addEventListener("click", () => {
-      isMirrored = !isMirrored;
-      if (isMirrored) {
-        localVideo.classList.add("mirrored");
-      } else {
-        localVideo.classList.remove("mirrored");
-      }
-    });
-
-    // Filter Change
-    filterSelect.addEventListener("change", (e) => {
-      const selectedFilter = e.target.value;
-      localVideo.style.filter = selectedFilter === "none" ? "none" : selectedFilter;
-    });
-
-    // Mic Mute Toggle
-    btnMuteAudio.addEventListener("click", () => {
-      if (!localStream) return;
-      micMuted = !micMuted;
-      localStream.getAudioTracks().forEach(t => (t.enabled = !micMuted));
-      btnMuteAudio.textContent = micMuted ? "🔇" : "🎤";
-    });
-
-    // Camera Pause Toggle
-    btnMuteVideo.addEventListener("click", () => {
-      if (!localStream) return;
-      camDisabled = !camDisabled;
-      localStream.getVideoTracks().forEach(t => (t.enabled = !camDisabled));
-
-      if (camDisabled) {
-        localVideo.style.display = "none";
-        localCanvas.style.display = "block";
-        renderLocalPerson();
-        localDot.className = "w-1.5 h-1.5 rounded-full bg-amber-500";
-        localLabel.textContent = "You (Paused)";
-      } else {
-        localVideo.style.display = "block";
-        localCanvas.style.display = "none";
-        localDot.className = "w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_6px_#10b981]";
-        localLabel.textContent = "You (Live)";
-      }
-    });
-
-    // --- STREAMING_CHUNK:Implementing dynamic interest tags management and horizontal drag scroll ---
-
-    function escapeHTML(str) {
-      return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-    }
-
+    // =========================================================================
+    // 8. DYNAMIC GLOWING TAG CAROUSEL
+    // =========================================================================
     function renderTags() {
       tagsList.innerHTML = "";
       userTags.forEach(tag => {
@@ -985,15 +1360,14 @@
         const cleanTag = escapeHTML(tag).replace(/^https?:\/\//, "");
         badge.innerHTML = `
           <span>#${cleanTag}</span>
-          <span class="remove-tag" data-tag="${escapeHTML(tag)}" title="Remove">&times;</span>
+          <span class="remove-tag" data-tag="${escapeHTML(tag)}" title="Remove tag">&times;</span>
         `;
         tagsList.appendChild(badge);
       });
     }
 
-    function addTagFromInput() {
-      let val = tagInput.value.trim().toLowerCase().replace(/^[#,\s]+/, "");
-      val = val.replace(/^https?:\/\/[^\/]+\/?/, "").slice(0, 18);
+    function addTag() {
+      let val = tagInput.value.trim().toLowerCase().replace(/^[#,\s]+/, "").slice(0, 18);
       if (val && !userTags.includes(val)) {
         userTags.push(val);
         renderTags();
@@ -1004,15 +1378,11 @@
       tagInput.value = "";
     }
 
-    btnAddTag.addEventListener("click", (e) => {
-      e.preventDefault();
-      addTagFromInput();
-    });
-
+    btnAddTag.addEventListener("click", addTag);
     tagInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === ",") {
         e.preventDefault();
-        addTagFromInput();
+        addTag();
       }
     });
 
@@ -1024,7 +1394,7 @@
       }
     });
 
-    // Mousewheel & Click-drag horizontal carousel
+    // Horizontal Mouse Wheel & Drag
     interestsContainer.addEventListener("wheel", (e) => {
       if (e.deltaY !== 0) {
         e.preventDefault();
@@ -1032,395 +1402,29 @@
       }
     });
 
-    let isDown = false;
-    let startX = 0;
-    let scrollLeft = 0;
+    let isMouseDown = false;
+    let startXPos, initialScrollLeft;
     interestsContainer.addEventListener("mousedown", (e) => {
       if (e.target.tagName === "INPUT" || e.target.tagName === "BUTTON") return;
-      isDown = true;
-      startX = e.pageX - interestsContainer.offsetLeft;
-      scrollLeft = interestsContainer.scrollLeft;
+      isMouseDown = true;
+      startXPos = e.pageX - interestsContainer.offsetLeft;
+      initialScrollLeft = interestsContainer.scrollLeft;
     });
-    window.addEventListener("mouseup", () => { isDown = false; });
+
+    window.addEventListener("mouseup", () => { isMouseDown = false; });
     interestsContainer.addEventListener("mousemove", (e) => {
-      if (!isDown) return;
+      if (!isMouseDown) return;
       e.preventDefault();
       const x = e.pageX - interestsContainer.offsetLeft;
-      const walk = (x - startX) * 1.5;
-      interestsContainer.scrollLeft = scrollLeft - walk;
+      const walk = (x - startXPos) * 1.5;
+      interestsContainer.scrollLeft = initialScrollLeft - walk;
     });
 
     renderTags();
 
-    // --- STREAMING_CHUNK:Initializing PeerJS WebRTC P2P networking and silent fallback streams ---
-
-    function generateCleanPeerId() {
-      return `webtv555-${Math.random().toString(36).substring(2, 8)}`;
-    }
-
-    // Interactive strangers pool for Canvas sandbox mode
-    const sandboxStrangers = [
-      { name: "Sofia", gender: "female", country: "Spain", tags: ["music", "art", "chatting"] },
-      { name: "Alex", gender: "male", country: "Canada", tags: ["coding", "gaming", "chatting"] },
-      { name: "Kenji", gender: "male", country: "Japan", tags: ["anime", "music", "lofi"] },
-      { name: "Maya", gender: "female", country: "Brazil", tags: ["dance", "movies", "travel"] }
-    ];
-
-    function initPeerInstance() {
-      if (isWebSocketRestricted) {
-        myPeerId = generateCleanPeerId();
-        modalMyPeerId.value = myPeerId;
-        return;
-      }
-
-      try {
-        const peerId = generateCleanPeerId();
-        peer = new Peer(peerId, {
-          debug: 0,
-          config: {
-            iceServers: [
-              { urls: "stun:stun.l.google.com:19302" },
-              { urls: "stun:stun1.l.google.com:19302" }
-            ]
-          }
-        });
-
-        peer.on("open", (id) => {
-          myPeerId = id;
-          modalMyPeerId.value = id;
-          appendMessage("", "WebRTC network connected. Ready for P2P matches.", "system");
-        });
-
-        peer.on("call", (incomingCall) => {
-          if (isConnected) {
-            incomingCall.close();
-            return;
-          }
-          const outgoingStream = localStream || createSilentStream();
-          incomingCall.answer(outgoingStream);
-          setupMediaCallEvents(incomingCall);
-        });
-
-        peer.on("connection", (conn) => {
-          if (isConnected && activeDataConn && activeDataConn.open) {
-            conn.close();
-            return;
-          }
-          setupDataConnection(conn);
-        });
-
-        peer.on("error", (err) => {
-          if (String(err).includes("WebSocket") || err.type === "server-error" || err.type === "socket-error") {
-            isWebSocketRestricted = true;
-          }
-          if (err.type === "peer-unavailable" && isSearching) {
-            cycleSearchQueue();
-          }
-        });
-      } catch (err) {
-        isWebSocketRestricted = true;
-        myPeerId = generateCleanPeerId();
-        modalMyPeerId.value = myPeerId;
-      }
-    }
-
-    function createSilentStream() {
-      const silentCanvas = document.createElement("canvas");
-      silentCanvas.width = 320;
-      silentCanvas.height = 240;
-      const ctx = silentCanvas.getContext("2d");
-      ctx.fillStyle = "#0c1322";
-      ctx.fillRect(0, 0, 320, 240);
-      const stream = silentCanvas.captureStream(10);
-
-      try {
-        const ctxAudio = getAudioContext();
-        const osc = ctxAudio.createOscillator();
-        const dest = ctxAudio.createMediaStreamDestination();
-        const gain = ctxAudio.createGain();
-        gain.gain.value = 0.0;
-        osc.connect(gain);
-        gain.connect(dest);
-        osc.start();
-        dest.stream.getAudioTracks().forEach(t => stream.addTrack(t));
-      } catch (e) {}
-
-      return stream;
-    }
-
-    function setupMediaCallEvents(mediaCall) {
-      activeMediaCall = mediaCall;
-
-      mediaCall.on("stream", (incomingRemoteStream) => {
-        remoteStream = incomingRemoteStream;
-        remoteVideo.srcObject = incomingRemoteStream;
-        remoteVideo.style.display = "block";
-        strangerCanvas.style.display = "none";
-        strangerLoader.classList.add("hidden");
-
-        strangerDot.className = "w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_6px_#10b981]";
-        strangerLabel.textContent = "Stranger (Live)";
-        playBeep(880, 0.12);
-      });
-
-      mediaCall.on("close", () => {
-        disconnectStranger("Stranger disconnected.");
-      });
-
-      mediaCall.on("error", () => {
-        disconnectStranger("Call ended unexpectedly.");
-      });
-    }
-
-    function setupDataConnection(conn) {
-      activeDataConn = conn;
-
-      conn.on("open", () => {
-        onPeerConnected();
-        conn.send({
-          type: "handshake",
-          gender: myGenderSelect.value,
-          tags: userTags
-        });
-      });
-
-      conn.on("data", (data) => {
-        if (!data) return;
-        if (data.type === "chat") {
-          appendMessage("Stranger", data.text, "stranger");
-        } else if (data.type === "handshake") {
-          handlePeerHandshake(data);
-        } else if (data.type === "disconnect") {
-          disconnectStranger("Stranger skipped to next.");
-        }
-      });
-
-      conn.on("close", () => disconnectStranger("Stranger left the chat."));
-      conn.on("error", () => disconnectStranger("Data channel dropped."));
-    }
-
-    function handlePeerHandshake(data) {
-      const theirGender = data.gender || "unknown";
-      const theirTags = Array.isArray(data.tags) ? data.tags : [];
-      const matchPref = genderSelect.value;
-
-      if (matchPref !== "both" && theirGender !== matchPref) {
-        appendMessage("", `Stranger skipped (Does not match '${matchPref}' filter).`, "system");
-        disconnectStranger(null, true);
-        return;
-      }
-
-      const commonTags = theirTags.filter(t => userTags.includes(t));
-      if (commonTags.length > 0) {
-        strangerTag.textContent = `Matched: #${commonTags[0]}`;
-        strangerTag.style.display = "block";
-        appendMessage("", `You both like #${commonTags[0]}.`, "system");
-      } else {
-        strangerTag.textContent = "Random Match";
-        strangerTag.style.display = "block";
-      }
-    }
-
-    function onPeerConnected(partnerName = "Stranger") {
-      clearInterval(searchInterval);
-      clearTimeout(simulatedPartnerTimer);
-      isSearching = false;
-      isConnected = true;
-
-      btnMainAction.textContent = "⏹ Next (Esc)";
-      btnMainAction.classList.replace("bg-blue-600", "bg-red-600");
-      btnMainAction.classList.replace("hover:bg-blue-500", "hover:bg-red-500");
-
-      strangerDot.className = "w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_6px_#10b981]";
-      strangerLabel.textContent = `${partnerName} (Connected)`;
-      strangerLoader.classList.add("hidden");
-
-      chatInput.disabled = false;
-      btnSendMessage.disabled = false;
-      chatInput.focus();
-
-      playBeep(880, 0.12);
-      appendMessage("", "You are now chatting with a live stranger! Say hi!", "system");
-    }
-
-    const LOBBY_PREFIX = "webtv555-slot-";
-    const TOTAL_ROOMS = 16;
-
-    function startSearching() {
-      if (isConnected) {
-        disconnectStranger();
-      }
-
-      isSearching = true;
-      isConnected = false;
-      currentLobbyIndex = Math.floor(Math.random() * TOTAL_ROOMS) + 1;
-
-      btnMainAction.textContent = "⏹ Stop";
-      btnMainAction.classList.replace("bg-blue-600", "bg-red-600");
-      btnMainAction.classList.replace("hover:bg-blue-500", "hover:bg-red-500");
-
-      strangerDot.className = "w-2 h-2 rounded-full bg-red-500";
-      strangerLabel.textContent = "Looking for peer...";
-      strangerTag.style.display = "none";
-      strangerLoader.classList.remove("hidden");
-      strangerLoadingText.textContent = "Looking for a stranger...";
-
-      chatInput.disabled = true;
-      btnSendMessage.disabled = true;
-
-      // In restricted sandbox environments (Canvas), simulate immediate partner match
-      if (isWebSocketRestricted || !peer || peer.disconnected) {
-        startSandboxMatching();
-        return;
-      }
-
-      cycleSearchQueue();
-      searchInterval = setInterval(cycleSearchQueue, 3500);
-
-      // Timeout fallback to sandbox match if no remote peer is in the queue
-      clearTimeout(simulatedPartnerTimer);
-      simulatedPartnerTimer = setTimeout(() => {
-        if (isSearching && !isConnected) {
-          startSandboxMatching();
-        }
-      }, 4000);
-    }
-
-    function startSandboxMatching() {
-      clearInterval(searchInterval);
-      const pref = genderSelect.value;
-      let pool = sandboxStrangers;
-      if (pref !== "both") {
-        pool = sandboxStrangers.filter(s => s.gender === pref);
-        if (pool.length === 0) pool = sandboxStrangers;
-      }
-
-      // Prioritize tags
-      const match = pool.find(s => s.tags.some(t => userTags.includes(t))) || pool[Math.floor(Math.random() * pool.length)];
-      simulatedStrangerData = match;
-
-      setTimeout(() => {
-        if (!isSearching) return;
-        onPeerConnected(`${match.name} (${match.country})`);
-        
-        const common = match.tags.filter(t => userTags.includes(t));
-        if (common.length > 0) {
-          strangerTag.textContent = `Matched on: #${common[0]}`;
-          strangerTag.style.display = "block";
-          appendMessage("", `You both like #${common[0]}.`, "system");
-        }
-
-        // Stranger intro message
-        clearTimeout(simulatedDialogueTimer);
-        simulatedDialogueTimer = setTimeout(() => {
-          if (!isConnected) return;
-          const greetings = [
-            `Hey there! Nice to meet you from ${match.country}! 👋`,
-            `Hello! How's your day going?`,
-            `Hey! What's up?`
-          ];
-          const text = greetings[Math.floor(Math.random() * greetings.length)];
-          appendMessage("Stranger", text, "stranger");
-        }, 1200);
-      }, 1000);
-    }
-
-    function cycleSearchQueue() {
-      if (!isSearching || isConnected || !peer || isWebSocketRestricted) return;
-
-      currentLobbyIndex = (currentLobbyIndex % TOTAL_ROOMS) + 1;
-      const targetLobbyPeer = `${LOBBY_PREFIX}${currentLobbyIndex}`;
-      strangerLoadingText.textContent = `Pinging lobby slot #${currentLobbyIndex}...`;
-
-      try {
-        const conn = peer.connect(targetLobbyPeer, {
-          reliable: true,
-          metadata: { gender: myGenderSelect.value, tags: userTags }
-        });
-
-        conn.on("open", () => {
-          setupDataConnection(conn);
-          const outgoingStream = localStream || createSilentStream();
-          const call = peer.call(targetLobbyPeer, outgoingStream);
-          setupMediaCallEvents(call);
-        });
-
-        conn.on("error", () => {});
-      } catch (e) {
-        isWebSocketRestricted = true;
-        startSandboxMatching();
-      }
-    }
-
-    function disconnectStranger(notice = "You have disconnected.", autoResume = false) {
-      clearInterval(searchInterval);
-      clearTimeout(simulatedPartnerTimer);
-      clearTimeout(simulatedDialogueTimer);
-
-      if (activeDataConn) {
-        try {
-          activeDataConn.send({ type: "disconnect" });
-          activeDataConn.close();
-        } catch (e) {}
-        activeDataConn = null;
-      }
-
-      if (activeMediaCall) {
-        try {
-          activeMediaCall.close();
-        } catch (e) {}
-        activeMediaCall = null;
-      }
-
-      if (remoteVideo) {
-        remoteVideo.srcObject = null;
-        remoteVideo.style.display = "none";
-      }
-
-      strangerCanvas.style.display = "block";
-      renderStrangerStandby();
-
-      isConnected = false;
-      isSearching = false;
-      simulatedStrangerData = null;
-
-      strangerDot.className = "w-2 h-2 rounded-full bg-red-500";
-      strangerLabel.textContent = "Disconnected";
-      strangerTag.style.display = "none";
-      strangerLoader.classList.add("hidden");
-
-      btnMainAction.textContent = "▶ Start Chat";
-      btnMainAction.classList.replace("bg-red-600", "bg-blue-600");
-      btnMainAction.classList.replace("hover:bg-red-500", "hover:bg-blue-500");
-
-      chatInput.disabled = true;
-      btnSendMessage.disabled = true;
-
-      playBeep(280, 0.15);
-      if (notice) appendMessage("", notice, "system");
-      if (autoResume) setTimeout(startSearching, 400);
-    }
-
-    // --- STREAMING_CHUNK:Handling chat events, message append, and direct modal logic ---
-
-    btnMainAction.addEventListener("click", () => {
-      if (isConnected || isSearching) {
-        disconnectStranger();
-      } else {
-        startSearching();
-      }
-    });
-
-    window.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") {
-        if (isConnected || isSearching) {
-          disconnectStranger(null, true);
-        } else {
-          startSearching();
-        }
-      }
-    });
-
+    // =========================================================================
+    // 9. TEXT CHAT SYSTEM
+    // =========================================================================
     function appendMessage(sender, text, type = "stranger") {
       const now = new Date();
       const timeStr = now.getHours().toString().padStart(2, "0") + ":" + now.getMinutes().toString().padStart(2, "0");
@@ -1429,116 +1433,41 @@
       msgDiv.className = `message ${type}`;
 
       if (type === "system") {
-        msgDiv.className = "text-[11px] sm:text-xs text-slate-400 italic text-center bg-white/[0.03] py-1 px-2 rounded-md";
         msgDiv.textContent = text;
       } else {
-        const senderColor = type === "you" ? "text-blue-400 font-bold" : "text-red-400 font-bold";
-        msgDiv.innerHTML = `<span class="text-[10px] text-slate-400 mr-1">${timeStr}</span><span class="${senderColor}">${sender}:</span> <span class="text-slate-100">${escapeHTML(text)}</span>`;
-        if (type === "stranger") playBeep(520, 0.08);
+        msgDiv.innerHTML = `<span class="time">${timeStr}</span><span class="sender">${sender}:</span> ${escapeHTML(text)}`;
       }
 
       chatContainer.appendChild(msgDiv);
       chatContainer.scrollTop = chatContainer.scrollHeight;
     }
 
-    function handleSendMessage(customMsg = null) {
-      const text = customMsg || chatInput.value.trim();
-      if (!text || !isConnected) return;
+    function escapeHTML(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
 
-      appendMessage("You", text, "you");
+    function sendChatMessage(text = null) {
+      const msg = text || chatInput.value.trim();
+      if (!msg || !isConnected) return;
+
+      appendMessage("You", msg, "you");
       chatInput.value = "";
 
-      if (activeDataConn && activeDataConn.open) {
-        activeDataConn.send({ type: "chat", text: text });
-      } else if (simulatedStrangerData) {
-        // Smart interactive conversational response in Canvas sandbox
-        clearTimeout(simulatedDialogueTimer);
-        simulatedDialogueTimer = setTimeout(() => {
-          if (!isConnected) return;
-          const responses = [
-            "Haha totally agree with you!",
-            "That's so cool!",
-            "Where are you from?",
-            "Nice! I'm just relaxing here listening to music.",
-            "Great meeting you!",
-            "What kind of hobbies do you enjoy?"
-          ];
-          const reply = responses[Math.floor(Math.random() * responses.length)];
-          appendMessage("Stranger", reply, "stranger");
-        }, 1100 + Math.random() * 600);
+      if (activeDataConnection && activeDataConnection.open) {
+        activeDataConnection.send({ type: "chat", text: msg });
       }
     }
 
-    btnSendMessage.addEventListener("click", () => handleSendMessage());
+    btnSendMessage.addEventListener("click", () => sendChatMessage());
     chatInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") handleSendMessage();
+      if (e.key === "Enter") sendChatMessage();
     });
 
-    quickChips.forEach(chip => {
+    document.querySelectorAll(".quick-chip").forEach(chip => {
       chip.addEventListener("click", () => {
-        if (!isConnected) return;
-        handleSendMessage(chip.getAttribute("data-msg"));
+        sendChatMessage(chip.getAttribute("data-msg"));
       });
     });
-
-    // Direct Room modal triggers
-    btnOpenDirectConnect.addEventListener("click", () => {
-      directModal.classList.remove("hidden");
-      directModal.classList.add("flex");
-      if (myPeerId) modalMyPeerId.value = myPeerId;
-    });
-
-    btnCloseModal.addEventListener("click", () => {
-      directModal.classList.add("hidden");
-      directModal.classList.remove("flex");
-    });
-
-    btnCopyMyPeerId.addEventListener("click", () => {
-      if (!modalMyPeerId.value) return;
-      modalMyPeerId.select();
-      document.execCommand("copy");
-      btnCopyMyPeerId.textContent = "Copied!";
-      setTimeout(() => { btnCopyMyPeerId.textContent = "Copy"; }, 1500);
-    });
-
-    btnConnectDirectPeer.addEventListener("click", () => {
-      const target = targetPeerIdInput.value.trim();
-      if (!target) return;
-
-      directModal.classList.add("hidden");
-      directModal.classList.remove("flex");
-
-      if (isConnected) disconnectStranger();
-
-      appendMessage("", `Connecting to ${target}...`, "system");
-
-      const conn = peer.connect(target, { reliable: true });
-      conn.on("open", () => {
-        setupDataConnection(conn);
-        const outgoingStream = localStream || createSilentStream();
-        const call = peer.call(target, outgoingStream);
-        setupMediaCallEvents(call);
-      });
-
-      conn.on("error", () => {
-        appendMessage("", `Could not reach ${target}. Check the ID and try again.`, "system");
-      });
-    });
-
-    // Boot real presence tracking and PeerJS on window load
-    window.onload = () => {
-      try {
-        initRealPresenceBroker();
-      } catch (e) {
-        isWebSocketRestricted = true;
-      }
-
-      try {
-        initPeerInstance();
-      } catch (e) {
-        isWebSocketRestricted = true;
-      }
-    };
   </script>
 </body>
 </html>
