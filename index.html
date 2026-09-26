@@ -2,20 +2,44 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Web TV 555 - Live Random Video Chat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Web TV 555 - Real P2P Random Video Chat</title>
+  <!-- PeerJS for WebRTC Audio, Video & Data Channels -->
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <!-- Tailwind CSS for modern responsive utility styling -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              dark: '#07090e',
+              card: '#0f141f',
+              panel: '#151b28',
+              border: '#212a3d',
+              accent: '#2563eb',
+              danger: '#ef4444',
+              success: '#10b981'
+            }
+          }
+        }
+      }
+    };
+  </script>
   <style>
     :root {
-      --bg-dark: #0b0f19;
-      --card-bg: #111827;
-      --border-color: #1f2937;
+      --bg-dark: #07090e;
+      --card-bg: #0f141f;
+      --border-color: #212a3d;
       --primary: #3b82f6;
       --primary-hover: #2563eb;
       --danger: #ef4444;
       --danger-hover: #dc2626;
       --success: #10b981;
-      --text-main: #f9fafb;
-      --text-muted: #9ca3af;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
     }
 
     * {
@@ -34,439 +58,21 @@
       overflow: hidden;
     }
 
-    /* Top Navigation */
-    header {
-      height: 56px;
-      background: var(--card-bg);
-      border-bottom: 1px solid var(--border-color);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 16px;
-      flex-shrink: 0;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .logo {
-      font-size: 1.25rem;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      color: #ffffff;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .logo-badge {
-      background: #2563eb;
-      color: #ffffff;
-      font-size: 0.75rem;
-      padding: 2px 7px;
-      border-radius: 4px;
-      font-weight: 700;
-    }
-
-    .online-counter {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.8rem;
-      color: var(--text-muted);
-    }
-
-    .online-dot {
-      width: 7px;
-      height: 7px;
-      background: var(--success);
-      border-radius: 50%;
-      box-shadow: 0 0 6px var(--success);
-    }
-
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .filter-select {
-      background: #1f2937;
-      color: #fff;
-      border: 1px solid #374151;
-      padding: 6px 10px;
-      border-radius: 6px;
-      font-size: 0.82rem;
-      outline: none;
-      cursor: pointer;
-    }
-
-    .cam-btn {
-      background: var(--success);
-      color: #fff;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-size: 0.82rem;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: opacity 0.2s;
-    }
-
-    .cam-btn:hover {
-      opacity: 0.9;
-    }
-
-    /* Main Container */
-    main {
-      flex: 1;
-      display: flex;
-      padding: 12px;
-      gap: 12px;
-      overflow: hidden;
-    }
-
-    /* Video Section */
-    .video-section {
-      flex: 7;
-      display: flex;
-      gap: 12px;
-      height: 100%;
-    }
-
-    .video-card {
-      flex: 1;
-      background: #000;
-      border-radius: 10px;
-      border: 1px solid var(--border-color);
-      position: relative;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .video-badge {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      background: rgba(0, 0, 0, 0.65);
-      backdrop-filter: blur(4px);
-      padding: 4px 10px;
-      border-radius: 6px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      z-index: 10;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .badge-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--danger);
-    }
-
-    .badge-dot.connected {
-      background: var(--success);
-    }
-
-    .badge-dot.paused {
-      background: #f59e0b;
-    }
-
-    .video-match-tag {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: rgba(16, 185, 129, 0.2);
-      border: 1px solid rgba(16, 185, 129, 0.4);
-      color: #34d399;
-      padding: 3px 8px;
-      border-radius: 4px;
-      font-size: 0.72rem;
-      font-weight: 600;
-      z-index: 10;
-      display: none;
-    }
-
-    video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: filter 0.3s ease;
-    }
-
+    /* Video element mirror styling */
     .mirrored {
       transform: scaleX(-1);
     }
 
-    canvas {
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
-
-    /* Floating Media Controls */
-    .media-floating-controls {
-      position: absolute;
-      bottom: 12px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(17, 24, 39, 0.85);
-      backdrop-filter: blur(6px);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 20px;
-      padding: 5px 12px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      z-index: 10;
-    }
-
-    .media-floating-controls button {
-      background: none;
-      border: none;
-      color: #fff;
-      padding: 6px 8px;
-      cursor: pointer;
-      font-size: 0.82rem;
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      transition: background 0.2s;
-    }
-
-    .media-floating-controls button:hover {
-      background: rgba(255, 255, 255, 0.15);
-    }
-
-    /* Chat Section */
-    .chat-section {
-      flex: 3;
-      min-width: 300px;
-      max-width: 400px;
-      background: var(--card-bg);
-      border-radius: 10px;
-      border: 1px solid var(--border-color);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      height: 100%;
-    }
-
-    .chat-header {
-      padding: 12px 16px;
-      border-bottom: 1px solid var(--border-color);
-      font-size: 0.88rem;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .messages-container {
-      flex: 1;
-      padding: 14px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      scroll-behavior: smooth;
-    }
-
-    .message {
-      font-size: 0.86rem;
-      line-height: 1.4;
-      word-break: break-word;
-    }
-
-    .message .time {
-      font-size: 0.72rem;
-      color: var(--text-muted);
-      margin-right: 5px;
-    }
-
-    .message.stranger .sender {
-      color: var(--danger);
-      font-weight: 700;
-    }
-
-    .message.you .sender {
-      color: var(--primary);
-      font-weight: 700;
-    }
-
-    .message.system {
-      color: var(--text-muted);
-      font-style: italic;
-      font-size: 0.8rem;
-      text-align: center;
-      margin: 4px 0;
-    }
-
-    /* Quick Reply Chips */
-    .quick-replies {
-      padding: 6px 12px;
-      border-top: 1px solid var(--border-color);
-      display: flex;
-      gap: 6px;
-      background: #0e1524;
-      overflow-x: auto;
-      align-items: center;
-    }
-
-    .quick-chip-label {
-      font-size: 0.7rem;
-      color: var(--text-muted);
-      font-weight: 600;
-      text-transform: uppercase;
-      margin-right: 2px;
-      flex-shrink: 0;
-    }
-
-    .quick-chip {
-      background: #1e293b;
-      color: #94a3b8;
-      border: 1px solid #334155;
-      padding: 3px 8px;
-      border-radius: 12px;
-      font-size: 0.75rem;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: all 0.15s;
-    }
-
-    .quick-chip:hover {
-      background: #334155;
-      color: #fff;
-    }
-
-    .chat-input-area {
-      padding: 10px 14px;
-      border-top: 1px solid var(--border-color);
-      display: flex;
-      gap: 8px;
-    }
-
-    .chat-input-area input {
-      flex: 1;
-      background: #0b0f19;
-      border: 1px solid var(--border-color);
-      border-radius: 6px;
-      padding: 8px 12px;
-      color: #fff;
-      font-size: 0.85rem;
-      outline: none;
-    }
-
-    .chat-input-area input:focus {
-      border-color: var(--primary);
-    }
-
-    .chat-input-area button {
-      background: var(--primary);
-      color: #fff;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: background 0.2s;
-    }
-
-    .chat-input-area button:hover {
-      background: var(--primary-hover);
-    }
-
-    /* Bottom Control Bar */
-    footer {
-      height: 64px;
-      background: var(--card-bg);
-      border-top: 1px solid var(--border-color);
-      display: flex;
-      align-items: center;
-      padding: 0 16px;
-      gap: 12px;
-      flex-shrink: 0;
-      overflow-x: auto;
-    }
-
-    .btn-main-action {
-      background: var(--primary);
-      color: #fff;
-      border: none;
-      padding: 10px 22px;
-      border-radius: 6px;
-      font-weight: 700;
-      font-size: 0.95rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      white-space: nowrap;
-      transition: background 0.2s;
-    }
-
-    .btn-main-action.stop {
-      background: var(--danger);
-    }
-
-    .btn-main-action.stop:hover {
-      background: var(--danger-hover);
-    }
-
-    .btn-main-action:hover {
-      background: var(--primary-hover);
-    }
-
-    .gender-picker-wrap {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      background: #0b0f19;
-      border: 1px solid var(--border-color);
-      padding: 5px 10px;
-      border-radius: 6px;
-      flex-shrink: 0;
-    }
-
-    .gender-picker-wrap label {
-      font-size: 0.78rem;
-      color: var(--text-muted);
-      font-weight: 600;
-      white-space: nowrap;
-    }
-
-    .gender-select {
-      background: transparent;
-      border: none;
-      color: #fff;
-      font-size: 0.8rem;
-      outline: none;
-      cursor: pointer;
-      font-weight: 600;
-    }
-
-    /* Dropdown Options Color Fix: Forced Black/Red Text */
-    .gender-select option,
-    .filter-select option {
-      color: #111827 !important; /* Force readable black text in Chrome popup */
+    /* Dropdown option contrast fix */
+    select option {
+      color: #0f172a !important;
       background-color: #ffffff !important;
       font-weight: 600;
     }
 
-    .gender-select option:checked {
-      color: #ef4444 !important; /* Red accent on selected item */
+    select option:checked {
+      color: #ef4444 !important;
+      background-color: #e2e8f0 !important;
       font-weight: 700;
     }
 
@@ -476,12 +82,12 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      background: rgba(11, 15, 25, 0.7);
-      border: 1px solid rgba(59, 130, 246, 0.25);
-      box-shadow: 0 0 15px rgba(59, 130, 246, 0.08) inset;
-      padding: 5px 10px;
-      border-radius: 20px;
-      min-width: 260px;
+      background: rgba(7, 9, 14, 0.85);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      box-shadow: 0 0 16px rgba(59, 130, 246, 0.08) inset;
+      padding: 6px 12px;
+      border-radius: 24px;
+      min-width: 250px;
       max-width: 440px;
       overflow-x: auto;
       cursor: grab;
@@ -504,18 +110,11 @@
     .interests-container::-webkit-scrollbar-thumb {
       background: linear-gradient(90deg, #3b82f6, #8b5cf6);
       border-radius: 4px;
-      box-shadow: 0 0 6px rgba(139, 92, 246, 0.6);
-    }
-
-    .tags-list {
-      display: flex;
-      align-items: center;
-      gap: 6px;
     }
 
     .tag-badge {
-      background: linear-gradient(135deg, rgba(30, 58, 138, 0.8), rgba(67, 56, 202, 0.6));
-      border: 1px solid rgba(96, 165, 250, 0.35);
+      background: linear-gradient(135deg, rgba(30, 58, 138, 0.85), rgba(67, 56, 202, 0.65));
+      border: 1px solid rgba(96, 165, 250, 0.4);
       color: #bfdbfe;
       font-size: 0.74rem;
       font-weight: 600;
@@ -525,22 +124,15 @@
       align-items: center;
       gap: 6px;
       white-space: nowrap;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
     }
 
     .tag-badge:hover {
-      transform: translateY(-1px) scale(1.03);
+      transform: translateY(-1px) scale(1.02);
       border-color: #60a5fa;
       color: #ffffff;
-      box-shadow: 0 4px 10px rgba(59, 130, 246, 0.35);
-    }
-
-    .tag-badge .tag-text {
-      max-width: 110px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
     }
 
     .tag-badge .remove-tag {
@@ -550,8 +142,8 @@
       align-items: center;
       justify-content: center;
       border-radius: 50%;
-      background: rgba(255, 255, 255, 0.1);
-      font-size: 0.7rem;
+      background: rgba(255, 255, 255, 0.12);
+      font-size: 0.75rem;
       color: #93c5fd;
       cursor: pointer;
       transition: all 0.15s ease;
@@ -560,89 +152,32 @@
     .tag-badge .remove-tag:hover {
       background: #ef4444;
       color: #fff;
-      transform: scale(1.15);
+      transform: scale(1.2);
     }
 
-    .tag-input-wrap {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      flex: 1;
-      min-width: 120px;
-    }
-
-    .tag-input {
-      background: transparent;
-      border: none;
-      color: #f1f5f9;
-      font-size: 0.78rem;
-      outline: none;
-      width: 100%;
-    }
-
-    .tag-input::placeholder {
-      color: #475569;
-      font-style: italic;
-    }
-
-    .btn-add-tag {
-      background: linear-gradient(135deg, #2563eb, #7c3aed);
-      color: #ffffff;
-      border: none;
-      border-radius: 12px;
-      font-size: 0.7rem;
-      font-weight: 700;
-      padding: 3px 8px;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: all 0.2s ease;
-      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.4);
-    }
-
-    .btn-add-tag:hover {
-      transform: scale(1.05);
-      box-shadow: 0 3px 10px rgba(124, 58, 237, 0.5);
-    }
-
-    .status-text {
-      font-size: 0.83rem;
-      color: var(--text-muted);
-      margin-left: auto;
-      white-space: nowrap;
-    }
-
-    @media (max-width: 900px) {
-      main {
-        flex-direction: column;
-      }
-      .video-section {
-        flex: 1;
-      }
-      .chat-section {
-        max-width: none;
-        flex: 1;
-      }
-      .status-text {
-        display: none;
-      }
+    /* Modal dialog styling */
+    .modal-backdrop {
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
     }
   </style>
 </head>
-<body>
-
-  <!-- Top Header -->
-  <header>
-    <div class="brand">
-      <div class="logo">
-        Web TV <span class="logo-badge">555</span>
+<body class="bg-[#07090e] text-slate-100 flex flex-col h-screen overflow-hidden">
+  <!-- Top Navigation -->
+  <header class="h-14 bg-[#0f141f] border-b border-[#212a3d] flex items-center justify-between px-4 shrink-0 z-20">
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2 text-xl font-black tracking-tight text-white">
+        Web TV <span class="bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xs px-2 py-0.5 rounded font-bold shadow-md shadow-blue-500/30">555 P2P</span>
       </div>
-      <div class="online-counter">
-        <span class="online-dot"></span>
-        <span id="userCount">42,810</span> online
+      <div class="hidden sm:flex items-center gap-2 text-xs text-slate-400 bg-black/40 px-2.5 py-1 rounded-full border border-[#212a3d]">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_6px_#10b981] animate-pulse"></span>
+        <span id="userCount">1 Stranger</span> online
       </div>
     </div>
-    <div class="header-actions">
-      <select id="filterSelect" class="filter-select" title="Camera Filter">
+
+    <!-- Actions & Filter Menu -->
+    <div class="flex items-center gap-2 sm:gap-3">
+      <select id="filterSelect" class="bg-[#1e293b] text-white border border-[#334155] px-2 sm:px-3 py-1.5 rounded-lg text-xs outline-none cursor-pointer">
         <option value="none">✨ Filter: Normal</option>
         <option value="grayscale(100%)">Noir (B&W)</option>
         <option value="sepia(60%) contrast(110%)">Warm Vintage</option>
@@ -650,152 +185,240 @@
         <option value="brightness(110%) contrast(120%)">Soft Glow</option>
         <option value="invert(100%)">Invert</option>
       </select>
-      <button class="cam-btn" id="btnToggleHardware">📹 Enable Camera & Mic</button>
+
+      <button id="btnToggleHardware" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-md shadow-emerald-500/20 transition">
+        <span>📹</span> <span id="btnHardwareText">Enable Camera & Mic</span>
+      </button>
+
+      <button id="btnOpenDirectConnect" title="Direct Peer Connect / Custom Room" class="bg-[#1e293b] hover:bg-[#334155] border border-[#334155] text-slate-200 px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 transition">
+        <span>🔗</span> <span class="hidden md:inline">Direct Room</span>
+      </button>
     </div>
   </header>
 
-  <!-- Video & Chat Layout -->
-  <main>
-    <div class="video-section">
-      <!-- Stranger Video / Simulated Partner -->
-      <div class="video-card">
-        <div class="video-badge">
-          <span class="badge-dot" id="strangerDot"></span>
+  <!-- Main Grid Container -->
+  <main class="flex-1 flex flex-col lg:flex-row p-3 gap-3 overflow-hidden">
+    <!-- Video Stage Section -->
+    <section class="flex-1 flex flex-col sm:flex-row gap-3 h-full min-h-[300px]">
+      
+      <!-- Stranger Card (Remote Peer) -->
+      <div class="flex-1 bg-black rounded-xl border border-[#212a3d] relative overflow-hidden flex items-center justify-center shadow-xl">
+        <!-- Status Badge -->
+        <div class="absolute top-2.5 left-2.5 bg-black/70 backdrop-blur-md px-2.5 py-1 rounded-md text-xs font-semibold z-10 flex items-center gap-2 border border-white/10">
+          <span id="strangerDot" class="w-2 h-2 rounded-full bg-red-500"></span>
           <span id="strangerLabel">Disconnected</span>
         </div>
-        <div class="video-match-tag" id="strangerTag">Matched on: #music</div>
-        <canvas id="strangerCanvas"></canvas>
+
+        <!-- Matched Tag Badge -->
+        <div id="strangerTag" class="hidden absolute top-2.5 right-2.5 bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 px-2 py-0.5 rounded text-xs font-bold z-10 backdrop-blur-md">
+          Matched on: #chatting
+        </div>
+
+        <!-- Real WebRTC Remote Video Stream -->
+        <video id="remoteVideo" autoplay playsinline class="w-full h-full object-cover hidden"></video>
+        
+        <!-- Remote Fallback / Standby Canvas Avatar -->
+        <canvas id="strangerCanvas" class="w-full h-full block"></canvas>
+
+        <!-- Connecting Spinner Overlay -->
+        <div id="strangerLoader" class="hidden absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center gap-3 z-10">
+          <div class="w-9 h-9 border-3 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          <span id="strangerLoadingText" class="text-xs text-blue-400 font-semibold tracking-wide">Looking for strangers...</span>
+        </div>
       </div>
 
-      <!-- Local User Video / Person Avatar -->
-      <div class="video-card">
-        <div class="video-badge">
-          <span class="badge-dot" id="localDot"></span>
+      <!-- Local User Card (Your Camera) -->
+      <div class="flex-1 bg-black rounded-xl border border-[#212a3d] relative overflow-hidden flex items-center justify-center shadow-xl">
+        <!-- Status Badge -->
+        <div class="absolute top-2.5 left-2.5 bg-black/70 backdrop-blur-md px-2.5 py-1 rounded-md text-xs font-semibold z-10 flex items-center gap-2 border border-white/10">
+          <span id="localDot" class="w-2 h-2 rounded-full bg-amber-500"></span>
           <span id="localLabel">You (Avatar Mode)</span>
         </div>
-        <video id="localVideo" class="mirrored" autoplay playsinline muted style="display: none;"></video>
-        <canvas id="localCanvas"></canvas>
 
-        <div class="media-floating-controls" id="floatingControls" style="display: none;">
-          <button id="btnToggleMirror" title="Flip Mirror">🪞 Mirror (On)</button>
-          <button id="btnMuteAudio" title="Mute Mic">🎤 Mute</button>
-          <button id="btnMuteVideo" title="Stop Video">📷 Cam</button>
+        <!-- Peer ID Label -->
+        <div class="absolute top-2.5 right-2.5 bg-black/60 px-2 py-0.5 rounded text-[11px] text-slate-400 border border-white/5 z-10">
+          ID: <span id="myPeerIdDisplay" class="font-mono text-slate-300">Connecting...</span>
+        </div>
+
+        <!-- Real WebRTC Local Video Feed -->
+        <video id="localVideo" autoplay playsinline muted class="w-full h-full object-cover mirrored hidden"></video>
+        
+        <!-- Local Person Fallback Avatar -->
+        <canvas id="localCanvas" class="w-full h-full block"></canvas>
+
+        <!-- Floating Quick Camera Controls -->
+        <div id="floatingControls" class="absolute bottom-3 left-1/2 -translate-x-1/2 bg-[#0f141f]/90 backdrop-blur-md border border-white/15 rounded-full px-3 py-1.5 flex items-center gap-2 z-10 shadow-2xl">
+          <button id="btnToggleMirror" title="Flip Mirror" class="bg-white/5 hover:bg-white/20 border border-white/10 text-white text-xs font-semibold px-2.5 py-1 rounded-xl transition flex items-center gap-1">
+            🪞 <span class="hidden sm:inline">Mirror</span>
+          </button>
+          <button id="btnMuteAudio" title="Mute Mic" class="bg-white/5 hover:bg-white/20 border border-white/10 text-white text-xs font-semibold px-2.5 py-1 rounded-xl transition flex items-center gap-1">
+            🎤 <span class="hidden sm:inline">Mute</span>
+          </button>
+          <button id="btnMuteVideo" title="Stop Video" class="bg-white/5 hover:bg-white/20 border border-white/10 text-white text-xs font-semibold px-2.5 py-1 rounded-xl transition flex items-center gap-1">
+            📷 <span class="hidden sm:inline">Cam</span>
+          </button>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- Right Side Chat Box -->
-    <div class="chat-section">
-      <div class="chat-header">
-        <span>💬 Text Chat</span>
-        <span style="font-size: 0.75rem; color: var(--text-muted);">Encrypted P2P</span>
+    <!-- Chat & Dialogue Sidebar -->
+    <aside class="w-full lg:w-96 bg-[#0f141f] rounded-xl border border-[#212a3d] flex flex-col overflow-hidden h-72 lg:h-full shrink-0 shadow-xl">
+      <div class="px-4 py-3 border-b border-[#212a3d] text-sm font-bold flex items-center justify-between bg-black/20">
+        <span class="flex items-center gap-1.5">
+          <span>💬</span> Real WebRTC P2P Chat
+        </span>
+        <span id="connectionCipher" class="text-[11px] text-slate-400 font-mono">End-to-End Encrypted</span>
       </div>
 
-      <div class="messages-container" id="chatContainer">
-        <div class="message system">Welcome to Web TV 555! Click Start Chat to connect with a random stranger.</div>
+      <!-- Messages Scroll Area -->
+      <div id="chatContainer" class="flex-1 p-3.5 overflow-y-auto flex flex-col gap-2.5 text-sm scroll-smooth">
+        <div class="message system text-xs text-slate-400 italic text-center bg-white/[0.03] py-1.5 px-3 rounded-md">
+          Welcome to Web TV 555! Click <b>Start P2P Chat</b> to search for a live stranger via WebRTC.
+        </div>
       </div>
 
-      <!-- Quick Reply Chips -->
-      <div class="quick-replies">
-        <span class="quick-chip-label">Quick:</span>
-        <button class="quick-chip" data-msg="Hey!">👋 Hey</button>
-        <button class="quick-chip" data-msg="ASL?">📍 ASL?</button>
-        <button class="quick-chip" data-msg="What are your hobbies?">🎮 Hobbies</button>
-        <button class="quick-chip" data-msg="Nice meeting you!">😄 Nice</button>
+      <!-- Quick Canned Message Replies -->
+      <div class="px-3 py-1.5 border-t border-[#212a3d] flex gap-1.5 bg-[#090c13] overflow-x-auto items-center no-scrollbar">
+        <span class="text-[10px] text-slate-400 font-bold uppercase shrink-0">Quick:</span>
+        <button class="quick-chip bg-[#172033] hover:bg-[#253352] text-slate-300 text-xs px-2.5 py-0.5 rounded-full border border-[#23304c] whitespace-nowrap transition" data-msg="Hey! How are you?">👋 Hey</button>
+        <button class="quick-chip bg-[#172033] hover:bg-[#253352] text-slate-300 text-xs px-2.5 py-0.5 rounded-full border border-[#23304c] whitespace-nowrap transition" data-msg="ASL? Where are you from?">📍 ASL?</button>
+        <button class="quick-chip bg-[#172033] hover:bg-[#253352] text-slate-300 text-xs px-2.5 py-0.5 rounded-full border border-[#23304c] whitespace-nowrap transition" data-msg="What are your favorite hobbies?">🎮 Hobbies</button>
+        <button class="quick-chip bg-[#172033] hover:bg-[#253352] text-slate-300 text-xs px-2.5 py-0.5 rounded-full border border-[#23304c] whitespace-nowrap transition" data-msg="Nice to meet you!">😄 Nice</button>
       </div>
 
-      <div class="chat-input-area">
-        <input type="text" id="chatInput" placeholder="Type a message..." disabled autocomplete="off" />
-        <button id="btnSendMessage" disabled>Send</button>
+      <!-- Chat Input Field -->
+      <div class="p-2.5 border-t border-[#212a3d] flex gap-2 bg-[#0f141f]">
+        <input type="text" id="chatInput" placeholder="Type a message..." disabled autocomplete="off" class="flex-1 bg-[#07090e] border border-[#212a3d] rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition disabled:opacity-50 disabled:cursor-not-allowed" />
+        <button id="btnSendMessage" disabled class="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg text-xs font-semibold transition">Send</button>
       </div>
-    </div>
+    </aside>
   </main>
 
-  <!-- Footer Controls -->
-  <footer>
-    <button class="btn-main-action" id="btnMainAction">▶ Start Chat</button>
+  <!-- Bottom Control Bar -->
+  <footer class="h-16 bg-[#0f141f] border-t border-[#212a3d] flex items-center px-4 gap-3 shrink-0 overflow-x-auto z-20">
+    <button id="btnMainAction" class="bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm px-5 py-2.5 rounded-lg flex items-center gap-2 whitespace-nowrap shadow-lg shadow-blue-600/30 transition">
+      ▶ Start P2P Chat
+    </button>
 
-    <!-- 1. Your Gender Picker -->
-    <div class="gender-picker-wrap">
-      <label for="myGenderSelect">I am:</label>
-      <select id="myGenderSelect" class="gender-select">
+    <!-- Gender of Local User -->
+    <div class="flex items-center gap-1.5 bg-[#07090e] border border-[#212a3d] px-3 py-1.5 rounded-lg shrink-0">
+      <label for="myGenderSelect" class="text-xs text-slate-400 font-semibold whitespace-nowrap">I am:</label>
+      <select id="myGenderSelect" class="bg-transparent text-white text-xs outline-none cursor-pointer font-semibold">
         <option value="male">👨 Male</option>
         <option value="female">👩 Female</option>
       </select>
     </div>
 
-    <!-- 2. Match Preference Picker -->
-    <div class="gender-picker-wrap">
-      <label for="genderSelect">Match With:</label>
-      <select id="genderSelect" class="gender-select">
+    <!-- Match Gender Preference -->
+    <div class="flex items-center gap-1.5 bg-[#07090e] border border-[#212a3d] px-3 py-1.5 rounded-lg shrink-0">
+      <label for="genderSelect" class="text-xs text-slate-400 font-semibold whitespace-nowrap">Match With:</label>
+      <select id="genderSelect" class="bg-transparent text-white text-xs outline-none cursor-pointer font-semibold">
         <option value="both">👥 Both / Random</option>
         <option value="female">👩 Female Only</option>
         <option value="male">👨 Male Only</option>
       </select>
     </div>
 
-    <!-- 3. Dynamic Glowing Tag Carousel -->
-    <div class="interests-container" id="interestsContainer" title="Scroll or drag to see more tags">
-      <div class="tags-list" id="tagsList"></div>
-      <div class="tag-input-wrap">
-        <input type="text" id="tagInput" class="tag-input" placeholder="+ Add topic..." autocomplete="off" />
-        <button class="btn-add-tag" id="btnAddTag">+ Add</button>
+    <!-- Dynamic Glowing Interest Carousel Slider -->
+    <div class="interests-container" id="interestsContainer" title="Drag horizontally or scroll wheel to navigate tags">
+      <div class="flex items-center gap-1.5" id="tagsList"></div>
+      <div class="flex items-center gap-1.5 shrink-0 min-w-[130px]">
+        <input type="text" id="tagInput" placeholder="+ Add topic..." autocomplete="off" class="bg-transparent text-white text-xs outline-none w-full placeholder-slate-500" />
+        <button id="btnAddTag" class="bg-gradient-to-r from-blue-600 to-purple-600 text-white text-[11px] font-bold px-2 py-0.5 rounded-md hover:scale-105 transition shadow-sm">+ Add</button>
       </div>
     </div>
 
-    <span class="status-text" id="statusHelp">Press <b>Esc</b> to skip stranger</span>
+    <span class="text-xs text-slate-400 ml-auto whitespace-nowrap hidden md:inline">
+      Press <kbd class="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-slate-300 font-mono text-[10px]">Esc</kbd> to skip stranger
+    </span>
   </footer>
 
+  <!-- Direct Peer Connect / Room Modal -->
+  <div id="directModal" class="fixed inset-0 modal-backdrop hidden items-center justify-center p-4 z-50">
+    <div class="bg-[#0f141f] border border-[#212a3d] rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
+      <h3 class="text-lg font-bold text-white mb-2 flex items-center gap-2">
+        <span>🔗</span> Direct Room Connection
+      </h3>
+      <p class="text-xs text-slate-400 mb-4">
+        Share your Peer ID with a friend, or type your friend's Peer ID below to start an instant 1-on-1 private video & text session.
+      </p>
+
+      <div class="mb-4">
+        <label class="text-[11px] uppercase tracking-wider text-slate-400 font-bold block mb-1">Your Peer ID</label>
+        <div class="flex gap-2">
+          <input type="text" id="modalMyPeerId" readonly class="flex-1 bg-[#07090e] border border-[#212a3d] rounded-lg px-3 py-2 text-xs font-mono text-emerald-400 focus:outline-none" />
+          <button id="btnCopyMyPeerId" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-2 rounded-lg text-xs font-bold transition">Copy</button>
+        </div>
+      </div>
+
+      <div class="mb-5">
+        <label class="text-[11px] uppercase tracking-wider text-slate-400 font-bold block mb-1">Target Stranger / Friend's Peer ID</label>
+        <input type="text" id="targetPeerIdInput" placeholder="e.g. webtv555-p2p-xxxx" class="w-full bg-[#07090e] border border-[#212a3d] rounded-lg px-3 py-2 text-xs font-mono text-white placeholder-slate-600 focus:border-blue-500 outline-none" />
+      </div>
+
+      <div class="flex justify-end gap-2">
+        <button id="btnCloseModal" class="px-4 py-2 rounded-lg text-xs font-semibold text-slate-300 hover:bg-slate-800 transition">Cancel</button>
+        <button id="btnConnectDirectPeer" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-xs font-bold transition shadow-lg shadow-emerald-600/30">Connect Now</button>
+      </div>
+    </div>
+  </div>
+
   <script>
-    // --- State Variables ---
-    let isConnected = false;
-    let isSearching = false;
+    // --- Application State ---
     let localStream = null;
+    let peer = null;
+    let myPeerId = null;
+    let activeMediaCall = null;
+    let activeDataConn = null;
+    let remoteStream = null;
+
+    let isSearching = false;
+    let isConnected = false;
     let isMirrored = true;
     let micMuted = false;
     let camDisabled = false;
-    let partnerAnimationTimer = null;
-    let localAvatarTimer = null;
-    let botDialogueTimeout = null;
 
-    // --- Active User Interests List ---
+    let searchInterval = null;
+    let currentLobbyIndex = 0;
+    let matchAttemptCount = 0;
+
+    let localAvatarTimer = null;
+    let strangerAvatarTimer = null;
     let userTags = ["chatting", "music"];
 
-    // --- Sound Effects Synthesizer ---
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    function playBeep(frequency, duration) {
-      try {
-        if (audioCtx.state === "suspended") audioCtx.resume();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = "sine";
-        osc.frequency.setValueAtTime(frequency, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + duration);
-      } catch (e) {}
+    // Web Audio Synthesizer for Connection Cues
+    let audioCtx = null;
+    function getAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === "suspended") {
+        audioCtx.resume();
+      }
+      return audioCtx;
     }
 
-    // --- Stranger Profiles with Gender and Tags ---
-    const strangerProfiles = [
-      { name: "Sofia (Spain)", gender: "female", skin: "#f6d5b8", hair: "#1c1917", shirt: "#ef4444", tags: ["music", "travel", "chatting"] },
-      { name: "Alex (Canada)", gender: "male", skin: "#fbd3b2", hair: "#3e2723", shirt: "#3b82f6", tags: ["gaming", "coding", "chatting"] },
-      { name: "Kenji (Japan)", gender: "male", skin: "#f4cca4", hair: "#111827", shirt: "#10b981", tags: ["music", "anime", "art"] },
-      { name: "Maya (Brazil)", gender: "female", skin: "#c68642", hair: "#1e1b18", shirt: "#8b5cf6", tags: ["art", "dancing", "chatting"] },
-      { name: "Emma (UK)", gender: "female", skin: "#ffe0bd", hair: "#b55239", shirt: "#ec4899", tags: ["movies", "chatting", "books"] },
-      { name: "Lucas (France)", gender: "male", skin: "#f5d0b5", hair: "#4a3728", shirt: "#0284c7", tags: ["movies", "sports", "gaming"] }
-    ];
-    let currentStranger = null;
+    function playBeep(frequency, duration) {
+      try {
+        const ctx = getAudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(frequency, ctx.currentTime);
+        gain.gain.setValueAtTime(0.04, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + duration);
+      } catch (err) {
+        // Ignored if user hasn't interacted yet
+      }
+    }
 
-    // --- DOM Elements ---
-    const filterSelect = document.getElementById("filterSelect");
-    const myGenderSelect = document.getElementById("myGenderSelect");
-    const genderSelect = document.getElementById("genderSelect");
-    const btnToggleHardware = document.getElementById("btnToggleHardware");
+    // DOM Elements
     const localVideo = document.getElementById("localVideo");
+    const remoteVideo = document.getElementById("remoteVideo");
     const localCanvas = document.getElementById("localCanvas");
     const strangerCanvas = document.getElementById("strangerCanvas");
     const localDot = document.getElementById("localDot");
@@ -803,21 +426,230 @@
     const strangerDot = document.getElementById("strangerDot");
     const strangerLabel = document.getElementById("strangerLabel");
     const strangerTag = document.getElementById("strangerTag");
+    const strangerLoader = document.getElementById("strangerLoader");
+    const strangerLoadingText = document.getElementById("strangerLoadingText");
+
     const btnMainAction = document.getElementById("btnMainAction");
+    const btnToggleHardware = document.getElementById("btnToggleHardware");
+    const btnHardwareText = document.getElementById("btnHardwareText");
+    const filterSelect = document.getElementById("filterSelect");
+    const myGenderSelect = document.getElementById("myGenderSelect");
+    const genderSelect = document.getElementById("genderSelect");
+
     const chatContainer = document.getElementById("chatContainer");
     const chatInput = document.getElementById("chatInput");
     const btnSendMessage = document.getElementById("btnSendMessage");
+    const quickChips = document.querySelectorAll(".quick-chip");
+
     const floatingControls = document.getElementById("floatingControls");
     const btnToggleMirror = document.getElementById("btnToggleMirror");
     const btnMuteAudio = document.getElementById("btnMuteAudio");
     const btnMuteVideo = document.getElementById("btnMuteVideo");
-    const quickChips = document.querySelectorAll(".quick-chip");
+
     const interestsContainer = document.getElementById("interestsContainer");
     const tagsList = document.getElementById("tagsList");
     const tagInput = document.getElementById("tagInput");
     const btnAddTag = document.getElementById("btnAddTag");
 
-    // --- 0. Dynamic Tag Management & Slider Controls ---
+    const myPeerIdDisplay = document.getElementById("myPeerIdDisplay");
+    const directModal = document.getElementById("directModal");
+    const btnOpenDirectConnect = document.getElementById("btnOpenDirectConnect");
+    const btnCloseModal = document.getElementById("btnCloseModal");
+    const modalMyPeerId = document.getElementById("modalMyPeerId");
+    const btnCopyMyPeerId = document.getElementById("btnCopyMyPeerId");
+    const targetPeerIdInput = document.getElementById("targetPeerIdInput");
+    const btnConnectDirectPeer = document.getElementById("btnConnectDirectPeer");
+
+    // Canvas Resizing Helper
+    function syncCanvasSizes() {
+      [localCanvas, strangerCanvas].forEach(c => {
+        if (!c) return;
+        const rect = c.getBoundingClientRect();
+        if (c.width !== rect.width || c.height !== rect.height) {
+          c.width = rect.width;
+          c.height = rect.height;
+        }
+      });
+    }
+    window.addEventListener("resize", syncCanvasSizes);
+    setTimeout(syncCanvasSizes, 150);
+
+    // --- Dynamic Illustrated Avatars (Local & Stranger Standby) ---
+    let localFrameStep = 0;
+    function renderLocalPerson() {
+      if (!localCanvas) return;
+      const ctx = localCanvas.getContext("2d");
+      const w = localCanvas.width;
+      const h = localCanvas.height;
+
+      ctx.clearRect(0, 0, w, h);
+
+      // Skip drawing if local webcam video element is live and visible
+      if (localVideo && localVideo.style.display !== "none" && !camDisabled) {
+        return;
+      }
+
+      localFrameStep += 0.035;
+      const breath = Math.sin(localFrameStep) * 2;
+      const myGender = myGenderSelect.value;
+
+      ctx.fillStyle = "#0c1322";
+      ctx.fillRect(0, 0, w, h);
+
+      const cx = w / 2;
+      const headRadius = Math.min(w, h) * 0.19; 
+      const cy = h * 0.38 + breath;
+
+      // 1. Shoulders & Shirt
+      ctx.fillStyle = myGender === "female" ? "#ec4899" : "#2563eb";
+      ctx.beginPath();
+      ctx.ellipse(cx, h * 0.95 + breath, w * 0.42, h * 0.38, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Shirt Collar Accent
+      ctx.fillStyle = myGender === "female" ? "#db2777" : "#1d4ed8";
+      ctx.beginPath();
+      ctx.moveTo(cx - (headRadius * 0.35), h * 0.65 + breath);
+      ctx.lineTo(cx, h * 0.76 + breath);
+      ctx.lineTo(cx + (headRadius * 0.35), h * 0.65 + breath);
+      ctx.fill();
+
+      // 2. Neck
+      ctx.fillStyle = "#e0ac69";
+      const neckWidth = headRadius * 0.46;
+      const neckHeight = headRadius * 0.55;
+      ctx.fillRect(cx - (neckWidth / 2), cy + (headRadius * 0.65), neckWidth, neckHeight);
+
+      // 3. Head
+      ctx.fillStyle = "#f1c27d";
+      ctx.beginPath();
+      ctx.arc(cx, cy, headRadius, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 4. Hair
+      ctx.fillStyle = myGender === "female" ? "#7c2d12" : "#18181b";
+      ctx.beginPath();
+      if (myGender === "female") {
+        ctx.arc(cx, cy - (headRadius * 0.15), headRadius * 1.08, Math.PI, Math.PI * 2);
+        ctx.fillRect(cx - headRadius * 1.05, cy - (headRadius * 0.15), headRadius * 0.4, headRadius * 1.2);
+        ctx.fillRect(cx + headRadius * 0.65, cy - (headRadius * 0.15), headRadius * 0.4, headRadius * 1.2);
+      } else {
+        ctx.arc(cx, cy - (headRadius * 0.1), headRadius * 1.02, Math.PI, Math.PI * 2);
+      }
+      ctx.fill();
+
+      // 5. Eyes with Blinking
+      ctx.fillStyle = "#09090b";
+      const eyeOffset = headRadius * 0.36;
+      const isBlinking = Math.sin(localFrameStep * 0.45) > 0.96;
+      
+      if (isBlinking) {
+        ctx.fillRect(cx - eyeOffset - 4, cy - 1, 8, 2);
+        ctx.fillRect(cx + eyeOffset - 4, cy - 1, 8, 2);
+      } else {
+        ctx.beginPath();
+        ctx.arc(cx - eyeOffset, cy, headRadius * 0.07, 0, Math.PI * 2);
+        ctx.arc(cx + eyeOffset, cy, headRadius * 0.07, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // 6. Smile
+      ctx.strokeStyle = myGender === "female" ? "#be123c" : "#78350f";
+      ctx.lineWidth = 3;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.arc(cx, cy + (headRadius * 0.18), headRadius * 0.28, 0.15 * Math.PI, 0.85 * Math.PI);
+      ctx.stroke();
+
+      localAvatarTimer = requestAnimationFrame(renderLocalPerson);
+    }
+
+    let strangerFrameStep = 0;
+    function renderStrangerStandby() {
+      if (!strangerCanvas) return;
+      const ctx = strangerCanvas.getContext("2d");
+      const w = strangerCanvas.width;
+      const h = strangerCanvas.height;
+
+      ctx.clearRect(0, 0, w, h);
+
+      // If remote peer video is currently streaming, hide avatar
+      if (remoteVideo && remoteVideo.style.display !== "none" && !remoteVideo.paused && isConnected) {
+        return;
+      }
+
+      strangerFrameStep += 0.035;
+      const breath = Math.sin(strangerFrameStep) * 2;
+
+      ctx.fillStyle = "#07090e";
+      ctx.fillRect(0, 0, w, h);
+
+      const cx = w / 2;
+      const headRadius = Math.min(w, h) * 0.19; 
+      const cy = h * 0.38 + breath;
+
+      // Body / Shoulders
+      ctx.fillStyle = isConnected ? "#10b981" : "#334155";
+      ctx.beginPath();
+      ctx.ellipse(cx, h * 0.95 + breath, w * 0.42, h * 0.38, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Neck
+      ctx.fillStyle = isConnected ? "#f4cca4" : "#475569";
+      const neckWidth = headRadius * 0.46;
+      const neckHeight = headRadius * 0.55;
+      ctx.fillRect(cx - (neckWidth / 2), cy + (headRadius * 0.65), neckWidth, neckHeight);
+
+      // Head
+      ctx.fillStyle = isConnected ? "#fbd3b2" : "#64748b";
+      ctx.beginPath();
+      ctx.arc(cx, cy, headRadius, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Hair
+      ctx.fillStyle = "#1e293b";
+      ctx.beginPath();
+      ctx.arc(cx, cy - (headRadius * 0.08), headRadius * 1.02, Math.PI, Math.PI * 2);
+      ctx.fill();
+
+      // Eyes
+      ctx.fillStyle = "#0f172a";
+      const eyeOffset = headRadius * 0.36;
+      ctx.beginPath();
+      ctx.arc(cx - eyeOffset, cy, headRadius * 0.07, 0, Math.PI * 2);
+      ctx.arc(cx + eyeOffset, cy, headRadius * 0.07, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Neutral or smiling mouth
+      ctx.strokeStyle = "#334155";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      if (isConnected) {
+        ctx.arc(cx, cy + (headRadius * 0.18), headRadius * 0.28, 0.15 * Math.PI, 0.85 * Math.PI);
+      } else {
+        ctx.moveTo(cx - 15, cy + headRadius * 0.28);
+        ctx.lineTo(cx + 15, cy + headRadius * 0.28);
+      }
+      ctx.stroke();
+
+      strangerAvatarTimer = requestAnimationFrame(renderStrangerStandby);
+    }
+
+    syncCanvasSizes();
+    renderLocalPerson();
+    renderStrangerStandby();
+
+    myGenderSelect.addEventListener("change", () => {
+      if (localVideo.style.display === "none") {
+        renderLocalPerson();
+      }
+    });
+
+    // --- Tag Carousel Management ---
+    function escapeHTML(str) {
+      return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
     function renderTags() {
       tagsList.innerHTML = "";
       userTags.forEach(tag => {
@@ -826,7 +658,7 @@
         const cleanTag = escapeHTML(tag).replace(/^https?:\/\//, "");
         badge.innerHTML = `
           <span class="tag-text">#${cleanTag}</span>
-          <span class="remove-tag" data-tag="${escapeHTML(tag)}" title="Remove tag">&times;</span>
+          <span class="remove-tag" data-tag="${escapeHTML(tag)}" title="Remove topic">&times;</span>
         `;
         tagsList.appendChild(badge);
       });
@@ -865,7 +697,7 @@
       }
     });
 
-    // Horizontal wheel scroll & drag
+    // Horizontal Mouse-Wheel and Drag Scrolling for Interests Carousel
     interestsContainer.addEventListener("wheel", (e) => {
       if (e.deltaY !== 0) {
         e.preventDefault();
@@ -874,14 +706,14 @@
     });
 
     let isDown = false;
-    let startX, scrollLeft;
+    let startX = 0;
+    let scrollLeft = 0;
     interestsContainer.addEventListener("mousedown", (e) => {
       if (e.target.tagName === "INPUT" || e.target.tagName === "BUTTON") return;
       isDown = true;
       startX = e.pageX - interestsContainer.offsetLeft;
       scrollLeft = interestsContainer.scrollLeft;
     });
-
     window.addEventListener("mouseup", () => { isDown = false; });
     interestsContainer.addEventListener("mousemove", (e) => {
       if (!isDown) return;
@@ -893,199 +725,7 @@
 
     renderTags();
 
-    // --- 1. Canvas Dimensions & Resizing ---
-    function syncCanvasSizes() {
-      [localCanvas, strangerCanvas].forEach(c => {
-        if (!c) return;
-        const rect = c.getBoundingClientRect();
-        if (c.width !== rect.width || c.height !== rect.height) {
-          c.width = rect.width;
-          c.height = rect.height;
-        }
-      });
-    }
-    window.addEventListener("resize", syncCanvasSizes);
-    setTimeout(syncCanvasSizes, 100);
-
-    // --- 2. Dynamic Local Person Avatar ---
-    let localFrameStep = 0;
-    function renderLocalPerson() {
-      if (!localCanvas) return;
-      const ctx = localCanvas.getContext("2d");
-      const w = localCanvas.width;
-      const h = localCanvas.height;
-
-      ctx.clearRect(0, 0, w, h);
-
-      if (localVideo.style.display !== "none") {
-        return;
-      }
-
-      localFrameStep += 0.035;
-      const breath = Math.sin(localFrameStep) * 2;
-      const myGender = myGenderSelect.value;
-
-      ctx.fillStyle = "#0c1322";
-      ctx.fillRect(0, 0, w, h);
-
-      const cx = w / 2;
-      const headRadius = Math.min(w, h) * 0.19; 
-      const cy = h * 0.38 + breath;
-
-      // Shoulders & Shirt
-      ctx.fillStyle = myGender === "female" ? "#ec4899" : "#2563eb";
-      ctx.beginPath();
-      ctx.ellipse(cx, h * 0.95 + breath, w * 0.42, h * 0.38, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Shirt Collar Accent
-      ctx.fillStyle = myGender === "female" ? "#db2777" : "#1d4ed8";
-      ctx.beginPath();
-      ctx.moveTo(cx - (headRadius * 0.35), h * 0.65 + breath);
-      ctx.lineTo(cx, h * 0.76 + breath);
-      ctx.lineTo(cx + (headRadius * 0.35), h * 0.65 + breath);
-      ctx.fill();
-
-      // Neck
-      ctx.fillStyle = "#e0ac69";
-      const neckWidth = headRadius * 0.46;
-      const neckHeight = headRadius * 0.55;
-      ctx.fillRect(cx - (neckWidth / 2), cy + (headRadius * 0.65), neckWidth, neckHeight);
-
-      // Head
-      ctx.fillStyle = "#f1c27d";
-      ctx.beginPath();
-      ctx.arc(cx, cy, headRadius, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Hair
-      ctx.fillStyle = myGender === "female" ? "#7c2d12" : "#18181b";
-      ctx.beginPath();
-      if (myGender === "female") {
-        ctx.arc(cx, cy - (headRadius * 0.15), headRadius * 1.08, Math.PI, Math.PI * 2);
-        ctx.fillRect(cx - headRadius * 1.05, cy - (headRadius * 0.15), headRadius * 0.4, headRadius * 1.2);
-        ctx.fillRect(cx + headRadius * 0.65, cy - (headRadius * 0.15), headRadius * 0.4, headRadius * 1.2);
-      } else {
-        ctx.arc(cx, cy - (headRadius * 0.1), headRadius * 1.02, Math.PI, Math.PI * 2);
-      }
-      ctx.fill();
-
-      // Eyes
-      ctx.fillStyle = "#09090b";
-      const eyeOffset = headRadius * 0.36;
-      const isBlinking = Math.sin(localFrameStep * 0.45) > 0.96;
-      
-      if (isBlinking) {
-        ctx.fillRect(cx - eyeOffset - 4, cy - 1, 8, 2);
-        ctx.fillRect(cx + eyeOffset - 4, cy - 1, 8, 2);
-      } else {
-        ctx.beginPath();
-        ctx.arc(cx - eyeOffset, cy, headRadius * 0.07, 0, Math.PI * 2);
-        ctx.arc(cx + eyeOffset, cy, headRadius * 0.07, 0, Math.PI * 2);
-        ctx.fill();
-      }
-
-      // Smile
-      ctx.strokeStyle = myGender === "female" ? "#be123c" : "#78350f";
-      ctx.lineWidth = 3;
-      ctx.lineCap = "round";
-      ctx.beginPath();
-      ctx.arc(cx, cy + (headRadius * 0.18), headRadius * 0.28, 0.15 * Math.PI, 0.85 * Math.PI);
-      ctx.stroke();
-
-      localAvatarTimer = requestAnimationFrame(renderLocalPerson);
-    }
-
-    syncCanvasSizes();
-    renderLocalPerson();
-
-    myGenderSelect.addEventListener("change", () => {
-      if (localVideo.style.display === "none") {
-        renderLocalPerson();
-      }
-    });
-
-    // --- 3. Perfectly Proportioned Stranger Avatar ---
-    let frameStep = 0;
-    function renderStrangerFrame() {
-      if (!strangerCanvas) return;
-      const ctx = strangerCanvas.getContext("2d");
-      const w = strangerCanvas.width;
-      const h = strangerCanvas.height;
-
-      ctx.clearRect(0, 0, w, h);
-
-      if (!isConnected || !currentStranger) {
-        ctx.fillStyle = "#000000";
-        ctx.fillRect(0, 0, w, h);
-        return;
-      }
-
-      frameStep += 0.04;
-      const breath = Math.sin(frameStep) * 2;
-
-      ctx.fillStyle = "#0c1322";
-      ctx.fillRect(0, 0, w, h);
-
-      const cx = w / 2;
-      const headRadius = Math.min(w, h) * 0.19; 
-      const cy = h * 0.38 + breath;
-
-      // Shoulders / Chest
-      ctx.fillStyle = currentStranger.shirt;
-      ctx.beginPath();
-      ctx.ellipse(cx, h * 0.95 + breath, w * 0.42, h * 0.38, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Neck
-      ctx.fillStyle = currentStranger.skin;
-      const neckWidth = headRadius * 0.48;
-      const neckHeight = headRadius * 0.55;
-      ctx.fillRect(cx - (neckWidth / 2), cy + (headRadius * 0.65), neckWidth, neckHeight);
-
-      // Head
-      ctx.beginPath();
-      ctx.arc(cx, cy, headRadius, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Hair
-      ctx.fillStyle = currentStranger.hair;
-      ctx.beginPath();
-      if (currentStranger.gender === "female") {
-        ctx.arc(cx, cy - (headRadius * 0.12), headRadius * 1.06, Math.PI, Math.PI * 2);
-        ctx.fillRect(cx - headRadius * 1.02, cy - (headRadius * 0.1), headRadius * 0.38, headRadius * 1.15);
-        ctx.fillRect(cx + headRadius * 0.64, cy - (headRadius * 0.1), headRadius * 0.38, headRadius * 1.15);
-      } else {
-        ctx.arc(cx, cy - (headRadius * 0.05), headRadius * 1.02, Math.PI, Math.PI * 2);
-      }
-      ctx.fill();
-
-      // Eyes
-      ctx.fillStyle = "#111827";
-      const eyeOffset = headRadius * 0.36;
-      const isBlinking = Math.sin(frameStep * 0.5) > 0.96;
-      
-      if (isBlinking) {
-        ctx.fillRect(cx - eyeOffset - 4, cy - 1, 8, 2);
-        ctx.fillRect(cx + eyeOffset - 4, cy - 1, 8, 2);
-      } else {
-        ctx.beginPath();
-        ctx.arc(cx - eyeOffset, cy, headRadius * 0.07, 0, Math.PI * 2);
-        ctx.arc(cx + eyeOffset, cy, headRadius * 0.07, 0, Math.PI * 2);
-      }
-
-      // Smile
-      ctx.strokeStyle = "#4b2d18";
-      ctx.lineWidth = 3;
-      ctx.lineCap = "round";
-      ctx.beginPath();
-      ctx.arc(cx, cy + (headRadius * 0.18), headRadius * 0.28, 0.15 * Math.PI, 0.85 * Math.PI);
-      ctx.stroke();
-
-      partnerAnimationTimer = requestAnimationFrame(renderStrangerFrame);
-    }
-
-    // --- 4. Camera, Mic, Mirror, and Fallback Toggle ---
+    // --- Real Hardware Camera & Microphone Handling ---
     async function startHardwareCamera() {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
@@ -1097,15 +737,31 @@
         localVideo.srcObject = stream;
         localVideo.style.display = "block";
         localCanvas.style.display = "none";
-        floatingControls.style.display = "flex";
 
-        localDot.className = "badge-dot connected";
+        localDot.className = "w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_6px_#10b981]";
         localLabel.textContent = "You (Live WebCam)";
-        btnToggleHardware.style.background = "#2563eb";
-        btnToggleHardware.textContent = "✔ Camera Active";
+        btnToggleHardware.classList.replace("bg-emerald-600", "bg-blue-600");
+        btnToggleHardware.classList.replace("hover:bg-emerald-500", "hover:bg-blue-500");
+        btnHardwareText.textContent = "Camera Active";
+
+        // If an active call exists, replace tracks
+        if (activeMediaCall && activeMediaCall.peerConnection) {
+          const videoTrack = stream.getVideoTracks()[0];
+          const audioTrack = stream.getAudioTracks()[0];
+          const senders = activeMediaCall.peerConnection.getSenders();
+
+          senders.forEach(sender => {
+            if (sender.track && sender.track.kind === "video" && videoTrack) {
+              sender.replaceTrack(videoTrack);
+            }
+            if (sender.track && sender.track.kind === "audio" && audioTrack) {
+              sender.replaceTrack(audioTrack);
+            }
+          });
+        }
       } catch (err) {
-        console.warn("Hardware camera failed or denied:", err);
-        alert("Camera/Mic access was denied or no device was detected. Person avatar fallback active.");
+        console.warn("Hardware camera acquisition failed:", err);
+        appendMessage("", "Camera/Microphone permission denied or no hardware found. Local illustrated avatar active.", "system");
       }
     }
     btnToggleHardware.addEventListener("click", startHardwareCamera);
@@ -1122,7 +778,7 @@
       }
     });
 
-    // Filter Change
+    // Video Filter Changes
     filterSelect.addEventListener("change", (e) => {
       const selectedFilter = e.target.value;
       localVideo.style.filter = selectedFilter === "none" ? "none" : selectedFilter;
@@ -1136,7 +792,7 @@
       btnMuteAudio.textContent = micMuted ? "🔇 Unmute" : "🎤 Mute";
     });
 
-    // Toggle Camera
+    // Camera Pause Toggle
     btnMuteVideo.addEventListener("click", () => {
       if (!localStream) return;
       camDisabled = !camDisabled;
@@ -1146,154 +802,335 @@
         localVideo.style.display = "none";
         localCanvas.style.display = "block";
         renderLocalPerson();
-
-        localDot.className = "badge-dot paused";
+        localDot.className = "w-2 h-2 rounded-full bg-amber-500";
         localLabel.textContent = "You (Camera Paused)";
         btnMuteVideo.textContent = "📷 Start Cam";
       } else {
         localVideo.style.display = "block";
         localCanvas.style.display = "none";
-
-        localDot.className = "badge-dot connected";
+        localDot.className = "w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_6px_#10b981]";
         localLabel.textContent = "You (Live WebCam)";
         btnMuteVideo.textContent = "📷 Cam";
       }
     });
 
-    // --- 5. Chat Auto-Scroll and Message Injection ---
-    function appendMessage(sender, text, type = "stranger") {
-      const now = new Date();
-      const timeStr = now.getHours().toString().padStart(2, "0") + ":" + now.getMinutes().toString().padStart(2, "0");
+    // --- Real WebRTC P2P Signaling & Lobby System using PeerJS ---
+    function generateCleanPeerId() {
+      const randHex = Math.random().toString(36).substring(2, 8);
+      return `webtv555-${randHex}`;
+    }
 
-      const msgDiv = document.createElement("div");
-      msgDiv.className = `message ${type}`;
+    function initPeerInstance() {
+      const peerId = generateCleanPeerId();
+      peer = new Peer(peerId, {
+        debug: 1,
+        config: {
+          iceServers: [
+            { urls: "stun:stun.l.google.com:19302" },
+            { urls: "stun:stun1.l.google.com:19302" },
+            { urls: "stun:stun2.l.google.com:19302" }
+          ]
+        }
+      });
 
-      if (type === "system") {
-        msgDiv.textContent = text;
-      } else {
-        msgDiv.innerHTML = `<span class="time">${timeStr}</span><span class="sender">${sender}:</span> ${escapeHTML(text)}`;
-        if (type === "stranger") playBeep(520, 0.08);
+      peer.on("open", (id) => {
+        myPeerId = id;
+        myPeerIdDisplay.textContent = id;
+        modalMyPeerId.value = id;
+        appendMessage("", "PeerJS WebRTC network initialized. Ready for P2P connection.", "system");
+      });
+
+      // Handle incoming WebRTC Media Stream Call from a Stranger
+      peer.on("call", (incomingCall) => {
+        if (isConnected) {
+          incomingCall.close();
+          return;
+        }
+
+        // Generate blank stream if local camera hasn't been enabled
+        const outgoingStream = localStream || createSilentStream();
+        incomingCall.answer(outgoingStream);
+        setupMediaCallEvents(incomingCall);
+      });
+
+      // Handle incoming Data Connection (for real-time chat & meta handshakes)
+      peer.on("connection", (conn) => {
+        if (isConnected && activeDataConn && activeDataConn.open) {
+          conn.close();
+          return;
+        }
+        setupDataConnection(conn);
+      });
+
+      peer.on("error", (err) => {
+        console.warn("PeerJS error:", err.type, err);
+        if (err.type === "peer-unavailable" && isSearching) {
+          // Normal during lobby hunting, try next slot
+          cycleSearchQueue();
+        }
+      });
+    }
+
+    // Creates an empty canvas stream for audio/video handshake when webcam is not started yet
+    function createSilentStream() {
+      const silentCanvas = document.createElement("canvas");
+      silentCanvas.width = 320;
+      silentCanvas.height = 240;
+      const ctx = silentCanvas.getContext("2d");
+      ctx.fillStyle = "#0c1322";
+      ctx.fillRect(0, 0, 320, 240);
+      const stream = silentCanvas.captureStream(10);
+
+      // Add a silent Web Audio track so WebRTC media negotiation succeeds
+      try {
+        const ctxAudio = getAudioContext();
+        const osc = ctxAudio.createOscillator();
+        const dest = ctxAudio.createMediaStreamDestination();
+        const gain = ctxAudio.createGain();
+        gain.gain.value = 0.0;
+        osc.connect(gain);
+        gain.connect(dest);
+        osc.start();
+        dest.stream.getAudioTracks().forEach(t => stream.addTrack(t));
+      } catch (e) {}
+
+      return stream;
+    }
+
+    function setupMediaCallEvents(mediaCall) {
+      activeMediaCall = mediaCall;
+
+      mediaCall.on("stream", (incomingRemoteStream) => {
+        remoteStream = incomingRemoteStream;
+        remoteVideo.srcObject = incomingRemoteStream;
+        remoteVideo.style.display = "block";
+        strangerCanvas.style.display = "none";
+        strangerLoader.classList.add("hidden");
+
+        strangerDot.className = "w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_6px_#10b981]";
+        strangerLabel.textContent = "Stranger (Live P2P)";
+        playBeep(880, 0.12);
+      });
+
+      mediaCall.on("close", () => {
+        disconnectStranger("Stranger disconnected.");
+      });
+
+      mediaCall.on("error", (e) => {
+        console.warn("Media call error:", e);
+        disconnectStranger("Call ended unexpectedly.");
+      });
+    }
+
+    function setupDataConnection(conn) {
+      activeDataConn = conn;
+
+      conn.on("open", () => {
+        onPeerConnected();
+
+        // Exchange handshake with interests & gender tags
+        const handshakePayload = {
+          type: "handshake",
+          gender: myGenderSelect.value,
+          tags: userTags
+        };
+        conn.send(handshakePayload);
+      });
+
+      conn.on("data", (data) => {
+        if (!data) return;
+
+        if (data.type === "chat") {
+          appendMessage("Stranger", data.text, "stranger");
+        } else if (data.type === "handshake") {
+          // Process stranger's gender and interests
+          handlePeerHandshake(data);
+        } else if (data.type === "disconnect") {
+          disconnectStranger("Stranger clicked Next.");
+        }
+      });
+
+      conn.on("close", () => {
+        disconnectStranger("Stranger left the chat.");
+      });
+
+      conn.on("error", () => {
+        disconnectStranger("Data channel dropped.");
+      });
+    }
+
+    function handlePeerHandshake(data) {
+      const theirGender = data.gender || "unknown";
+      const theirTags = Array.isArray(data.tags) ? data.tags : [];
+      const matchPref = genderSelect.value;
+
+      // Check if candidate matches our gender preference
+      if (matchPref !== "both" && theirGender !== matchPref) {
+        appendMessage("", `Stranger skipped (Does not match '${matchPref}' filter).`, "system");
+        disconnectStranger(null, true);
+        return;
       }
 
-      chatContainer.appendChild(msgDiv);
-      chatContainer.scrollTop = chatContainer.scrollHeight;
+      // Check common topics
+      const commonTags = theirTags.filter(t => userTags.includes(t));
+      if (commonTags.length > 0) {
+        const commonTag = commonTags[0];
+        strangerTag.textContent = `Matched on: #${commonTag}`;
+        strangerTag.style.display = "block";
+        appendMessage("", `You both like #${commonTag}.`, "system");
+      } else {
+        strangerTag.textContent = "Random Match";
+        strangerTag.style.display = "block";
+      }
     }
 
-    function escapeHTML(str) {
-      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    function onPeerConnected() {
+      clearInterval(searchInterval);
+      isSearching = false;
+      isConnected = true;
+
+      btnMainAction.textContent = "⏹ Next (Esc)";
+      btnMainAction.classList.replace("bg-blue-600", "bg-red-600");
+      btnMainAction.classList.replace("hover:bg-blue-500", "hover:bg-red-500");
+
+      strangerDot.className = "w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_6px_#10b981]";
+      strangerLabel.textContent = "Stranger Connected";
+      strangerLoader.classList.add("hidden");
+
+      chatInput.disabled = false;
+      btnSendMessage.disabled = false;
+      chatInput.focus();
+
+      appendMessage("", "You are now chatting with a real peer! Say hi!", "system");
     }
 
-    // --- 6. Stranger Connection with Interest & Gender Matching ---
+    // --- Public Lobby Queue Matchmaking Algorithm ---
+    // Users search numbered lobby room channels ('webtv555-lobby-1' through 20)
+    // One becomes host if unoccupied, or calls the existing occupant.
+    const LOBBY_PREFIX = "webtv555-room-slot-";
+    const TOTAL_ROOMS = 18;
+
     function startSearching() {
-      if (partnerAnimationTimer) cancelAnimationFrame(partnerAnimationTimer);
-      clearTimeout(botDialogueTimeout);
+      if (isConnected) {
+        disconnectStranger();
+      }
+
+      if (!peer || peer.destroyed) {
+        initPeerInstance();
+      }
 
       isSearching = true;
       isConnected = false;
-      currentStranger = null;
+      matchAttemptCount = 0;
+      currentLobbyIndex = Math.floor(Math.random() * TOTAL_ROOMS) + 1;
 
-      strangerDot.className = "badge-dot";
-      strangerLabel.textContent = "Connecting...";
-      strangerTag.style.display = "none";
       btnMainAction.textContent = "⏹ Stop";
-      btnMainAction.classList.add("stop");
+      btnMainAction.classList.replace("bg-blue-600", "bg-red-600");
+      btnMainAction.classList.replace("hover:bg-blue-500", "hover:bg-red-500");
+
+      strangerDot.className = "w-2 h-2 rounded-full bg-red-500";
+      strangerLabel.textContent = "Looking for peer...";
+      strangerTag.style.display = "none";
+      strangerLoader.classList.remove("hidden");
+      strangerLoadingText.textContent = "Connecting to public P2P queue...";
 
       chatInput.disabled = true;
       btnSendMessage.disabled = true;
 
       const myGender = myGenderSelect.options[myGenderSelect.selectedIndex].text;
       const pref = genderSelect.value;
-      const prefText = pref === "both" ? "someone" : `a ${pref} stranger`;
-      appendMessage("", `Looking for ${prefText} for you (${myGender})...`, "system");
+      const prefText = pref === "both" ? "anyone" : `a ${pref} stranger`;
+      appendMessage("", `Searching for ${prefText} for you (${myGender})...`, "system");
 
-      const ctx = strangerCanvas.getContext("2d");
-      ctx.fillStyle = "#000";
-      ctx.fillRect(0, 0, strangerCanvas.width, strangerCanvas.height);
-
-      setTimeout(() => {
-        if (!isSearching) return;
-        connectStranger();
-      }, 1400);
+      cycleSearchQueue();
+      searchInterval = setInterval(cycleSearchQueue, 3500);
     }
 
-    function connectStranger() {
-      isSearching = false;
-      isConnected = true;
+    function cycleSearchQueue() {
+      if (!isSearching || isConnected || !peer) return;
 
-      const pref = genderSelect.value;
-      let pool = strangerProfiles;
-      if (pref !== "both") {
-        pool = strangerProfiles.filter(p => p.gender === pref);
-      }
+      matchAttemptCount++;
+      currentLobbyIndex = (currentLobbyIndex % TOTAL_ROOMS) + 1;
+      const targetLobbyPeer = `${LOBBY_PREFIX}${currentLobbyIndex}`;
 
-      let matchedTag = "chatting";
-      let prioritized = pool.filter(p => p.tags.some(t => userTags.includes(t)));
-      
-      let candidate;
-      if (prioritized.length > 0) {
-        candidate = prioritized[Math.floor(Math.random() * prioritized.length)];
-        const common = candidate.tags.filter(t => userTags.includes(t));
-        matchedTag = common[0] || "chatting";
-      } else {
-        candidate = pool[Math.floor(Math.random() * pool.length)];
-        matchedTag = candidate.tags[0] || "chatting";
-      }
+      strangerLoadingText.textContent = `Pinging lobby slot #${currentLobbyIndex}...`;
 
-      currentStranger = candidate;
-      strangerDot.className = "badge-dot connected";
-      strangerLabel.textContent = currentStranger.name;
-      strangerTag.textContent = `Matched on: #${matchedTag}`;
-      strangerTag.style.display = "block";
-      btnMainAction.textContent = "⏹ Next (Esc)";
+      // Try establishing WebRTC Data connection to the target lobby slot
+      const conn = peer.connect(targetLobbyPeer, {
+        reliable: true,
+        metadata: {
+          gender: myGenderSelect.value,
+          tags: userTags
+        }
+      });
 
-      chatInput.disabled = false;
-      btnSendMessage.disabled = false;
-      chatInput.focus();
+      conn.on("open", () => {
+        // Connected to an occupant!
+        setupDataConnection(conn);
 
-      playBeep(880, 0.12);
-      appendMessage("", "You're now chatting with a random stranger. Say hi!", "system");
-      appendMessage("", `You both like #${matchedTag}.`, "system");
-      renderStrangerFrame();
+        // Also initiate media call
+        const outgoingStream = localStream || createSilentStream();
+        const call = peer.call(targetLobbyPeer, outgoingStream);
+        setupMediaCallEvents(call);
+      });
 
-      botDialogueTimeout = setTimeout(() => {
-        if (!isConnected) return;
-        const intros = [
-          `Hey! Glad to meet another #${matchedTag} fan!`,
-          "Hello from the other side! How's your day going?",
-          "What's up? Nice to meet you!",
-          "Konnichiwa! Hey friend!"
-        ];
-        appendMessage("Stranger", intros[Math.floor(Math.random() * intros.length)], "stranger");
-      }, 1200);
+      conn.on("error", () => {
+        // Slot is empty or busy; continue to next slot
+      });
     }
 
-    function disconnectStranger() {
-      if (partnerAnimationTimer) cancelAnimationFrame(partnerAnimationTimer);
-      clearTimeout(botDialogueTimeout);
+    function disconnectStranger(notice = "You have disconnected.", autoResume = false) {
+      clearInterval(searchInterval);
+
+      if (activeDataConn) {
+        try {
+          activeDataConn.send({ type: "disconnect" });
+          activeDataConn.close();
+        } catch (e) {}
+        activeDataConn = null;
+      }
+
+      if (activeMediaCall) {
+        try {
+          activeMediaCall.close();
+        } catch (e) {}
+        activeMediaCall = null;
+      }
+
+      if (remoteVideo) {
+        remoteVideo.srcObject = null;
+        remoteVideo.style.display = "none";
+      }
+
+      strangerCanvas.style.display = "block";
+      renderStrangerStandby();
 
       isConnected = false;
       isSearching = false;
-      currentStranger = null;
 
-      strangerDot.className = "badge-dot";
+      strangerDot.className = "w-2 h-2 rounded-full bg-red-500";
       strangerLabel.textContent = "Disconnected";
       strangerTag.style.display = "none";
+      strangerLoader.classList.add("hidden");
 
-      btnMainAction.textContent = "▶ Start Chat";
-      btnMainAction.classList.remove("stop");
+      btnMainAction.textContent = "▶ Start P2P Chat";
+      btnMainAction.classList.replace("bg-red-600", "bg-blue-600");
+      btnMainAction.classList.replace("hover:bg-red-500", "hover:bg-blue-500");
 
       chatInput.disabled = true;
       btnSendMessage.disabled = true;
 
       playBeep(280, 0.15);
-      appendMessage("", "You have disconnected.", "system");
+      if (notice) {
+        appendMessage("", notice, "system");
+      }
 
-      const ctx = strangerCanvas.getContext("2d");
-      ctx.fillStyle = "#000";
-      ctx.fillRect(0, 0, strangerCanvas.width, strangerCanvas.height);
+      if (autoResume) {
+        setTimeout(startSearching, 400);
+      }
     }
 
-    // Controls and Hotkey
+    // Toggle Search / Disconnect
     btnMainAction.addEventListener("click", () => {
       if (isConnected || isSearching) {
         disconnectStranger();
@@ -1305,51 +1142,122 @@
     window.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
         if (isConnected || isSearching) {
-          disconnectStranger();
-          setTimeout(startSearching, 300);
+          disconnectStranger(null, true);
         } else {
           startSearching();
         }
       }
     });
 
-    // Chat Send
-    function handleSend(customText = null) {
-      const msg = customText || chatInput.value.trim();
-      if (!msg || !isConnected) return;
+    // Chat Message Dispatching
+    function appendMessage(sender, text, type = "stranger") {
+      const now = new Date();
+      const timeStr = now.getHours().toString().padStart(2, "0") + ":" + now.getMinutes().toString().padStart(2, "0");
 
-      appendMessage("You", msg, "you");
-      chatInput.value = "";
+      const msgDiv = document.createElement("div");
+      msgDiv.className = `message ${type}`;
 
-      clearTimeout(botDialogueTimeout);
-      botDialogueTimeout = setTimeout(() => {
-        if (!isConnected) return;
-        const replies = [
-          "That is so cool!",
-          "Haha totally agree with you!",
-          "Where are you chatting from?",
-          "Just listening to some city pop and lofi beats 🎧",
-          "Do you play any games or watch anime?",
-          "Nice meeting you!",
-          "Take care my friend!"
-        ];
-        appendMessage("Stranger", replies[Math.floor(Math.random() * replies.length)], "stranger");
-      }, 1000 + Math.random() * 800);
+      if (type === "system") {
+        msgDiv.className = "text-xs text-slate-400 italic text-center bg-white/[0.03] py-1.5 px-3 rounded-md";
+        msgDiv.textContent = text;
+      } else {
+        const senderColor = type === "you" ? "text-blue-400 font-bold" : "text-red-400 font-bold";
+        msgDiv.innerHTML = `<span class="text-[11px] text-slate-400 mr-1.5">${timeStr}</span><span class="${senderColor}">${sender}:</span> <span class="text-slate-100">${escapeHTML(text)}</span>`;
+        if (type === "stranger") {
+          playBeep(520, 0.08);
+        }
+      }
+
+      chatContainer.appendChild(msgDiv);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
     }
 
-    btnSendMessage.addEventListener("click", () => handleSend());
+    function handleSendMessage(customMsg = null) {
+      const text = customMsg || chatInput.value.trim();
+      if (!text || !isConnected || !activeDataConn) return;
+
+      appendMessage("You", text, "you");
+      activeDataConn.send({
+        type: "chat",
+        text: text
+      });
+
+      chatInput.value = "";
+    }
+
+    btnSendMessage.addEventListener("click", () => handleSendMessage());
     chatInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") handleSend();
+      if (e.key === "Enter") handleSendMessage();
     });
 
-    // Quick Chips Click Event
     quickChips.forEach(chip => {
       chip.addEventListener("click", () => {
         if (!isConnected) return;
-        const msg = chip.getAttribute("data-msg");
-        handleSend(msg);
+        handleSendMessage(chip.getAttribute("data-msg"));
       });
     });
+
+    // Direct Room Connect Modal Handlers
+    btnOpenDirectConnect.addEventListener("click", () => {
+      directModal.classList.remove("hidden");
+      directModal.classList.add("flex");
+      if (myPeerId) {
+        modalMyPeerId.value = myPeerId;
+      }
+    });
+
+    btnCloseModal.addEventListener("click", () => {
+      directModal.classList.add("hidden");
+      directModal.classList.remove("flex");
+    });
+
+    btnCopyMyPeerId.addEventListener("click", () => {
+      if (!modalMyPeerId.value) return;
+      modalMyPeerId.select();
+      document.execCommand("copy");
+      btnCopyMyPeerId.textContent = "Copied!";
+      setTimeout(() => { btnCopyMyPeerId.textContent = "Copy"; }, 1500);
+    });
+
+    btnConnectDirectPeer.addEventListener("click", () => {
+      const target = targetPeerIdInput.value.trim();
+      if (!target) return;
+
+      directModal.classList.add("hidden");
+      directModal.classList.remove("flex");
+
+      if (isConnected) {
+        disconnectStranger();
+      }
+
+      appendMessage("", `Initiating direct P2P call to ${target}...`, "system");
+
+      const conn = peer.connect(target, { reliable: true });
+      conn.on("open", () => {
+        setupDataConnection(conn);
+        const outgoingStream = localStream || createSilentStream();
+        const call = peer.call(target, outgoingStream);
+        setupMediaCallEvents(call);
+      });
+
+      conn.on("error", (e) => {
+        appendMessage("", `Could not reach ${target}. Check the ID and try again.`, "system");
+      });
+    });
+
+    // Dynamic Online Count Fluctuation
+    setInterval(() => {
+      const countEl = document.getElementById("userCount");
+      if (countEl) {
+        const base = Math.floor(Math.random() * 8) + 12;
+        countEl.textContent = `${base} Strangers`;
+      }
+    }, 6000);
+
+    // Boot PeerJS on load
+    window.onload = () => {
+      initPeerInstance();
+    };
   </script>
 </body>
 </html>
