@@ -5,10 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>Web TV 555 - Live Random Video Chat</title>
   
-  <!-- Socket.io for High-Performance Atomic Backend Matchmaking -->
-  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-  <!-- PeerJS for WebRTC Direct P2P Video, Audio & Encrypted Chat -->
-  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <!-- High-Speed Global CDNs (Cloudflare Edge) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 
   <style>
     :root {
@@ -16,10 +15,8 @@
       --card-bg: #0f172a;
       --card-inner: #111827;
       --border-color: #1e293b;
-      --border-hover: #334155;
       --primary: #3b82f6;
       --primary-hover: #2563eb;
-      --primary-glow: rgba(59, 130, 246, 0.35);
       --danger: #ef4444;
       --danger-hover: #dc2626;
       --success: #10b981;
@@ -49,11 +46,9 @@
       padding-bottom: env(safe-area-inset-bottom, 0px);
     }
 
-    /* ==========================================================================
-       Top Navigation Bar
-       ========================================================================== */
+    /* Top Navigation Header */
     header {
-      height: 56px;
+      height: 54px;
       background: var(--card-bg);
       border-bottom: 1px solid var(--border-color);
       display: flex;
@@ -62,13 +57,12 @@
       padding: 0 16px;
       flex-shrink: 0;
       z-index: 30;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
     }
 
     .brand-group {
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 12px;
     }
 
     .logo {
@@ -85,18 +79,17 @@
     .logo-badge {
       background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
       color: #ffffff;
-      font-size: 0.75rem;
-      padding: 2px 8px;
+      font-size: 0.72rem;
+      padding: 2px 7px;
       border-radius: 5px;
       font-weight: 800;
-      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.4);
     }
 
     .online-counter-badge {
       display: flex;
       align-items: center;
       gap: 7px;
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       color: var(--text-muted);
       background: rgba(15, 23, 42, 0.8);
       padding: 4px 10px;
@@ -106,17 +99,11 @@
     }
 
     .online-dot {
-      width: 8px;
-      height: 8px;
+      width: 7px;
+      height: 7px;
       background: var(--success);
       border-radius: 50%;
-      box-shadow: 0 0 8px var(--success);
-      animation: pulseGreen 2s infinite ease-in-out;
-    }
-
-    @keyframes pulseGreen {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.2); opacity: 0.7; }
+      box-shadow: 0 0 6px var(--success);
     }
 
     .header-actions {
@@ -135,11 +122,6 @@
       outline: none;
       cursor: pointer;
       font-weight: 600;
-      transition: border-color 0.2s;
-    }
-
-    .filter-select:hover {
-      border-color: #475569;
     }
 
     .filter-select option {
@@ -152,41 +134,31 @@
       background: var(--success);
       color: #fff;
       border: none;
-      padding: 7px 14px;
+      padding: 6px 14px;
       border-radius: 7px;
       font-size: 0.82rem;
       font-weight: 700;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 7px;
+      gap: 6px;
       transition: all 0.2s ease;
-      box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);
-    }
-
-    .cam-btn:hover {
-      opacity: 0.92;
-      transform: translateY(-1px);
     }
 
     .cam-btn.active {
       background: #2563eb;
-      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
     }
 
-    /* ==========================================================================
-       Main Workspace Layout
-       ========================================================================== */
+    /* Main Split Layout */
     main {
       flex: 1;
       display: flex;
-      padding: 12px;
-      gap: 12px;
+      padding: 10px;
+      gap: 10px;
       overflow: hidden;
       min-height: 0;
     }
 
-    /* Video Hero Arena (Hero Stranger + Corner PiP) */
     .video-stage-container {
       flex: 7;
       position: relative;
@@ -197,7 +169,6 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
     }
 
     .remote-video-wrap {
@@ -256,7 +227,6 @@
     .badge-dot.waiting {
       background: var(--warning);
       box-shadow: 0 0 8px var(--warning);
-      animation: pulseGreen 1.5s infinite;
     }
 
     .video-match-tag {
@@ -278,8 +248,8 @@
     /* Picture-In-Picture Floating Card */
     .local-pip-card {
       position: absolute;
-      bottom: 14px;
-      right: 14px;
+      bottom: 12px;
+      right: 12px;
       width: 190px;
       height: 142px;
       background: #111827;
@@ -288,12 +258,6 @@
       box-shadow: 0 10px 28px rgba(0, 0, 0, 0.7);
       overflow: hidden;
       z-index: 20;
-      transition: border-color 0.2s, transform 0.2s;
-    }
-
-    .local-pip-card:hover {
-      border-color: #60a5fa;
-      transform: scale(1.02);
     }
 
     video#localVideo {
@@ -351,16 +315,9 @@
       cursor: pointer;
       padding: 3px 5px;
       border-radius: 5px;
-      transition: background 0.15s;
     }
 
-    .pip-controls button:hover {
-      background: rgba(255, 255, 255, 0.2);
-    }
-
-    /* ==========================================================================
-       Right-Side Chat Section
-       ========================================================================== */
+    /* Right-Side Chat Box */
     .chat-section {
       flex: 3;
       min-width: 300px;
@@ -372,7 +329,6 @@
       flex-direction: column;
       overflow: hidden;
       height: 100%;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
     }
 
     .chat-header {
@@ -432,9 +388,6 @@
       font-size: 0.8rem;
       text-align: center;
       margin: 4px 0;
-      padding: 2px 6px;
-      background: rgba(255, 255, 255, 0.02);
-      border-radius: 4px;
     }
 
     .quick-replies {
@@ -447,13 +400,6 @@
       align-items: center;
     }
 
-    .quick-replies::-webkit-scrollbar {
-      height: 3px;
-    }
-    .quick-replies::-webkit-scrollbar-thumb {
-      background: #1e293b;
-    }
-
     .quick-chip {
       background: #1e293b;
       color: #94a3b8;
@@ -463,14 +409,12 @@
       font-size: 0.74rem;
       cursor: pointer;
       white-space: nowrap;
-      transition: all 0.15s ease;
       font-weight: 600;
     }
 
     .quick-chip:hover {
       background: #334155;
       color: #ffffff;
-      transform: translateY(-1px);
     }
 
     .chat-input-area {
@@ -490,7 +434,6 @@
       color: #ffffff;
       font-size: 0.84rem;
       outline: none;
-      transition: border-color 0.2s;
     }
 
     .chat-input-area input:focus {
@@ -505,11 +448,6 @@
       border-radius: 7px;
       cursor: pointer;
       font-weight: 700;
-      transition: background 0.2s;
-    }
-
-    .chat-input-area button:hover:not(:disabled) {
-      background: var(--primary-hover);
     }
 
     .chat-input-area button:disabled {
@@ -517,11 +455,9 @@
       cursor: not-allowed;
     }
 
-    /* ==========================================================================
-       Bottom Footer Controls & Tag Carousel
-       ========================================================================== */
+    /* Bottom Footer Controls */
     footer {
-      height: 64px;
+      height: 60px;
       background: var(--card-bg);
       border-top: 1px solid var(--border-color);
       display: flex;
@@ -531,10 +467,6 @@
       flex-shrink: 0;
       overflow-x: auto;
       z-index: 25;
-    }
-
-    footer::-webkit-scrollbar {
-      height: 3px;
     }
 
     .btn-main-action {
@@ -551,21 +483,10 @@
       gap: 8px;
       white-space: nowrap;
       transition: all 0.2s;
-      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.35);
-    }
-
-    .btn-main-action:hover {
-      background: var(--primary-hover);
-      transform: translateY(-1px);
     }
 
     .btn-main-action.stop {
       background: var(--danger);
-      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.35);
-    }
-
-    .btn-main-action.stop:hover {
-      background: var(--danger-hover);
     }
 
     .gender-picker-wrap {
@@ -602,9 +523,8 @@
       font-weight: 700;
     }
 
-    /* Modern Glowing Tags Carousel */
+    /* Tags Carousel */
     .interests-container {
-      position: relative;
       display: flex;
       align-items: center;
       gap: 8px;
@@ -618,24 +538,6 @@
       cursor: grab;
       user-select: none;
       flex-shrink: 0;
-      box-shadow: 0 0 12px rgba(59, 130, 246, 0.08) inset;
-    }
-
-    .interests-container:active {
-      cursor: grabbing;
-    }
-
-    .interests-container::-webkit-scrollbar {
-      height: 4px;
-    }
-    .interests-container::-webkit-scrollbar-track {
-      background: rgba(15, 23, 42, 0.6);
-      border-radius: 4px;
-    }
-    .interests-container::-webkit-scrollbar-thumb {
-      background: linear-gradient(90deg, #3b82f6, #8b5cf6);
-      border-radius: 4px;
-      box-shadow: 0 0 6px rgba(139, 92, 246, 0.6);
     }
 
     .tags-list {
@@ -656,13 +558,6 @@
       align-items: center;
       gap: 6px;
       white-space: nowrap;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .tag-badge:hover {
-      border-color: #60a5fa;
-      color: #ffffff;
-      transform: translateY(-1px) scale(1.03);
     }
 
     .tag-badge .remove-tag {
@@ -670,20 +565,10 @@
       color: #93c5fd;
       font-weight: 800;
       font-size: 0.76rem;
-      width: 14px;
-      height: 14px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.1);
-      transition: all 0.15s ease;
     }
 
     .tag-badge .remove-tag:hover {
-      background: #ef4444;
-      color: #ffffff;
-      transform: scale(1.15);
+      color: #ef4444;
     }
 
     .tag-input-wrap {
@@ -703,13 +588,8 @@
       width: 100%;
     }
 
-    .tag-input::placeholder {
-      color: #64748b;
-      font-style: italic;
-    }
-
     .btn-add-tag {
-      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      background: #2563eb;
       color: #ffffff;
       border: none;
       border-radius: 12px;
@@ -718,11 +598,6 @@
       padding: 3px 8px;
       cursor: pointer;
       white-space: nowrap;
-      transition: transform 0.15s;
-    }
-
-    .btn-add-tag:hover {
-      transform: scale(1.05);
     }
 
     .status-text {
@@ -733,24 +608,22 @@
       user-select: none;
     }
 
-    /* ==========================================================================
-       Mobile-Native Split Rules
-       ========================================================================== */
+    /* Mobile-Native Viewport Handling */
     @media (max-width: 880px) {
       main {
         flex-direction: column;
-        padding: 8px;
-        gap: 8px;
+        padding: 6px;
+        gap: 6px;
       }
       .video-stage-container {
         flex: 1;
         min-height: 48%;
       }
       .local-pip-card {
-        width: 130px;
-        height: 98px;
-        bottom: 10px;
-        right: 10px;
+        width: 120px;
+        height: 90px;
+        bottom: 8px;
+        right: 8px;
       }
       .chat-section {
         flex: 1;
@@ -762,16 +635,16 @@
         display: none;
       }
       footer {
-        height: 56px;
-        padding: 0 10px;
-        gap: 8px;
+        height: 54px;
+        padding: 0 8px;
+        gap: 6px;
       }
     }
   </style>
 </head>
 <body>
 
-  <!-- Top Navigation Header -->
+  <!-- Header -->
   <header>
     <div class="brand-group">
       <div class="logo">
@@ -784,7 +657,6 @@
     </div>
     
     <div class="header-actions">
-      <!-- Live Video Filter Switcher -->
       <select id="filterSelect" class="filter-select" title="Camera Filter">
         <option value="none">✨ Filter: Normal</option>
         <option value="grayscale(100%)">Noir (B&W)</option>
@@ -797,9 +669,8 @@
     </div>
   </header>
 
-  <!-- Main Split Layout -->
+  <!-- Main Viewports -->
   <main>
-    <!-- Stranger Hero Video Stage + Corner PiP -->
     <div class="video-stage-container">
       <div class="remote-video-wrap">
         <div class="video-badge">
@@ -811,30 +682,30 @@
         <canvas id="remoteCanvas"></canvas>
       </div>
 
-      <!-- Local Picture-in-Picture Card -->
+      <!-- Local PiP -->
       <div class="local-pip-card">
         <div class="local-pip-badge" id="localLabel">You</div>
         <video id="localVideo" class="mirrored" autoplay playsinline muted></video>
         <canvas id="localCanvas"></canvas>
 
         <div class="pip-controls">
-          <button id="btnSwitchCamera" title="Switch Front/Rear Camera">🔄</button>
+          <button id="btnSwitchCamera" title="Switch Front/Rear Cam">🔄</button>
           <button id="btnToggleMirror" title="Flip Mirror">🪞</button>
-          <button id="btnMuteAudio" title="Mute Microphone">🎤</button>
+          <button id="btnMuteAudio" title="Mute Mic">🎤</button>
           <button id="btnMuteVideo" title="Stop Video">📷</button>
         </div>
       </div>
     </div>
 
-    <!-- Right-Hand Text Chat -->
+    <!-- Chat Drawer -->
     <div class="chat-section">
       <div class="chat-header">
         <span>💬 Text Conversation</span>
-        <span id="p2pStatus" style="font-size: 0.74rem; color: var(--text-muted);">Backend: Initializing...</span>
+        <span id="p2pStatus" style="font-size: 0.74rem; color: #10b981;">Railway: Connecting...</span>
       </div>
 
       <div class="messages-container" id="chatContainer">
-        <div class="message system">Welcome to Web TV 555! Click Start Chat to connect with a real stranger.</div>
+        <div class="message system">Welcome to Web TV 555! Click Start Chat to connect with a stranger.</div>
       </div>
 
       <div class="quick-replies">
@@ -851,11 +722,10 @@
     </div>
   </main>
 
-  <!-- Bottom Control Bar -->
+  <!-- Controls Footer -->
   <footer>
     <button class="btn-main-action" id="btnMainAction">▶ Start Chat</button>
 
-    <!-- Your Gender Picker -->
     <div class="gender-picker-wrap">
       <label for="myGenderSelect">I am:</label>
       <select id="myGenderSelect" class="gender-select">
@@ -864,7 +734,6 @@
       </select>
     </div>
 
-    <!-- Match Preference Picker -->
     <div class="gender-picker-wrap">
       <label for="genderSelect">Match With:</label>
       <select id="genderSelect" class="gender-select">
@@ -874,8 +743,7 @@
       </select>
     </div>
 
-    <!-- Glowing Dynamic Tag Carousel -->
-    <div class="interests-container" id="interestsContainer" title="Scroll or drag sideways to see topics">
+    <div class="interests-container" id="interestsContainer" title="Scroll or drag tags">
       <div class="tags-list" id="tagsList"></div>
       <div class="tag-input-wrap">
         <input type="text" id="tagInput" class="tag-input" placeholder="+ Add topic..." autocomplete="off" />
@@ -888,13 +756,14 @@
 
   <script>
     // =========================================================================
-    // 1. CONFIGURATION & RENDER SERVER CONNECTION
+    // 1. RAILWAY BACKEND & INSTANT SOCKET INITIALIZATION
     // =========================================================================
-    const BACKEND_URL = "https://your-railway-url.up.railway.app";
+    const BACKEND_URL = "https://my-web-chat-production.up.railway.app";
 
     const socket = io(BACKEND_URL, {
       transports: ["websocket", "polling"],
-      reconnectionAttempts: 10,
+      reconnection: true,
+      reconnectionAttempts: Infinity,
       timeout: 10000
     });
 
@@ -909,31 +778,11 @@
     let isMirrored = true;
     let micMuted = false;
     let camDisabled = false;
-    let currentFacingMode = "user"; // "user" (front) or "environment" (rear)
+    let currentFacingMode = "user";
 
     let userTags = ["chatting", "music"];
 
-    // Web Audio Synthesizer for System Chimes
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    function playTone(freq, type, duration) {
-      try {
-        if (audioCtx.state === "suspended") audioCtx.resume();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = type;
-        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + duration);
-      } catch (err) {}
-    }
-
-    // =========================================================================
-    // 2. DOM ELEMENT CACHE
-    // =========================================================================
+    // UI Cache
     const filterSelect = document.getElementById("filterSelect");
     const myGenderSelect = document.getElementById("myGenderSelect");
     const genderSelect = document.getElementById("genderSelect");
@@ -962,60 +811,22 @@
     const btnAddTag = document.getElementById("btnAddTag");
 
     // =========================================================================
-    // 3. WEBRTC ENGINE (PEERJS INITIALIZATION)
-    // =========================================================================
-    function initializePeer() {
-      peer = new Peer(undefined, {
-        config: {
-          iceServers: [
-            { urls: "stun:stun.l.google.com:19302" },
-            { urls: "stun:stun1.l.google.com:19302" },
-            { urls: "stun:global.stun.twilio.com:3478" }
-          ]
-        },
-        debug: 1
-      });
-
-      peer.on("open", (id) => {
-        myPeerId = id;
-        p2pStatus.textContent = "Backend: Connected";
-      });
-
-      // Answer Incoming Calls
-      peer.on("call", (call) => {
-        const streamToSend = (localStream && !camDisabled) ? localStream : createFallbackStream();
-        call.answer(streamToSend);
-        bindCallEvents(call);
-      });
-
-      // Handle Data Connections for Text Chat
-      peer.on("connection", (conn) => {
-        bindDataEvents(conn);
-      });
-
-      peer.on("error", (err) => {
-        console.warn("PeerJS Notification:", err);
-      });
-    }
-    initializePeer();
-
-    // =========================================================================
-    // 4. ATOMIC SOCKET.IO MATCHMAKING (RENDER BACKEND)
+    // 2. SOCKET.IO EVENTS (RAILWAY)
     // =========================================================================
     socket.on("connect", () => {
-      p2pStatus.textContent = "Server: Online";
+      p2pStatus.textContent = "Railway: Connected";
+      p2pStatus.style.color = "#10b981";
     });
 
-    socket.on("disconnect", () => {
-      p2pStatus.textContent = "Server: Offline";
+    socket.on("connect_error", () => {
+      p2pStatus.textContent = "Connecting to Railway...";
+      p2pStatus.style.color = "#f59e0b";
     });
 
-    // Genuine Real-Time Presence Count
     socket.on("presence_count", (count) => {
       userCount.textContent = count;
     });
 
-    // 1-on-1 Match Pair Notification
     socket.on("matched", (payload) => {
       isSearching = false;
       isConnected = true;
@@ -1034,10 +845,8 @@
         strangerTag.style.display = "block";
       }
 
-      playTone(880, "sine", 0.15);
       appendMessage("", "Connected with a live stranger. Say hi!", "system");
 
-      // Initiator triggers WebRTC call
       if (payload.isInitiator && myPeerId && payload.partnerPeerId) {
         const streamToSend = (localStream && !camDisabled) ? localStream : createFallbackStream();
         const call = peer.call(payload.partnerPeerId, streamToSend);
@@ -1048,6 +857,40 @@
       }
     });
 
+    // =========================================================================
+    // 3. WEBRTC ENGINE (PEERJS)
+    // =========================================================================
+    function initializePeer() {
+      peer = new Peer({
+        config: {
+          iceServers: [
+            { urls: "stun:stun.l.google.com:19302" },
+            { urls: "stun:stun1.l.google.com:19302" },
+            { urls: "stun:global.stun.twilio.com:3478" }
+          ]
+        }
+      });
+
+      peer.on("open", (id) => {
+        myPeerId = id;
+      });
+
+      peer.on("call", (call) => {
+        const streamToSend = (localStream && !camDisabled) ? localStream : createFallbackStream();
+        call.answer(streamToSend);
+        bindCallEvents(call);
+      });
+
+      peer.on("connection", (conn) => {
+        bindDataEvents(conn);
+      });
+
+      peer.on("error", (err) => {
+        console.warn("PeerJS note:", err);
+      });
+    }
+    initializePeer();
+
     function bindCallEvents(call) {
       activeCall = call;
       call.on("stream", (remoteMediaStream) => {
@@ -1055,40 +898,35 @@
         remoteVideo.style.display = "block";
         remoteCanvas.style.display = "none";
       });
-      call.on("close", () => {
-        handleStrangerLeft();
-      });
-      call.on("error", () => {
-        handleStrangerLeft();
-      });
+      call.on("close", handleStrangerLeft);
+      call.on("error", handleStrangerLeft);
     }
 
     function bindDataEvents(conn) {
       activeDataConnection = conn;
       conn.on("data", (data) => {
         if (data.type === "chat") {
-          playTone(520, "triangle", 0.08);
           appendMessage("Stranger", data.text, "stranger");
         }
       });
-      conn.on("close", () => {
-        handleStrangerLeft();
-      });
+      conn.on("close", handleStrangerLeft);
     }
 
     function handleStrangerLeft() {
       if (!isConnected) return;
       isConnected = false;
-      playTone(280, "sine", 0.2);
       appendMessage("", "Stranger has disconnected.", "system");
       disconnectStranger();
     }
 
     // =========================================================================
-    // 5. MATCHMAKING QUEUE ACTIONS
+    // 4. MATCHMAKING ACTIONS
     // =========================================================================
     function startMatchmaking() {
-      if (!myPeerId) return;
+      if (!myPeerId) {
+        appendMessage("", "Establishing network handshake, please wait...", "system");
+        return;
+      }
       isSearching = true;
       isConnected = false;
 
@@ -1103,7 +941,6 @@
 
       appendMessage("", "Looking for an active stranger...", "system");
 
-      // Register into Render's atomic queue
       socket.emit("join_queue", {
         peerId: myPeerId,
         gender: myGenderSelect.value,
@@ -1160,7 +997,7 @@
     });
 
     // =========================================================================
-    // 6. HARDWARE CAMERA / MIC & PIP CONTROLS
+    // 5. NON-BLOCKING CAMERA & MIC INITIALIZATION
     // =========================================================================
     async function activateCamera() {
       try {
@@ -1188,30 +1025,25 @@
           if (sender) sender.replaceTrack(videoTrack);
         }
       } catch (err) {
-        console.warn("Camera access failed or was rejected:", err);
-        alert("Camera or Microphone permission was not granted. Illustrated avatar active.");
+        console.warn("Camera request skipped:", err);
       }
     }
     btnToggleHardware.addEventListener("click", activateCamera);
 
-    // Front/Rear Camera Switcher
     btnSwitchCamera.addEventListener("click", () => {
       currentFacingMode = currentFacingMode === "user" ? "environment" : "user";
       activateCamera();
     });
 
-    // Mirror Toggle
     btnToggleMirror.addEventListener("click", () => {
       isMirrored = !isMirrored;
       localVideo.classList.toggle("mirrored", isMirrored);
     });
 
-    // Filters
     filterSelect.addEventListener("change", (e) => {
       localVideo.style.filter = e.target.value;
     });
 
-    // Audio & Video Mute
     btnMuteAudio.addEventListener("click", () => {
       if (!localStream) return;
       micMuted = !micMuted;
@@ -1228,7 +1060,6 @@
       localLabel.textContent = camDisabled ? "You (Paused)" : "You (Live)";
     });
 
-    // Silent Fallback Stream when webcam is off
     function createFallbackStream() {
       const fallbackCanvas = document.createElement("canvas");
       fallbackCanvas.width = 320;
@@ -1240,23 +1071,21 @@
     }
 
     // =========================================================================
-    // 7. FULL PROCEDURAL CANVAS AVATAR ENGINE (BREATHING & BLINKING)
+    // 6. PROCEDURAL AVATAR RENDERER (0ms IMMEDIATE DISPLAY)
     // =========================================================================
     let animStep = 0;
     function renderAvatarsLoop() {
       animStep += 0.04;
-      const breath = Math.sin(animStep) * 2.2;
+      const breath = Math.sin(animStep) * 2;
       const isBlinking = Math.sin(animStep * 0.45) > 0.95;
 
-      // 1. Render Local Canvas Avatar if camera is paused/inactive
-      if (localCanvas && localVideo.style.display === "none") {
+      if (localCanvas && localVideo.style.display !== "block") {
         drawCharacter(localCanvas, myGenderSelect.value, breath, isBlinking, "#2563eb", "#e0ac69");
       }
 
-      // 2. Render Remote Canvas Avatar if disconnected or waiting
-      if (remoteCanvas && remoteVideo.style.display === "none") {
+      if (remoteCanvas && remoteVideo.style.display !== "block") {
         const targetGender = genderSelect.value === "female" ? "female" : "male";
-        const accentColor = isSearching ? "#f59e0b" : "#475569";
+        const accentColor = isSearching ? "#f59e0b" : "#3b82f6";
         drawCharacter(remoteCanvas, targetGender, breath, isBlinking, accentColor, "#f1c27d");
       }
 
@@ -1267,6 +1096,7 @@
       const ctx = canvas.getContext("2d");
       const w = canvas.width;
       const h = canvas.height;
+      if (!w || !h) return;
 
       ctx.clearRect(0, 0, w, h);
       ctx.fillStyle = "#090d16";
@@ -1276,32 +1106,20 @@
       const headRadius = Math.min(w, h) * 0.19;
       const cy = h * 0.38 + breath;
 
-      // Torso / Shirt
       ctx.fillStyle = gender === "female" ? "#ec4899" : shirtColor;
       ctx.beginPath();
       ctx.ellipse(cx, h * 0.95 + breath, w * 0.42, h * 0.38, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      // Shirt Collar Accent
-      ctx.fillStyle = gender === "female" ? "#db2777" : "#1d4ed8";
-      ctx.beginPath();
-      ctx.moveTo(cx - (headRadius * 0.35), h * 0.65 + breath);
-      ctx.lineTo(cx, h * 0.76 + breath);
-      ctx.lineTo(cx + (headRadius * 0.35), h * 0.65 + breath);
-      ctx.fill();
-
-      // Neck
       ctx.fillStyle = skinColor;
       const neckW = headRadius * 0.46;
       const neckH = headRadius * 0.55;
       ctx.fillRect(cx - (neckW / 2), cy + (headRadius * 0.65), neckW, neckH);
 
-      // Head
       ctx.beginPath();
       ctx.arc(cx, cy, headRadius, 0, Math.PI * 2);
       ctx.fill();
 
-      // Hair
       ctx.fillStyle = gender === "female" ? "#7c2d12" : "#18181b";
       ctx.beginPath();
       if (gender === "female") {
@@ -1313,7 +1131,6 @@
       }
       ctx.fill();
 
-      // Eyes
       ctx.fillStyle = "#09090b";
       const eyeOffset = headRadius * 0.36;
       if (isBlinking) {
@@ -1326,7 +1143,6 @@
         ctx.fill();
       }
 
-      // Smile
       ctx.strokeStyle = gender === "female" ? "#be123c" : "#78350f";
       ctx.lineWidth = 3;
       ctx.lineCap = "round";
@@ -1346,11 +1162,9 @@
       });
     }
     window.addEventListener("resize", syncCanvasDimensions);
-    setTimeout(syncCanvasDimensions, 100);
-    renderAvatarsLoop();
 
     // =========================================================================
-    // 8. DYNAMIC GLOWING TAG CAROUSEL
+    // 7. TAGS SYSTEM
     // =========================================================================
     function renderTags() {
       tagsList.innerHTML = "";
@@ -1358,10 +1172,7 @@
         const badge = document.createElement("span");
         badge.className = "tag-badge";
         const cleanTag = escapeHTML(tag).replace(/^https?:\/\//, "");
-        badge.innerHTML = `
-          <span>#${cleanTag}</span>
-          <span class="remove-tag" data-tag="${escapeHTML(tag)}" title="Remove tag">&times;</span>
-        `;
+        badge.innerHTML = `<span>#${cleanTag}</span> <span class="remove-tag" data-tag="${escapeHTML(tag)}">&times;</span>`;
         tagsList.appendChild(badge);
       });
     }
@@ -1371,9 +1182,7 @@
       if (val && !userTags.includes(val)) {
         userTags.push(val);
         renderTags();
-        setTimeout(() => {
-          interestsContainer.scrollLeft = interestsContainer.scrollWidth;
-        }, 50);
+        interestsContainer.scrollLeft = interestsContainer.scrollWidth;
       }
       tagInput.value = "";
     }
@@ -1394,14 +1203,7 @@
       }
     });
 
-    // Horizontal Mouse Wheel & Drag
-    interestsContainer.addEventListener("wheel", (e) => {
-      if (e.deltaY !== 0) {
-        e.preventDefault();
-        interestsContainer.scrollLeft += e.deltaY;
-      }
-    });
-
+    // Drag-to-scroll tags
     let isMouseDown = false;
     let startXPos, initialScrollLeft;
     interestsContainer.addEventListener("mousedown", (e) => {
@@ -1410,20 +1212,15 @@
       startXPos = e.pageX - interestsContainer.offsetLeft;
       initialScrollLeft = interestsContainer.scrollLeft;
     });
-
     window.addEventListener("mouseup", () => { isMouseDown = false; });
     interestsContainer.addEventListener("mousemove", (e) => {
       if (!isMouseDown) return;
       e.preventDefault();
-      const x = e.pageX - interestsContainer.offsetLeft;
-      const walk = (x - startXPos) * 1.5;
-      interestsContainer.scrollLeft = initialScrollLeft - walk;
+      interestsContainer.scrollLeft = initialScrollLeft - (e.pageX - interestsContainer.offsetLeft);
     });
 
-    renderTags();
-
     // =========================================================================
-    // 9. TEXT CHAT SYSTEM
+    // 8. CHAT ENGINE
     // =========================================================================
     function appendMessage(sender, text, type = "stranger") {
       const now = new Date();
@@ -1431,13 +1228,11 @@
 
       const msgDiv = document.createElement("div");
       msgDiv.className = `message ${type}`;
-
       if (type === "system") {
         msgDiv.textContent = text;
       } else {
         msgDiv.innerHTML = `<span class="time">${timeStr}</span><span class="sender">${sender}:</span> ${escapeHTML(text)}`;
       }
-
       chatContainer.appendChild(msgDiv);
       chatContainer.scrollTop = chatContainer.scrollHeight;
     }
@@ -1449,10 +1244,8 @@
     function sendChatMessage(text = null) {
       const msg = text || chatInput.value.trim();
       if (!msg || !isConnected) return;
-
       appendMessage("You", msg, "you");
       chatInput.value = "";
-
       if (activeDataConnection && activeDataConnection.open) {
         activeDataConnection.send({ type: "chat", text: msg });
       }
@@ -1468,6 +1261,15 @@
         sendChatMessage(chip.getAttribute("data-msg"));
       });
     });
+
+    // =========================================================================
+    // 9. INSTANT DOM BOOTSTRAP (RUN IMMEDIATELY)
+    // =========================================================================
+    syncCanvasDimensions();
+    renderAvatarsLoop();
+    renderTags();
+    // Non-blocking hardware prompt after UI paints
+    setTimeout(activateCamera, 300);
   </script>
 </body>
 </html>
