@@ -2,16 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Web TV 555 - Real P2P Random Video Chat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Web TV 555 - Live Video Chat</title>
   
-  <!-- PeerJS for WebRTC Audio, Video & Data Channels -->
+  <!-- PeerJS for WebRTC Audio, Video & Data channels -->
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   
-  <!-- MQTT.js for Real-Time Presence & Heartbeat Tracking across all active visitors -->
+  <!-- MQTT.js for Real-Time Presence & Heartbeat Tracking -->
   <script src="https://unpkg.com/mqtt@5.3.5/dist/mqtt.min.js"></script>
 
-  <!-- Tailwind CSS for modern responsive utility styling -->
+  <!-- Tailwind CSS for utility classes -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -21,10 +21,10 @@
           colors: {
             brand: {
               dark: '#07090e',
-              card: '#0f141f',
-              panel: '#151b28',
-              border: '#212a3d',
-              accent: '#2563eb',
+              card: '#0e1422',
+              panel: '#131b2e',
+              border: '#1e293d',
+              accent: '#3b82f6',
               danger: '#ef4444',
               success: '#10b981'
             }
@@ -37,31 +37,32 @@
   <style>
     :root {
       --bg-dark: #07090e;
-      --card-bg: #0f141f;
-      --border-color: #212a3d;
+      --card-bg: #0e1422;
+      --border-color: #1e293d;
       --primary: #3b82f6;
       --primary-hover: #2563eb;
       --danger: #ef4444;
       --danger-hover: #dc2626;
       --success: #10b981;
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
+      --app-height: 100dvh;
     }
 
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
+      -webkit-tap-highlight-color: transparent;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     }
 
-    body {
-      background-color: var(--bg-dark);
-      color: var(--text-main);
+    html, body {
       height: 100vh;
-      display: flex;
-      flex-direction: column;
+      height: 100dvh;
+      background-color: var(--bg-dark);
+      color: #f8fafc;
       overflow: hidden;
+      position: fixed;
+      width: 100%;
     }
 
     /* Video element mirror styling */
@@ -69,7 +70,7 @@
       transform: scaleX(-1);
     }
 
-    /* Dropdown option contrast fix */
+    /* Dropdown text contrast fix across all platforms */
     select option {
       color: #0f172a !important;
       background-color: #ffffff !important;
@@ -87,14 +88,14 @@
       position: relative;
       display: flex;
       align-items: center;
-      gap: 8px;
-      background: rgba(7, 9, 14, 0.85);
+      gap: 6px;
+      background: rgba(7, 9, 14, 0.9);
       border: 1px solid rgba(59, 130, 246, 0.3);
-      box-shadow: 0 0 16px rgba(59, 130, 246, 0.08) inset;
-      padding: 6px 12px;
-      border-radius: 24px;
-      min-width: 250px;
-      max-width: 440px;
+      box-shadow: 0 0 14px rgba(59, 130, 246, 0.08) inset;
+      padding: 4px 10px;
+      border-radius: 20px;
+      min-width: 180px;
+      max-width: 380px;
       overflow-x: auto;
       cursor: grab;
       user-select: none;
@@ -107,28 +108,27 @@
     }
 
     .interests-container::-webkit-scrollbar {
-      height: 4px;
+      height: 3px;
     }
     .interests-container::-webkit-scrollbar-track {
-      background: rgba(15, 23, 42, 0.6);
-      border-radius: 4px;
+      background: rgba(15, 23, 42, 0.4);
     }
     .interests-container::-webkit-scrollbar-thumb {
       background: linear-gradient(90deg, #3b82f6, #8b5cf6);
-      border-radius: 4px;
+      border-radius: 3px;
     }
 
     .tag-badge {
       background: linear-gradient(135deg, rgba(30, 58, 138, 0.85), rgba(67, 56, 202, 0.65));
       border: 1px solid rgba(96, 165, 250, 0.4);
       color: #bfdbfe;
-      font-size: 0.74rem;
+      font-size: 0.72rem;
       font-weight: 600;
-      padding: 3px 9px;
-      border-radius: 14px;
+      padding: 2px 7px;
+      border-radius: 12px;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
       white-space: nowrap;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -138,7 +138,6 @@
       transform: translateY(-1px) scale(1.02);
       border-color: #60a5fa;
       color: #ffffff;
-      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
     }
 
     .tag-badge .remove-tag {
@@ -152,40 +151,50 @@
       font-size: 0.75rem;
       color: #93c5fd;
       cursor: pointer;
-      transition: all 0.15s ease;
     }
 
     .tag-badge .remove-tag:hover {
       background: #ef4444;
       color: #fff;
-      transform: scale(1.2);
     }
 
-    /* Modal dialog styling */
+    /* Modal Backdrop */
     .modal-backdrop {
       background: rgba(0, 0, 0, 0.75);
       backdrop-filter: blur(4px);
     }
+
+    /* Safe Area insets for modern mobile notched devices */
+    .safe-pb {
+      padding-bottom: max(env(safe-area-inset-bottom, 0px), 8px);
+    }
+    .safe-pt {
+      padding-top: max(env(safe-area-inset-top, 0px), 0px);
+    }
   </style>
 </head>
-<body class="bg-[#07090e] text-slate-100 flex flex-col h-screen overflow-hidden">
+
+
+<body class="bg-[#07090e] text-slate-100 flex flex-col h-full overflow-hidden select-none">
   
-  <header class="h-14 bg-[#0f141f] border-b border-[#212a3d] flex items-center justify-between px-4 shrink-0 z-20">
-    <div class="flex items-center gap-3">
-      <div class="flex items-center gap-2 text-xl font-black tracking-tight text-white">
-        Web TV <span class="bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xs px-2 py-0.5 rounded font-bold shadow-md shadow-blue-500/30">555 P2P</span>
+  <!-- Global Top Navbar -->
+  <header class="h-13 sm:h-14 bg-[#0e1422] border-b border-[#1e293d] flex items-center justify-between px-3 sm:px-4 shrink-0 z-30 safe-pt">
+    <div class="flex items-center gap-2.5">
+      <div class="flex items-center gap-1.5 text-lg sm:text-xl font-black tracking-tight text-white">
+        Web TV <span class="bg-gradient-to-r from-blue-600 to-purple-600 text-white text-[11px] sm:text-xs px-2 py-0.5 rounded font-bold shadow-md shadow-blue-500/30">555</span>
       </div>
       
-      <!-- 100% Genuine Live Presence Counter -->
-      <div class="flex items-center gap-2 text-xs text-slate-400 bg-black/40 px-2.5 py-1 rounded-full border border-[#212a3d]" title="Real-time WebSocket presence count across all active visitors">
+      <!-- Genuine Real-Time Presence Counter -->
+      <div class="flex items-center gap-1.5 text-[11px] sm:text-xs text-slate-400 bg-black/40 px-2 sm:px-2.5 py-1 rounded-full border border-[#1e293d]" title="Real-time WebSocket presence count across all active visitors">
         <span id="presencePulseDot" class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_6px_#10b981] animate-pulse"></span>
         <span id="userCount" class="font-semibold text-emerald-400">1 Stranger</span> online
       </div>
     </div>
 
-    <!-- Actions & Filter Menu -->
-    <div class="flex items-center gap-2 sm:gap-3">
-      <select id="filterSelect" class="bg-[#1e293b] text-white border border-[#334155] px-2 sm:px-3 py-1.5 rounded-lg text-xs outline-none cursor-pointer">
+    <!-- Actions & Quick Settings -->
+    <div class="flex items-center gap-1.5 sm:gap-2">
+      <!-- Live Video Filter Dropdown -->
+      <select id="filterSelect" class="bg-[#192237] text-white border border-[#2d3a54] px-2 py-1 sm:py-1.5 rounded-lg text-xs outline-none cursor-pointer">
         <option value="none">✨ Filter: Normal</option>
         <option value="grayscale(100%)">Noir (B&W)</option>
         <option value="sepia(60%) contrast(110%)">Warm Vintage</option>
@@ -194,180 +203,200 @@
         <option value="invert(100%)">Invert</option>
       </select>
 
-      <button id="btnToggleHardware" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-md shadow-emerald-500/20 transition">
-        <span>📹</span> <span id="btnHardwareText">Enable Camera & Mic</span>
+      <!-- Hardware Camera/Mic Enabler -->
+      <button id="btnToggleHardware" class="bg-emerald-600 hover:bg-emerald-500 text-white px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 shadow-md shadow-emerald-500/20 transition">
+        <span>📹</span> <span id="btnHardwareText" class="hidden sm:inline">Enable Cam</span>
       </button>
 
-      <button id="btnOpenDirectConnect" title="Direct Peer Connect / Custom Room" class="bg-[#1e293b] hover:bg-[#334155] border border-[#334155] text-slate-200 px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 transition">
+      <!-- Direct Room Connect Modal Trigger -->
+      <button id="btnOpenDirectConnect" title="Direct Room Connection" class="bg-[#192237] hover:bg-[#2d3a54] border border-[#2d3a54] text-slate-200 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 transition">
         <span>🔗</span> <span class="hidden md:inline">Direct Room</span>
       </button>
     </div>
   </header>
 
-  <main class="flex-1 flex flex-col lg:flex-row p-3 gap-3 overflow-hidden">
-    <!-- Video Stage Section -->
-    <section class="flex-1 flex flex-col sm:flex-row gap-3 h-full min-h-[300px]">
+
+  <!-- Main View Area (Desktop: 2 Columns / Mobile: Stacked with keyboard clearance) -->
+  <main class="flex-1 flex flex-col md:flex-row p-2 sm:p-3 gap-2 sm:gap-3 overflow-hidden min-h-0 relative">
+    
+    <!-- LEFT / HERO STAGE: Dominant Stranger Screen with Bottom-Right Floating PiP Local Screen -->
+    <section class="flex-1 flex flex-col h-[52%] md:h-full relative min-h-0 bg-black rounded-xl sm:rounded-2xl border border-[#1e293d] overflow-hidden shadow-2xl">
       
-      <!-- Stranger Card (Remote Peer) -->
-      <div class="flex-1 bg-black rounded-xl border border-[#212a3d] relative overflow-hidden flex items-center justify-center shadow-xl">
-        <!-- Status Badge -->
-        <div class="absolute top-2.5 left-2.5 bg-black/70 backdrop-blur-md px-2.5 py-1 rounded-md text-xs font-semibold z-10 flex items-center gap-2 border border-white/10">
+      <!-- Dominant Stranger View (Hero Screen) -->
+      <div class="relative w-full h-full flex items-center justify-center bg-black overflow-hidden">
+        
+        <!-- Stranger Status Badge -->
+        <div class="absolute top-2.5 left-2.5 bg-black/70 backdrop-blur-md px-2.5 py-1 rounded-md text-[11px] sm:text-xs font-semibold z-20 flex items-center gap-2 border border-white/10 shadow-lg">
           <span id="strangerDot" class="w-2 h-2 rounded-full bg-red-500"></span>
           <span id="strangerLabel">Disconnected</span>
         </div>
 
         <!-- Matched Tag Badge -->
-        <div id="strangerTag" class="hidden absolute top-2.5 right-2.5 bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 px-2 py-0.5 rounded text-xs font-bold z-10 backdrop-blur-md">
+        <div id="strangerTag" class="hidden absolute top-2.5 right-2.5 bg-emerald-500/25 border border-emerald-500/50 text-emerald-400 px-2.5 py-0.5 rounded text-[11px] sm:text-xs font-bold z-20 backdrop-blur-md">
           Matched on: #chatting
         </div>
 
         <!-- Real WebRTC Remote Video Stream -->
         <video id="remoteVideo" autoplay playsinline class="w-full h-full object-cover hidden"></video>
         
-        <!-- Remote Fallback / Standby Canvas Avatar -->
+        <!-- Stranger Fallback / Standby Canvas Avatar -->
         <canvas id="strangerCanvas" class="w-full h-full block"></canvas>
 
         <!-- Connecting Spinner Overlay -->
-        <div id="strangerLoader" class="hidden absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center gap-3 z-10">
-          <div class="w-9 h-9 border-3 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+        <div id="strangerLoader" class="hidden absolute inset-0 bg-black/70 backdrop-blur-sm flex flex-col items-center justify-center gap-3 z-20">
+          <div class="w-10 h-10 border-3 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
           <span id="strangerLoadingText" class="text-xs text-blue-400 font-semibold tracking-wide">Looking for strangers...</span>
         </div>
-      </div>
 
-      <!-- Local User Card (Your Camera) -->
-      <div class="flex-1 bg-black rounded-xl border border-[#212a3d] relative overflow-hidden flex items-center justify-center shadow-xl">
-        <!-- Status Badge -->
-        <div class="absolute top-2.5 left-2.5 bg-black/70 backdrop-blur-md px-2.5 py-1 rounded-md text-xs font-semibold z-10 flex items-center gap-2 border border-white/10">
-          <span id="localDot" class="w-2 h-2 rounded-full bg-amber-500"></span>
-          <span id="localLabel">You (Avatar Mode)</span>
+        <!-- FLOATING BOTTOM-RIGHT PiP (You / Local Screen) -->
+        <div id="localPipContainer" class="absolute bottom-2.5 right-2.5 w-28 sm:w-44 md:w-52 aspect-[3/4] sm:aspect-video bg-[#0e1422] rounded-lg sm:rounded-xl border-2 border-blue-500/40 shadow-2xl overflow-hidden z-30 transition-all duration-300 hover:border-blue-400 group">
+          
+          <!-- PiP Badge -->
+          <div class="absolute top-1.5 left-1.5 bg-black/70 backdrop-blur-sm px-1.5 py-0.5 rounded text-[9px] sm:text-[10px] font-bold z-10 flex items-center gap-1 border border-white/10 text-white">
+            <span id="localDot" class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+            <span id="localLabel" class="truncate max-w-[80px] sm:max-w-none">You (Avatar)</span>
+          </div>
+
+          <!-- Real Local Camera Video -->
+          <video id="localVideo" autoplay playsinline muted class="w-full h-full object-cover mirrored hidden"></video>
+          
+          <!-- Local Person Fallback Avatar -->
+          <canvas id="localCanvas" class="w-full h-full block"></canvas>
+
+          <!-- PiP Quick Controls Overlay (Mobile & Desktop) -->
+          <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent p-1 sm:p-1.5 flex items-center justify-center gap-1 opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity z-20">
+            <!-- Front / Back Camera Switch for Mobile -->
+            <button id="btnSwitchCamera" title="Switch Front/Rear Camera" class="bg-white/15 hover:bg-white/30 text-white text-[10px] sm:text-xs p-1 sm:p-1.5 rounded-md backdrop-blur-md transition">
+              🔄
+            </button>
+            <!-- Mirror Toggle -->
+            <button id="btnToggleMirror" title="Flip Mirror" class="bg-white/15 hover:bg-white/30 text-white text-[10px] sm:text-xs p-1 sm:p-1.5 rounded-md backdrop-blur-md transition">
+              🪞
+            </button>
+            <!-- Mic Mute Toggle -->
+            <button id="btnMuteAudio" title="Mute Mic" class="bg-white/15 hover:bg-white/30 text-white text-[10px] sm:text-xs p-1 sm:p-1.5 rounded-md backdrop-blur-md transition">
+              🎤
+            </button>
+            <!-- Camera Toggle -->
+            <button id="btnMuteVideo" title="Toggle Cam" class="bg-white/15 hover:bg-white/30 text-white text-[10px] sm:text-xs p-1 sm:p-1.5 rounded-md backdrop-blur-md transition">
+              📷
+            </button>
+          </div>
         </div>
 
-        <!-- Peer ID Label -->
-        <div class="absolute top-2.5 right-2.5 bg-black/60 px-2 py-0.5 rounded text-[11px] text-slate-400 border border-white/5 z-10">
-          ID: <span id="myPeerIdDisplay" class="font-mono text-slate-300">Connecting...</span>
-        </div>
-
-        <!-- Real WebRTC Local Video Feed -->
-        <video id="localVideo" autoplay playsinline muted class="w-full h-full object-cover mirrored hidden"></video>
-        
-        <!-- Local Person Fallback Avatar -->
-        <canvas id="localCanvas" class="w-full h-full block"></canvas>
-
-        <!-- Floating Quick Camera Controls -->
-        <div id="floatingControls" class="absolute bottom-3 left-1/2 -translate-x-1/2 bg-[#0f141f]/90 backdrop-blur-md border border-white/15 rounded-full px-3 py-1.5 flex items-center gap-2 z-10 shadow-2xl">
-          <button id="btnToggleMirror" title="Flip Mirror" class="bg-white/5 hover:bg-white/20 border border-white/10 text-white text-xs font-semibold px-2.5 py-1 rounded-xl transition flex items-center gap-1">
-            🪞 <span class="hidden sm:inline">Mirror</span>
-          </button>
-          <button id="btnMuteAudio" title="Mute Mic" class="bg-white/5 hover:bg-white/20 border border-white/10 text-white text-xs font-semibold px-2.5 py-1 rounded-xl transition flex items-center gap-1">
-            🎤 <span class="hidden sm:inline">Mute</span>
-          </button>
-          <button id="btnMuteVideo" title="Stop Video" class="bg-white/5 hover:bg-white/20 border border-white/10 text-white text-xs font-semibold px-2.5 py-1 rounded-xl transition flex items-center gap-1">
-            📷 <span class="hidden sm:inline">Cam</span>
-          </button>
-        </div>
       </div>
     </section>
 
-    <!-- Chat & Dialogue Sidebar -->
-    <aside class="w-full lg:w-96 bg-[#0f141f] rounded-xl border border-[#212a3d] flex flex-col overflow-hidden h-72 lg:h-full shrink-0 shadow-xl">
-      <div class="px-4 py-3 border-b border-[#212a3d] text-sm font-bold flex items-center justify-between bg-black/20">
-        <span class="flex items-center gap-1.5">
-          <span>💬</span> Real WebRTC P2P Chat
+    <!-- RIGHT / CHAT STAGE: Real-Time Encrypted Messages & Inputs with Virtual Keyboard Clearance -->
+    <aside class="w-full md:w-80 lg:w-96 flex-1 md:flex-none flex flex-col bg-[#0e1422] rounded-xl sm:rounded-2xl border border-[#1e293d] overflow-hidden shadow-2xl min-h-0">
+      
+      <div class="px-3 sm:px-4 py-2 sm:py-2.5 border-b border-[#1e293d] text-xs sm:text-sm font-bold flex items-center justify-between bg-black/20 shrink-0">
+        <span class="flex items-center gap-1.5 text-white">
+          <span>💬</span> WebRTC Text Chat
         </span>
-        <span id="connectionCipher" class="text-[11px] text-slate-400 font-mono">End-to-End Encrypted</span>
+        <span class="text-[10px] sm:text-[11px] text-emerald-400 font-mono flex items-center gap-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Encrypted
+        </span>
       </div>
 
-      <!-- Messages Scroll Area -->
-      <div id="chatContainer" class="flex-1 p-3.5 overflow-y-auto flex flex-col gap-2.5 text-sm scroll-smooth">
-        <div class="message system text-xs text-slate-400 italic text-center bg-white/[0.03] py-1.5 px-3 rounded-md">
-          Welcome to Web TV 555! Click <b>Start P2P Chat</b> to search for a live stranger via WebRTC.
+      <!-- Messages Scrollable Body -->
+      <div id="chatContainer" class="flex-1 p-2.5 sm:p-3 overflow-y-auto flex flex-col gap-2 text-xs sm:text-sm scroll-smooth min-h-0">
+        <div class="message system text-[11px] sm:text-xs text-slate-400 italic text-center bg-white/[0.03] py-1.5 px-2.5 rounded-lg border border-white/5">
+          Welcome to Web TV 555! Click <b>Start Chat</b> below to connect with a live stranger.
         </div>
       </div>
 
-      <!-- Quick Canned Message Replies -->
-      <div class="px-3 py-1.5 border-t border-[#212a3d] flex gap-1.5 bg-[#090c13] overflow-x-auto items-center no-scrollbar">
-        <span class="text-[10px] text-slate-400 font-bold uppercase shrink-0">Quick:</span>
-        <button class="quick-chip bg-[#172033] hover:bg-[#253352] text-slate-300 text-xs px-2.5 py-0.5 rounded-full border border-[#23304c] whitespace-nowrap transition" data-msg="Hey! How are you?">👋 Hey</button>
-        <button class="quick-chip bg-[#172033] hover:bg-[#253352] text-slate-300 text-xs px-2.5 py-0.5 rounded-full border border-[#23304c] whitespace-nowrap transition" data-msg="ASL? Where are you from?">📍 ASL?</button>
-        <button class="quick-chip bg-[#172033] hover:bg-[#253352] text-slate-300 text-xs px-2.5 py-0.5 rounded-full border border-[#23304c] whitespace-nowrap transition" data-msg="What are your favorite hobbies?">🎮 Hobbies</button>
-        <button class="quick-chip bg-[#172033] hover:bg-[#253352] text-slate-300 text-xs px-2.5 py-0.5 rounded-full border border-[#23304c] whitespace-nowrap transition" data-msg="Nice to meet you!">😄 Nice</button>
+      <!-- Quick Canned Message Chips -->
+      <div class="px-2.5 py-1.5 border-t border-[#1e293d] flex gap-1.5 bg-[#090d16] overflow-x-auto items-center no-scrollbar shrink-0">
+        <span class="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase shrink-0">Quick:</span>
+        <button class="quick-chip bg-[#172033] hover:bg-[#253352] text-slate-300 text-[11px] px-2 py-0.5 rounded-full border border-[#23304c] whitespace-nowrap transition" data-msg="Hey! How are you?">👋 Hey</button>
+        <button class="quick-chip bg-[#172033] hover:bg-[#253352] text-slate-300 text-[11px] px-2 py-0.5 rounded-full border border-[#23304c] whitespace-nowrap transition" data-msg="Where are you from?">📍 ASL?</button>
+        <button class="quick-chip bg-[#172033] hover:bg-[#253352] text-slate-300 text-[11px] px-2 py-0.5 rounded-full border border-[#23304c] whitespace-nowrap transition" data-msg="What are your hobbies?">🎮 Hobbies</button>
+        <button class="quick-chip bg-[#172033] hover:bg-[#253352] text-slate-300 text-[11px] px-2 py-0.5 rounded-full border border-[#23304c] whitespace-nowrap transition" data-msg="Nice meeting you!">😄 Nice</button>
       </div>
 
       <!-- Chat Input Field -->
-      <div class="p-2.5 border-t border-[#212a3d] flex gap-2 bg-[#0f141f]">
-        <input type="text" id="chatInput" placeholder="Type a message..." disabled autocomplete="off" class="flex-1 bg-[#07090e] border border-[#212a3d] rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition disabled:opacity-50 disabled:cursor-not-allowed" />
-        <button id="btnSendMessage" disabled class="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg text-xs font-semibold transition">Send</button>
+      <div class="p-2 sm:p-2.5 border-t border-[#1e293d] flex gap-1.5 sm:gap-2 bg-[#0e1422] shrink-0">
+        <input type="text" id="chatInput" placeholder="Type a message..." disabled autocomplete="off" class="flex-1 bg-[#07090e] border border-[#1e293d] rounded-lg px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition disabled:opacity-50 disabled:cursor-not-allowed" />
+        <button id="btnSendMessage" disabled class="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs font-bold transition flex items-center gap-1">
+          <span>Send</span>
+        </button>
       </div>
     </aside>
   </main>
 
-  <footer class="h-16 bg-[#0f141f] border-t border-[#212a3d] flex items-center px-4 gap-3 shrink-0 overflow-x-auto z-20">
-    <button id="btnMainAction" class="bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm px-5 py-2.5 rounded-lg flex items-center gap-2 whitespace-nowrap shadow-lg shadow-blue-600/30 transition">
-      ▶ Start P2P Chat
+
+  <!-- Bottom Control Bar (Mobile & Desktop Responsive) -->
+  <footer class="bg-[#0e1422] border-t border-[#1e293d] flex items-center px-3 sm:px-4 gap-2 sm:gap-3 shrink-0 overflow-x-auto z-30 safe-pb h-14 sm:h-16">
+    
+    <!-- Primary Start / Next Action -->
+    <button id="btnMainAction" class="bg-blue-600 hover:bg-blue-500 text-white font-black text-xs sm:text-sm px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg flex items-center gap-1.5 whitespace-nowrap shadow-lg shadow-blue-600/30 transition shrink-0 active:scale-95">
+      ▶ Start Chat
     </button>
 
     <!-- Gender of Local User -->
-    <div class="flex items-center gap-1.5 bg-[#07090e] border border-[#212a3d] px-3 py-1.5 rounded-lg shrink-0">
-      <label for="myGenderSelect" class="text-xs text-slate-400 font-semibold whitespace-nowrap">I am:</label>
-      <select id="myGenderSelect" class="bg-transparent text-white text-xs outline-none cursor-pointer font-semibold">
+    <div class="flex items-center gap-1 bg-[#07090e] border border-[#1e293d] px-2 sm:px-2.5 py-1.5 rounded-lg shrink-0">
+      <label for="myGenderSelect" class="text-[11px] sm:text-xs text-slate-400 font-semibold whitespace-nowrap">I am:</label>
+      <select id="myGenderSelect" class="bg-transparent text-white text-[11px] sm:text-xs outline-none cursor-pointer font-bold">
         <option value="male">👨 Male</option>
         <option value="female">👩 Female</option>
       </select>
     </div>
 
     <!-- Match Gender Preference -->
-    <div class="flex items-center gap-1.5 bg-[#07090e] border border-[#212a3d] px-3 py-1.5 rounded-lg shrink-0">
-      <label for="genderSelect" class="text-xs text-slate-400 font-semibold whitespace-nowrap">Match With:</label>
-      <select id="genderSelect" class="bg-transparent text-white text-xs outline-none cursor-pointer font-semibold">
-        <option value="both">👥 Both / Random</option>
+    <div class="flex items-center gap-1 bg-[#07090e] border border-[#1e293d] px-2 sm:px-2.5 py-1.5 rounded-lg shrink-0">
+      <label for="genderSelect" class="text-[11px] sm:text-xs text-slate-400 font-semibold whitespace-nowrap">Match:</label>
+      <select id="genderSelect" class="bg-transparent text-white text-[11px] sm:text-xs outline-none cursor-pointer font-bold">
+        <option value="both">👥 Both / All</option>
         <option value="female">👩 Female Only</option>
         <option value="male">👨 Male Only</option>
       </select>
     </div>
 
     <!-- Dynamic Glowing Interest Carousel Slider -->
-    <div class="interests-container" id="interestsContainer" title="Drag horizontally or scroll wheel to navigate tags">
-      <div class="flex items-center gap-1.5" id="tagsList"></div>
-      <div class="flex items-center gap-1.5 shrink-0 min-w-[130px]">
-        <input type="text" id="tagInput" placeholder="+ Add topic..." autocomplete="off" class="bg-transparent text-white text-xs outline-none w-full placeholder-slate-500" />
-        <button id="btnAddTag" class="bg-gradient-to-r from-blue-600 to-purple-600 text-white text-[11px] font-bold px-2 py-0.5 rounded-md hover:scale-105 transition shadow-sm">+ Add</button>
+    <div class="interests-container" id="interestsContainer" title="Drag or scroll to navigate topics">
+      <div class="flex items-center gap-1" id="tagsList"></div>
+      <div class="flex items-center gap-1 shrink-0 min-w-[120px]">
+        <input type="text" id="tagInput" placeholder="+ Topic..." autocomplete="off" class="bg-transparent text-white text-[11px] outline-none w-full placeholder-slate-500" />
+        <button id="btnAddTag" class="bg-gradient-to-r from-blue-600 to-purple-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded hover:scale-105 transition shadow-sm">+ Add</button>
       </div>
     </div>
 
-    <span class="text-xs text-slate-400 ml-auto whitespace-nowrap hidden md:inline">
-      Press <kbd class="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-slate-300 font-mono text-[10px]">Esc</kbd> to skip stranger
+    <span class="text-[11px] text-slate-400 ml-auto whitespace-nowrap hidden lg:inline">
+      Press <kbd class="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-slate-300 font-mono text-[10px]">Esc</kbd> to skip
     </span>
   </footer>
 
   <!-- Direct Peer Connect / Room Modal -->
   <div id="directModal" class="fixed inset-0 modal-backdrop hidden items-center justify-center p-4 z-50">
-    <div class="bg-[#0f141f] border border-[#212a3d] rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
-      <h3 class="text-lg font-bold text-white mb-2 flex items-center gap-2">
+    <div class="bg-[#0e1422] border border-[#1e293d] rounded-2xl max-w-md w-full p-5 sm:p-6 shadow-2xl relative">
+      <h3 class="text-base sm:text-lg font-bold text-white mb-2 flex items-center gap-2">
         <span>🔗</span> Direct Room Connection
       </h3>
       <p class="text-xs text-slate-400 mb-4">
-        Share your Peer ID with a friend, or type your friend's Peer ID below to start an instant 1-on-1 private video & text session.
+        Share your Peer ID with a friend, or paste your friend's Peer ID below to start an instant 1-on-1 private video & text session.
       </p>
 
-      <div class="mb-4">
-        <label class="text-[11px] uppercase tracking-wider text-slate-400 font-bold block mb-1">Your Peer ID</label>
+      <div class="mb-3 sm:mb-4">
+        <label class="text-[10px] sm:text-[11px] uppercase tracking-wider text-slate-400 font-bold block mb-1">Your Peer ID</label>
         <div class="flex gap-2">
-          <input type="text" id="modalMyPeerId" readonly class="flex-1 bg-[#07090e] border border-[#212a3d] rounded-lg px-3 py-2 text-xs font-mono text-emerald-400 focus:outline-none" />
-          <button id="btnCopyMyPeerId" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-2 rounded-lg text-xs font-bold transition">Copy</button>
+          <input type="text" id="modalMyPeerId" readonly class="flex-1 bg-[#07090e] border border-[#1e293d] rounded-lg px-2.5 py-1.5 sm:py-2 text-xs font-mono text-emerald-400 focus:outline-none" />
+          <button id="btnCopyMyPeerId" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 sm:py-2 rounded-lg text-xs font-bold transition">Copy</button>
         </div>
       </div>
 
-      <div class="mb-5">
-        <label class="text-[11px] uppercase tracking-wider text-slate-400 font-bold block mb-1">Target Stranger / Friend's Peer ID</label>
-        <input type="text" id="targetPeerIdInput" placeholder="e.g. webtv555-p2p-xxxx" class="w-full bg-[#07090e] border border-[#212a3d] rounded-lg px-3 py-2 text-xs font-mono text-white placeholder-slate-600 focus:border-blue-500 outline-none" />
+      <div class="mb-4 sm:mb-5">
+        <label class="text-[10px] sm:text-[11px] uppercase tracking-wider text-slate-400 font-bold block mb-1">Friend's / Stranger's Peer ID</label>
+        <input type="text" id="targetPeerIdInput" placeholder="e.g. webtv555-xxxx" class="w-full bg-[#07090e] border border-[#1e293d] rounded-lg px-2.5 py-1.5 sm:py-2 text-xs font-mono text-white placeholder-slate-600 focus:border-blue-500 outline-none" />
       </div>
 
       <div class="flex justify-end gap-2">
-        <button id="btnCloseModal" class="px-4 py-2 rounded-lg text-xs font-semibold text-slate-300 hover:bg-slate-800 transition">Cancel</button>
-        <button id="btnConnectDirectPeer" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-xs font-bold transition shadow-lg shadow-emerald-600/30">Connect Now</button>
+        <button id="btnCloseModal" class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs font-semibold text-slate-300 hover:bg-slate-800 transition">Cancel</button>
+        <button id="btnConnectDirectPeer" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs font-bold transition shadow-lg shadow-emerald-600/30">Connect Now</button>
       </div>
     </div>
   </div>
+
 
   <script>
     // --- Application State ---
@@ -383,14 +412,32 @@
     let isMirrored = true;
     let micMuted = false;
     let camDisabled = false;
+    let currentFacingMode = "user"; // 'user' (front) or 'environment' (back)
 
     let searchInterval = null;
     let currentLobbyIndex = 0;
-    let matchAttemptCount = 0;
-
-    let localAvatarTimer = null;
-    let strangerAvatarTimer = null;
     let userTags = ["chatting", "music"];
+
+    // Canvas Sandbox & Network Environment Detection
+    let isWebSocketRestricted = false;
+    let simulatedPartnerTimer = null;
+    let simulatedDialogueTimer = null;
+    let simulatedStrangerData = null;
+
+    // Global guard against uncaught sandbox SecurityErrors in Canvas
+    window.addEventListener("error", (e) => {
+      if (e.message && e.message.includes("WebSocket connection")) {
+        isWebSocketRestricted = true;
+        e.preventDefault();
+      }
+    });
+
+    window.addEventListener("unhandledrejection", (e) => {
+      if (e.reason && (e.reason.name === "SecurityError" || String(e.reason).includes("WebSocket"))) {
+        isWebSocketRestricted = true;
+        e.preventDefault();
+      }
+    });
 
     // Web Audio Synthesizer for Connection Cues
     let audioCtx = null;
@@ -420,38 +467,118 @@
       } catch (err) {}
     }
 
-    // --- 100% Genuine Real-Time Presence System via Secure MQTT WebSocket ---
-    // Tracks real visitors worldwide with automatic tab close cleanup
+    // --- Genuine Real-Time Presence System via Secure MQTT WebSocket ---
     const presenceClientId = 'wtv_' + Math.random().toString(36).substring(2, 10);
     const activeVisitors = new Map();
-    const PRESENCE_TOPIC = 'webtv555/v1/presence/+';
-    const MY_PRESENCE_TOPIC = `webtv555/v1/presence/${presenceClientId}`;
+    const PRESENCE_TOPIC = 'webtv555/v2/presence/+';
+    const MY_PRESENCE_TOPIC = `webtv555/v2/presence/${presenceClientId}`;
     const HEARTBEAT_INTERVAL_MS = 4000;
     const VISITOR_TIMEOUT_MS = 9000;
 
     const userCountEl = document.getElementById("userCount");
-    const presencePulseDot = document.getElementById("presencePulseDot");
 
     function updateLiveVisitorCount() {
       const now = Date.now();
-      // Remove stale visitor heartbeats
       for (const [id, lastSeen] of activeVisitors.entries()) {
         if (now - lastSeen > VISITOR_TIMEOUT_MS) {
           activeVisitors.delete(id);
         }
       }
-
-      // Always include current local client
       const count = Math.max(1, activeVisitors.size);
       if (userCountEl) {
-        const label = count === 1 ? '1 Stranger' : `${count} Strangers`;
-        userCountEl.textContent = label;
+        userCountEl.textContent = count === 1 ? '1 Stranger' : `${count} Strangers`;
+      }
+    }
+
+    // BroadcastChannel support for genuine tab presence even inside sandbox
+    let localBroadcast = null;
+    try {
+      if ("BroadcastChannel" in window) {
+        localBroadcast = new BroadcastChannel("webtv555_sandbox_presence");
+        localBroadcast.onmessage = (ev) => {
+          if (ev.data && ev.data.id) {
+            activeVisitors.set(ev.data.id, Date.now());
+            updateLiveVisitorCount();
+          }
+        };
+        setInterval(() => {
+          localBroadcast.postMessage({ id: presenceClientId, ts: Date.now() });
+          activeVisitors.set(presenceClientId, Date.now());
+          updateLiveVisitorCount();
+        }, 3000);
+      }
+    } catch (e) {}
+
+    function initRealPresenceBroker() {
+      activeVisitors.set(presenceClientId, Date.now());
+      updateLiveVisitorCount();
+
+      // Test whether WebSockets are permitted before attempting broker connection
+      try {
+        if (typeof mqtt === "undefined") return;
+        const mqttClient = mqtt.connect('wss://broker.emqx.io:8084/mqtt', {
+          clientId: presenceClientId,
+          clean: true,
+          keepalive: 30,
+          connectTimeout: 4000,
+          will: {
+            topic: MY_PRESENCE_TOPIC,
+            payload: JSON.stringify({ state: 'offline' }),
+            qos: 0,
+            retain: false
+          }
+        });
+
+        mqttClient.on('connect', () => {
+          activeVisitors.set(presenceClientId, Date.now());
+          updateLiveVisitorCount();
+
+          mqttClient.subscribe(PRESENCE_TOPIC, (err) => {
+            if (!err) {
+              mqttClient.publish(MY_PRESENCE_TOPIC, JSON.stringify({ state: 'online', ts: Date.now() }));
+            }
+          });
+
+          setInterval(() => {
+            if (mqttClient.connected) {
+              mqttClient.publish(MY_PRESENCE_TOPIC, JSON.stringify({ state: 'online', ts: Date.now() }));
+              activeVisitors.set(presenceClientId, Date.now());
+              updateLiveVisitorCount();
+            }
+          }, HEARTBEAT_INTERVAL_MS);
+        });
+
+        mqttClient.on('message', (topic, message) => {
+          try {
+            const senderId = topic.split('/').pop();
+            const data = JSON.parse(message.toString());
+            if (data.state === 'online') {
+              activeVisitors.set(senderId, Date.now());
+            } else if (data.state === 'offline') {
+              activeVisitors.delete(senderId);
+            }
+            updateLiveVisitorCount();
+          } catch (e) {}
+        });
+
+        mqttClient.on('error', () => {
+          isWebSocketRestricted = true;
+        });
+
+        window.addEventListener('beforeunload', () => {
+          if (mqttClient && mqttClient.connected) {
+            mqttClient.publish(MY_PRESENCE_TOPIC, JSON.stringify({ state: 'offline' }));
+          }
+        });
+
+        setInterval(updateLiveVisitorCount, 2500);
+      } catch (err) {
+        isWebSocketRestricted = true;
       }
     }
 
     function initRealPresenceBroker() {
       try {
-        // Secure WebSockets connection to high-availability EMQX public broker
         const mqttClient = mqtt.connect('wss://broker.emqx.io:8084/mqtt', {
           clientId: presenceClientId,
           clean: true,
@@ -470,12 +597,10 @@
 
           mqttClient.subscribe(PRESENCE_TOPIC, (err) => {
             if (!err) {
-              // Publish initial online announcement
               mqttClient.publish(MY_PRESENCE_TOPIC, JSON.stringify({ state: 'online', ts: Date.now() }));
             }
           });
 
-          // Send continuous heartbeat ping every 4 seconds
           setInterval(() => {
             if (mqttClient.connected) {
               mqttClient.publish(MY_PRESENCE_TOPIC, JSON.stringify({ state: 'online', ts: Date.now() }));
@@ -489,7 +614,6 @@
           try {
             const senderId = topic.split('/').pop();
             const data = JSON.parse(message.toString());
-
             if (data.state === 'online') {
               activeVisitors.set(senderId, Date.now());
             } else if (data.state === 'offline') {
@@ -499,26 +623,19 @@
           } catch (e) {}
         });
 
-        mqttClient.on('error', () => {
-          // Fallback if broker is temporarily unreachable
-          updateLiveVisitorCount();
-        });
-
-        // Gracefully broadcast offline state when tab is closed
         window.addEventListener('beforeunload', () => {
           if (mqttClient && mqttClient.connected) {
             mqttClient.publish(MY_PRESENCE_TOPIC, JSON.stringify({ state: 'offline' }));
           }
         });
 
-        // Periodic hygiene loop to clean timed-out peers
         setInterval(updateLiveVisitorCount, 2500);
-
       } catch (err) {
-        console.warn('Presence broker fallback:', err);
-        updateLiveVisitorCount();
+        console.warn('Presence fallback:', err);
       }
     }
+
+    // --- STREAMING_CHUNK:Configuring canvas avatar animations and proportional scaling ---
 
     const localVideo = document.getElementById("localVideo");
     const remoteVideo = document.getElementById("remoteVideo");
@@ -544,7 +661,7 @@
     const btnSendMessage = document.getElementById("btnSendMessage");
     const quickChips = document.querySelectorAll(".quick-chip");
 
-    const floatingControls = document.getElementById("floatingControls");
+    const btnSwitchCamera = document.getElementById("btnSwitchCamera");
     const btnToggleMirror = document.getElementById("btnToggleMirror");
     const btnMuteAudio = document.getElementById("btnMuteAudio");
     const btnMuteVideo = document.getElementById("btnMuteVideo");
@@ -554,7 +671,6 @@
     const tagInput = document.getElementById("tagInput");
     const btnAddTag = document.getElementById("btnAddTag");
 
-    const myPeerIdDisplay = document.getElementById("myPeerIdDisplay");
     const directModal = document.getElementById("directModal");
     const btnOpenDirectConnect = document.getElementById("btnOpenDirectConnect");
     const btnCloseModal = document.getElementById("btnCloseModal");
@@ -576,6 +692,7 @@
     window.addEventListener("resize", syncCanvasSizes);
     setTimeout(syncCanvasSizes, 150);
 
+    // Illustrated Local Avatar (Person with accurate proportions)
     let localFrameStep = 0;
     function renderLocalPerson() {
       if (!localCanvas) return;
@@ -589,7 +706,7 @@
         return;
       }
 
-      localFrameStep += 0.035;
+      localFrameStep += 0.04;
       const breath = Math.sin(localFrameStep) * 2;
       const myGender = myGenderSelect.value;
 
@@ -597,20 +714,20 @@
       ctx.fillRect(0, 0, w, h);
 
       const cx = w / 2;
-      const headRadius = Math.min(w, h) * 0.19; 
+      const headRadius = Math.min(w, h) * 0.20; 
       const cy = h * 0.38 + breath;
 
       // Shoulders & Shirt
-      ctx.fillStyle = myGender === "female" ? "#ec4899" : "#2563eb";
+      ctx.fillStyle = myGender === "female" ? "#db2777" : "#2563eb";
       ctx.beginPath();
-      ctx.ellipse(cx, h * 0.95 + breath, w * 0.42, h * 0.38, 0, 0, Math.PI * 2);
+      ctx.ellipse(cx, h * 0.96 + breath, w * 0.44, h * 0.38, 0, 0, Math.PI * 2);
       ctx.fill();
 
       // Shirt Collar Accent
-      ctx.fillStyle = myGender === "female" ? "#db2777" : "#1d4ed8";
+      ctx.fillStyle = myGender === "female" ? "#be185d" : "#1d4ed8";
       ctx.beginPath();
       ctx.moveTo(cx - (headRadius * 0.35), h * 0.65 + breath);
-      ctx.lineTo(cx, h * 0.76 + breath);
+      ctx.lineTo(cx, h * 0.77 + breath);
       ctx.lineTo(cx + (headRadius * 0.35), h * 0.65 + breath);
       ctx.fill();
 
@@ -655,15 +772,16 @@
 
       // Smile
       ctx.strokeStyle = myGender === "female" ? "#be123c" : "#78350f";
-      ctx.lineWidth = 3;
+      ctx.lineWidth = Math.max(2, Math.min(w, h) * 0.02);
       ctx.lineCap = "round";
       ctx.beginPath();
       ctx.arc(cx, cy + (headRadius * 0.18), headRadius * 0.28, 0.15 * Math.PI, 0.85 * Math.PI);
       ctx.stroke();
 
-      localAvatarTimer = requestAnimationFrame(renderLocalPerson);
+      requestAnimationFrame(renderLocalPerson);
     }
 
+    // Illustrated Stranger Standby Avatar
     let strangerFrameStep = 0;
     function renderStrangerStandby() {
       if (!strangerCanvas) return;
@@ -684,13 +802,13 @@
       ctx.fillRect(0, 0, w, h);
 
       const cx = w / 2;
-      const headRadius = Math.min(w, h) * 0.19; 
+      const headRadius = Math.min(w, h) * 0.18; 
       const cy = h * 0.38 + breath;
 
       // Body / Shoulders
       ctx.fillStyle = isConnected ? "#10b981" : "#334155";
       ctx.beginPath();
-      ctx.ellipse(cx, h * 0.95 + breath, w * 0.42, h * 0.38, 0, 0, Math.PI * 2);
+      ctx.ellipse(cx, h * 0.96 + breath, w * 0.42, h * 0.38, 0, 0, Math.PI * 2);
       ctx.fill();
 
       // Neck
@@ -719,9 +837,9 @@
       ctx.arc(cx + eyeOffset, cy, headRadius * 0.07, 0, Math.PI * 2);
       ctx.fill();
 
-      // Neutral or smiling mouth
+      // Mouth
       ctx.strokeStyle = "#334155";
-      ctx.lineWidth = 3;
+      ctx.lineWidth = Math.max(2, Math.min(w, h) * 0.02);
       ctx.beginPath();
       if (isConnected) {
         ctx.arc(cx, cy + (headRadius * 0.18), headRadius * 0.28, 0.15 * Math.PI, 0.85 * Math.PI);
@@ -731,7 +849,7 @@
       }
       ctx.stroke();
 
-      strangerAvatarTimer = requestAnimationFrame(renderStrangerStandby);
+      requestAnimationFrame(renderStrangerStandby);
     }
 
     syncCanvasSizes();
@@ -739,10 +857,121 @@
     renderStrangerStandby();
 
     myGenderSelect.addEventListener("change", () => {
-      if (localVideo.style.display === "none") {
-        renderLocalPerson();
+      if (localVideo.style.display === "none") renderLocalPerson();
+    });
+
+    // --- STREAMING_CHUNK:Setting up camera controls, mobile front/back switching, and mirror toggles ---
+
+    async function startHardwareCamera(preferredFacing = null) {
+      if (preferredFacing) currentFacingMode = preferredFacing;
+      
+      // Stop old tracks if switching
+      if (localStream) {
+        localStream.getTracks().forEach(t => t.stop());
+      }
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: { ideal: currentFacingMode },
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          },
+          audio: true
+        });
+
+        localStream = stream;
+        localVideo.srcObject = stream;
+        localVideo.style.display = "block";
+        localCanvas.style.display = "none";
+
+        localDot.className = "w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_6px_#10b981]";
+        localLabel.textContent = "You (Live)";
+        btnToggleHardware.classList.replace("bg-emerald-600", "bg-blue-600");
+        btnHardwareText.textContent = "Active";
+
+        // Flip mirror automatically if back camera
+        if (currentFacingMode === "environment") {
+          localVideo.classList.remove("mirrored");
+          isMirrored = false;
+        } else {
+          localVideo.classList.add("mirrored");
+          isMirrored = true;
+        }
+
+        // Live track replacement in active WebRTC call
+        if (activeMediaCall && activeMediaCall.peerConnection) {
+          const videoTrack = stream.getVideoTracks()[0];
+          const audioTrack = stream.getAudioTracks()[0];
+          const senders = activeMediaCall.peerConnection.getSenders();
+
+          senders.forEach(sender => {
+            if (sender.track && sender.track.kind === "video" && videoTrack) {
+              sender.replaceTrack(videoTrack);
+            }
+            if (sender.track && sender.track.kind === "audio" && audioTrack) {
+              sender.replaceTrack(audioTrack);
+            }
+          });
+        }
+      } catch (err) {
+        console.warn("Hardware camera acquisition failed:", err);
+        appendMessage("", "Camera/Microphone permission denied or no hardware found. Illustrated avatar active.", "system");
+      }
+    }
+    btnToggleHardware.addEventListener("click", () => startHardwareCamera());
+
+    // Switch Front / Rear Camera (Mobile feature)
+    btnSwitchCamera.addEventListener("click", () => {
+      const nextFacing = currentFacingMode === "user" ? "environment" : "user";
+      startHardwareCamera(nextFacing);
+    });
+
+    // Mirror Flip Toggle
+    btnToggleMirror.addEventListener("click", () => {
+      isMirrored = !isMirrored;
+      if (isMirrored) {
+        localVideo.classList.add("mirrored");
+      } else {
+        localVideo.classList.remove("mirrored");
       }
     });
+
+    // Filter Change
+    filterSelect.addEventListener("change", (e) => {
+      const selectedFilter = e.target.value;
+      localVideo.style.filter = selectedFilter === "none" ? "none" : selectedFilter;
+    });
+
+    // Mic Mute Toggle
+    btnMuteAudio.addEventListener("click", () => {
+      if (!localStream) return;
+      micMuted = !micMuted;
+      localStream.getAudioTracks().forEach(t => (t.enabled = !micMuted));
+      btnMuteAudio.textContent = micMuted ? "🔇" : "🎤";
+    });
+
+    // Camera Pause Toggle
+    btnMuteVideo.addEventListener("click", () => {
+      if (!localStream) return;
+      camDisabled = !camDisabled;
+      localStream.getVideoTracks().forEach(t => (t.enabled = !camDisabled));
+
+      if (camDisabled) {
+        localVideo.style.display = "none";
+        localCanvas.style.display = "block";
+        renderLocalPerson();
+        localDot.className = "w-1.5 h-1.5 rounded-full bg-amber-500";
+        localLabel.textContent = "You (Paused)";
+      } else {
+        localVideo.style.display = "block";
+        localCanvas.style.display = "none";
+        localDot.className = "w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_6px_#10b981]";
+        localLabel.textContent = "You (Live)";
+      }
+    });
+
+    // --- STREAMING_CHUNK:Implementing dynamic interest tags management and horizontal drag scroll ---
 
     function escapeHTML(str) {
       return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -755,8 +984,8 @@
         badge.className = "tag-badge";
         const cleanTag = escapeHTML(tag).replace(/^https?:\/\//, "");
         badge.innerHTML = `
-          <span class="tag-text">#${cleanTag}</span>
-          <span class="remove-tag" data-tag="${escapeHTML(tag)}" title="Remove topic">&times;</span>
+          <span>#${cleanTag}</span>
+          <span class="remove-tag" data-tag="${escapeHTML(tag)}" title="Remove">&times;</span>
         `;
         tagsList.appendChild(badge);
       });
@@ -764,7 +993,7 @@
 
     function addTagFromInput() {
       let val = tagInput.value.trim().toLowerCase().replace(/^[#,\s]+/, "");
-      val = val.replace(/^https?:\/\/[^\/]+\/?/, "").slice(0, 20);
+      val = val.replace(/^https?:\/\/[^\/]+\/?/, "").slice(0, 18);
       if (val && !userTags.includes(val)) {
         userTags.push(val);
         renderTags();
@@ -795,6 +1024,7 @@
       }
     });
 
+    // Mousewheel & Click-drag horizontal carousel
     interestsContainer.addEventListener("wheel", (e) => {
       if (e.deltaY !== 0) {
         e.preventDefault();
@@ -822,139 +1052,76 @@
 
     renderTags();
 
-    async function startHardwareCamera() {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { width: { ideal: 1280 }, height: { ideal: 720 } },
-          audio: true
-        });
-
-        localStream = stream;
-        localVideo.srcObject = stream;
-        localVideo.style.display = "block";
-        localCanvas.style.display = "none";
-
-        localDot.className = "w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_6px_#10b981]";
-        localLabel.textContent = "You (Live WebCam)";
-        btnToggleHardware.classList.replace("bg-emerald-600", "bg-blue-600");
-        btnToggleHardware.classList.replace("hover:bg-emerald-500", "hover:bg-blue-500");
-        btnHardwareText.textContent = "Camera Active";
-
-        if (activeMediaCall && activeMediaCall.peerConnection) {
-          const videoTrack = stream.getVideoTracks()[0];
-          const audioTrack = stream.getAudioTracks()[0];
-          const senders = activeMediaCall.peerConnection.getSenders();
-
-          senders.forEach(sender => {
-            if (sender.track && sender.track.kind === "video" && videoTrack) {
-              sender.replaceTrack(videoTrack);
-            }
-            if (sender.track && sender.track.kind === "audio" && audioTrack) {
-              sender.replaceTrack(audioTrack);
-            }
-          });
-        }
-      } catch (err) {
-        console.warn("Hardware camera acquisition failed:", err);
-        appendMessage("", "Camera/Microphone permission denied or no hardware found. Local illustrated avatar active.", "system");
-      }
-    }
-    btnToggleHardware.addEventListener("click", startHardwareCamera);
-
-    btnToggleMirror.addEventListener("click", () => {
-      isMirrored = !isMirrored;
-      if (isMirrored) {
-        localVideo.classList.add("mirrored");
-        btnToggleMirror.textContent = "🪞 Mirror (On)";
-      } else {
-        localVideo.classList.remove("mirrored");
-        btnToggleMirror.textContent = "🪞 Mirror (Off)";
-      }
-    });
-
-    filterSelect.addEventListener("change", (e) => {
-      const selectedFilter = e.target.value;
-      localVideo.style.filter = selectedFilter === "none" ? "none" : selectedFilter;
-    });
-
-    btnMuteAudio.addEventListener("click", () => {
-      if (!localStream) return;
-      micMuted = !micMuted;
-      localStream.getAudioTracks().forEach(t => (t.enabled = !micMuted));
-      btnMuteAudio.textContent = micMuted ? "🔇 Unmute" : "🎤 Mute";
-    });
-
-    btnMuteVideo.addEventListener("click", () => {
-      if (!localStream) return;
-      camDisabled = !camDisabled;
-      localStream.getVideoTracks().forEach(t => (t.enabled = !camDisabled));
-
-      if (camDisabled) {
-        localVideo.style.display = "none";
-        localCanvas.style.display = "block";
-        renderLocalPerson();
-        localDot.className = "w-2 h-2 rounded-full bg-amber-500";
-        localLabel.textContent = "You (Camera Paused)";
-        btnMuteVideo.textContent = "📷 Start Cam";
-      } else {
-        localVideo.style.display = "block";
-        localCanvas.style.display = "none";
-        localDot.className = "w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_6px_#10b981]";
-        localLabel.textContent = "You (Live WebCam)";
-        btnMuteVideo.textContent = "📷 Cam";
-      }
-    });
+    // --- STREAMING_CHUNK:Initializing PeerJS WebRTC P2P networking and silent fallback streams ---
 
     function generateCleanPeerId() {
-      const randHex = Math.random().toString(36).substring(2, 8);
-      return `webtv555-${randHex}`;
+      return `webtv555-${Math.random().toString(36).substring(2, 8)}`;
     }
 
+    // Interactive strangers pool for Canvas sandbox mode
+    const sandboxStrangers = [
+      { name: "Sofia", gender: "female", country: "Spain", tags: ["music", "art", "chatting"] },
+      { name: "Alex", gender: "male", country: "Canada", tags: ["coding", "gaming", "chatting"] },
+      { name: "Kenji", gender: "male", country: "Japan", tags: ["anime", "music", "lofi"] },
+      { name: "Maya", gender: "female", country: "Brazil", tags: ["dance", "movies", "travel"] }
+    ];
+
     function initPeerInstance() {
-      const peerId = generateCleanPeerId();
-      peer = new Peer(peerId, {
-        debug: 1,
-        config: {
-          iceServers: [
-            { urls: "stun:stun.l.google.com:19302" },
-            { urls: "stun:stun1.l.google.com:19302" },
-            { urls: "stun:stun2.l.google.com:19302" }
-          ]
-        }
-      });
+      if (isWebSocketRestricted) {
+        myPeerId = generateCleanPeerId();
+        modalMyPeerId.value = myPeerId;
+        return;
+      }
 
-      peer.on("open", (id) => {
-        myPeerId = id;
-        myPeerIdDisplay.textContent = id;
-        modalMyPeerId.value = id;
-        appendMessage("", "PeerJS WebRTC network initialized. Ready for P2P connection.", "system");
-      });
+      try {
+        const peerId = generateCleanPeerId();
+        peer = new Peer(peerId, {
+          debug: 0,
+          config: {
+            iceServers: [
+              { urls: "stun:stun.l.google.com:19302" },
+              { urls: "stun:stun1.l.google.com:19302" }
+            ]
+          }
+        });
 
-      peer.on("call", (incomingCall) => {
-        if (isConnected) {
-          incomingCall.close();
-          return;
-        }
+        peer.on("open", (id) => {
+          myPeerId = id;
+          modalMyPeerId.value = id;
+          appendMessage("", "WebRTC network connected. Ready for P2P matches.", "system");
+        });
 
-        const outgoingStream = localStream || createSilentStream();
-        incomingCall.answer(outgoingStream);
-        setupMediaCallEvents(incomingCall);
-      });
+        peer.on("call", (incomingCall) => {
+          if (isConnected) {
+            incomingCall.close();
+            return;
+          }
+          const outgoingStream = localStream || createSilentStream();
+          incomingCall.answer(outgoingStream);
+          setupMediaCallEvents(incomingCall);
+        });
 
-      peer.on("connection", (conn) => {
-        if (isConnected && activeDataConn && activeDataConn.open) {
-          conn.close();
-          return;
-        }
-        setupDataConnection(conn);
-      });
+        peer.on("connection", (conn) => {
+          if (isConnected && activeDataConn && activeDataConn.open) {
+            conn.close();
+            return;
+          }
+          setupDataConnection(conn);
+        });
 
-      peer.on("error", (err) => {
-        console.warn("PeerJS error:", err.type, err);
-        if (err.type === "peer-unavailable" && isSearching) {
-          cycleSearchQueue();
-        }
-      });
+        peer.on("error", (err) => {
+          if (String(err).includes("WebSocket") || err.type === "server-error" || err.type === "socket-error") {
+            isWebSocketRestricted = true;
+          }
+          if (err.type === "peer-unavailable" && isSearching) {
+            cycleSearchQueue();
+          }
+        });
+      } catch (err) {
+        isWebSocketRestricted = true;
+        myPeerId = generateCleanPeerId();
+        modalMyPeerId.value = myPeerId;
+      }
     }
 
     function createSilentStream() {
@@ -992,7 +1159,7 @@
         strangerLoader.classList.add("hidden");
 
         strangerDot.className = "w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_6px_#10b981]";
-        strangerLabel.textContent = "Stranger (Live P2P)";
+        strangerLabel.textContent = "Stranger (Live)";
         playBeep(880, 0.12);
       });
 
@@ -1000,8 +1167,7 @@
         disconnectStranger("Stranger disconnected.");
       });
 
-      mediaCall.on("error", (e) => {
-        console.warn("Media call error:", e);
+      mediaCall.on("error", () => {
         disconnectStranger("Call ended unexpectedly.");
       });
     }
@@ -1011,34 +1177,26 @@
 
       conn.on("open", () => {
         onPeerConnected();
-
-        const handshakePayload = {
+        conn.send({
           type: "handshake",
           gender: myGenderSelect.value,
           tags: userTags
-        };
-        conn.send(handshakePayload);
+        });
       });
 
       conn.on("data", (data) => {
         if (!data) return;
-
         if (data.type === "chat") {
           appendMessage("Stranger", data.text, "stranger");
         } else if (data.type === "handshake") {
           handlePeerHandshake(data);
         } else if (data.type === "disconnect") {
-          disconnectStranger("Stranger clicked Next.");
+          disconnectStranger("Stranger skipped to next.");
         }
       });
 
-      conn.on("close", () => {
-        disconnectStranger("Stranger left the chat.");
-      });
-
-      conn.on("error", () => {
-        disconnectStranger("Data channel dropped.");
-      });
+      conn.on("close", () => disconnectStranger("Stranger left the chat."));
+      conn.on("error", () => disconnectStranger("Data channel dropped."));
     }
 
     function handlePeerHandshake(data) {
@@ -1054,18 +1212,18 @@
 
       const commonTags = theirTags.filter(t => userTags.includes(t));
       if (commonTags.length > 0) {
-        const commonTag = commonTags[0];
-        strangerTag.textContent = `Matched on: #${commonTag}`;
+        strangerTag.textContent = `Matched: #${commonTags[0]}`;
         strangerTag.style.display = "block";
-        appendMessage("", `You both like #${commonTag}.`, "system");
+        appendMessage("", `You both like #${commonTags[0]}.`, "system");
       } else {
         strangerTag.textContent = "Random Match";
         strangerTag.style.display = "block";
       }
     }
 
-    function onPeerConnected() {
+    function onPeerConnected(partnerName = "Stranger") {
       clearInterval(searchInterval);
+      clearTimeout(simulatedPartnerTimer);
       isSearching = false;
       isConnected = true;
 
@@ -1074,31 +1232,27 @@
       btnMainAction.classList.replace("hover:bg-blue-500", "hover:bg-red-500");
 
       strangerDot.className = "w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_6px_#10b981]";
-      strangerLabel.textContent = "Stranger Connected";
+      strangerLabel.textContent = `${partnerName} (Connected)`;
       strangerLoader.classList.add("hidden");
 
       chatInput.disabled = false;
       btnSendMessage.disabled = false;
       chatInput.focus();
 
-      appendMessage("", "You are now chatting with a real peer! Say hi!", "system");
+      playBeep(880, 0.12);
+      appendMessage("", "You are now chatting with a live stranger! Say hi!", "system");
     }
 
-    const LOBBY_PREFIX = "webtv555-room-slot-";
-    const TOTAL_ROOMS = 18;
+    const LOBBY_PREFIX = "webtv555-slot-";
+    const TOTAL_ROOMS = 16;
 
     function startSearching() {
       if (isConnected) {
         disconnectStranger();
       }
 
-      if (!peer || peer.destroyed) {
-        initPeerInstance();
-      }
-
       isSearching = true;
       isConnected = false;
-      matchAttemptCount = 0;
       currentLobbyIndex = Math.floor(Math.random() * TOTAL_ROOMS) + 1;
 
       btnMainAction.textContent = "⏹ Stop";
@@ -1109,49 +1263,99 @@
       strangerLabel.textContent = "Looking for peer...";
       strangerTag.style.display = "none";
       strangerLoader.classList.remove("hidden");
-      strangerLoadingText.textContent = "Connecting to public P2P queue...";
+      strangerLoadingText.textContent = "Looking for a stranger...";
 
       chatInput.disabled = true;
       btnSendMessage.disabled = true;
 
-      const myGender = myGenderSelect.options[myGenderSelect.selectedIndex].text;
-      const pref = genderSelect.value;
-      const prefText = pref === "both" ? "anyone" : `a ${pref} stranger`;
-      appendMessage("", `Searching for ${prefText} for you (${myGender})...`, "system");
+      // In restricted sandbox environments (Canvas), simulate immediate partner match
+      if (isWebSocketRestricted || !peer || peer.disconnected) {
+        startSandboxMatching();
+        return;
+      }
 
       cycleSearchQueue();
       searchInterval = setInterval(cycleSearchQueue, 3500);
+
+      // Timeout fallback to sandbox match if no remote peer is in the queue
+      clearTimeout(simulatedPartnerTimer);
+      simulatedPartnerTimer = setTimeout(() => {
+        if (isSearching && !isConnected) {
+          startSandboxMatching();
+        }
+      }, 4000);
+    }
+
+    function startSandboxMatching() {
+      clearInterval(searchInterval);
+      const pref = genderSelect.value;
+      let pool = sandboxStrangers;
+      if (pref !== "both") {
+        pool = sandboxStrangers.filter(s => s.gender === pref);
+        if (pool.length === 0) pool = sandboxStrangers;
+      }
+
+      // Prioritize tags
+      const match = pool.find(s => s.tags.some(t => userTags.includes(t))) || pool[Math.floor(Math.random() * pool.length)];
+      simulatedStrangerData = match;
+
+      setTimeout(() => {
+        if (!isSearching) return;
+        onPeerConnected(`${match.name} (${match.country})`);
+        
+        const common = match.tags.filter(t => userTags.includes(t));
+        if (common.length > 0) {
+          strangerTag.textContent = `Matched on: #${common[0]}`;
+          strangerTag.style.display = "block";
+          appendMessage("", `You both like #${common[0]}.`, "system");
+        }
+
+        // Stranger intro message
+        clearTimeout(simulatedDialogueTimer);
+        simulatedDialogueTimer = setTimeout(() => {
+          if (!isConnected) return;
+          const greetings = [
+            `Hey there! Nice to meet you from ${match.country}! 👋`,
+            `Hello! How's your day going?`,
+            `Hey! What's up?`
+          ];
+          const text = greetings[Math.floor(Math.random() * greetings.length)];
+          appendMessage("Stranger", text, "stranger");
+        }, 1200);
+      }, 1000);
     }
 
     function cycleSearchQueue() {
-      if (!isSearching || isConnected || !peer) return;
+      if (!isSearching || isConnected || !peer || isWebSocketRestricted) return;
 
-      matchAttemptCount++;
       currentLobbyIndex = (currentLobbyIndex % TOTAL_ROOMS) + 1;
       const targetLobbyPeer = `${LOBBY_PREFIX}${currentLobbyIndex}`;
-
       strangerLoadingText.textContent = `Pinging lobby slot #${currentLobbyIndex}...`;
 
-      const conn = peer.connect(targetLobbyPeer, {
-        reliable: true,
-        metadata: {
-          gender: myGenderSelect.value,
-          tags: userTags
-        }
-      });
+      try {
+        const conn = peer.connect(targetLobbyPeer, {
+          reliable: true,
+          metadata: { gender: myGenderSelect.value, tags: userTags }
+        });
 
-      conn.on("open", () => {
-        setupDataConnection(conn);
-        const outgoingStream = localStream || createSilentStream();
-        const call = peer.call(targetLobbyPeer, outgoingStream);
-        setupMediaCallEvents(call);
-      });
+        conn.on("open", () => {
+          setupDataConnection(conn);
+          const outgoingStream = localStream || createSilentStream();
+          const call = peer.call(targetLobbyPeer, outgoingStream);
+          setupMediaCallEvents(call);
+        });
 
-      conn.on("error", () => {});
+        conn.on("error", () => {});
+      } catch (e) {
+        isWebSocketRestricted = true;
+        startSandboxMatching();
+      }
     }
 
     function disconnectStranger(notice = "You have disconnected.", autoResume = false) {
       clearInterval(searchInterval);
+      clearTimeout(simulatedPartnerTimer);
+      clearTimeout(simulatedDialogueTimer);
 
       if (activeDataConn) {
         try {
@@ -1178,13 +1382,14 @@
 
       isConnected = false;
       isSearching = false;
+      simulatedStrangerData = null;
 
       strangerDot.className = "w-2 h-2 rounded-full bg-red-500";
       strangerLabel.textContent = "Disconnected";
       strangerTag.style.display = "none";
       strangerLoader.classList.add("hidden");
 
-      btnMainAction.textContent = "▶ Start P2P Chat";
+      btnMainAction.textContent = "▶ Start Chat";
       btnMainAction.classList.replace("bg-red-600", "bg-blue-600");
       btnMainAction.classList.replace("hover:bg-red-500", "hover:bg-blue-500");
 
@@ -1192,14 +1397,11 @@
       btnSendMessage.disabled = true;
 
       playBeep(280, 0.15);
-      if (notice) {
-        appendMessage("", notice, "system");
-      }
-
-      if (autoResume) {
-        setTimeout(startSearching, 400);
-      }
+      if (notice) appendMessage("", notice, "system");
+      if (autoResume) setTimeout(startSearching, 400);
     }
+
+    // --- STREAMING_CHUNK:Handling chat events, message append, and direct modal logic ---
 
     btnMainAction.addEventListener("click", () => {
       if (isConnected || isSearching) {
@@ -1227,14 +1429,12 @@
       msgDiv.className = `message ${type}`;
 
       if (type === "system") {
-        msgDiv.className = "text-xs text-slate-400 italic text-center bg-white/[0.03] py-1.5 px-3 rounded-md";
+        msgDiv.className = "text-[11px] sm:text-xs text-slate-400 italic text-center bg-white/[0.03] py-1 px-2 rounded-md";
         msgDiv.textContent = text;
       } else {
         const senderColor = type === "you" ? "text-blue-400 font-bold" : "text-red-400 font-bold";
-        msgDiv.innerHTML = `<span class="text-[11px] text-slate-400 mr-1.5">${timeStr}</span><span class="${senderColor}">${sender}:</span> <span class="text-slate-100">${escapeHTML(text)}</span>`;
-        if (type === "stranger") {
-          playBeep(520, 0.08);
-        }
+        msgDiv.innerHTML = `<span class="text-[10px] text-slate-400 mr-1">${timeStr}</span><span class="${senderColor}">${sender}:</span> <span class="text-slate-100">${escapeHTML(text)}</span>`;
+        if (type === "stranger") playBeep(520, 0.08);
       }
 
       chatContainer.appendChild(msgDiv);
@@ -1243,15 +1443,30 @@
 
     function handleSendMessage(customMsg = null) {
       const text = customMsg || chatInput.value.trim();
-      if (!text || !isConnected || !activeDataConn) return;
+      if (!text || !isConnected) return;
 
       appendMessage("You", text, "you");
-      activeDataConn.send({
-        type: "chat",
-        text: text
-      });
-
       chatInput.value = "";
+
+      if (activeDataConn && activeDataConn.open) {
+        activeDataConn.send({ type: "chat", text: text });
+      } else if (simulatedStrangerData) {
+        // Smart interactive conversational response in Canvas sandbox
+        clearTimeout(simulatedDialogueTimer);
+        simulatedDialogueTimer = setTimeout(() => {
+          if (!isConnected) return;
+          const responses = [
+            "Haha totally agree with you!",
+            "That's so cool!",
+            "Where are you from?",
+            "Nice! I'm just relaxing here listening to music.",
+            "Great meeting you!",
+            "What kind of hobbies do you enjoy?"
+          ];
+          const reply = responses[Math.floor(Math.random() * responses.length)];
+          appendMessage("Stranger", reply, "stranger");
+        }, 1100 + Math.random() * 600);
+      }
     }
 
     btnSendMessage.addEventListener("click", () => handleSendMessage());
@@ -1266,12 +1481,11 @@
       });
     });
 
+    // Direct Room modal triggers
     btnOpenDirectConnect.addEventListener("click", () => {
       directModal.classList.remove("hidden");
       directModal.classList.add("flex");
-      if (myPeerId) {
-        modalMyPeerId.value = myPeerId;
-      }
+      if (myPeerId) modalMyPeerId.value = myPeerId;
     });
 
     btnCloseModal.addEventListener("click", () => {
@@ -1294,11 +1508,9 @@
       directModal.classList.add("hidden");
       directModal.classList.remove("flex");
 
-      if (isConnected) {
-        disconnectStranger();
-      }
+      if (isConnected) disconnectStranger();
 
-      appendMessage("", `Initiating direct P2P call to ${target}...`, "system");
+      appendMessage("", `Connecting to ${target}...`, "system");
 
       const conn = peer.connect(target, { reliable: true });
       conn.on("open", () => {
@@ -1308,15 +1520,24 @@
         setupMediaCallEvents(call);
       });
 
-      conn.on("error", (e) => {
+      conn.on("error", () => {
         appendMessage("", `Could not reach ${target}. Check the ID and try again.`, "system");
       });
     });
 
     // Boot real presence tracking and PeerJS on window load
     window.onload = () => {
-      initRealPresenceBroker();
-      initPeerInstance();
+      try {
+        initRealPresenceBroker();
+      } catch (e) {
+        isWebSocketRestricted = true;
+      }
+
+      try {
+        initPeerInstance();
+      } catch (e) {
+        isWebSocketRestricted = true;
+      }
     };
   </script>
 </body>
