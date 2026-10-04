@@ -4,23 +4,19 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>Web TV 555 - Live Random Video Chat</title>
-  
-  <!-- High-Speed Global CDNs -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
-
-  <!-- External Stylesheet -->
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-  <!-- App Shell Header -->
+  <!-- Clean Top Bar -->
   <header class="app-header">
     <div class="header-left">
       <div class="logo">
         <span class="logo-icon">⚡</span>
         <span class="logo-text">Web TV</span>
-        <span class="logo-pill">555</span>
+        <span class="logo-badge">555</span>
       </div>
 
       <div class="status-pills">
@@ -29,7 +25,7 @@
           <span id="userCount">1</span> Online
         </div>
         <div class="pill streak-pill" id="streakBadge" title="Strangers met this session">
-          <span>🔥</span> <span id="strangersMetCount">0</span> Met
+          <span>⚡</span> <span id="strangersMetCount">0</span> Met
         </div>
         <div class="pill server-pill" id="serverStatusBadge">
           <span class="status-dot warning" id="serverDot"></span>
@@ -39,105 +35,95 @@
     </div>
     
     <div class="header-right">
-      <!-- Media Mode & Audio Controls -->
-      <button class="nav-btn" id="btnToggleAudioOnly" title="Toggle Audio/Video Mode">
-        <span class="icon">🎧</span>
-        <span class="label">Video ON</span>
+      <!-- Quick Media Toggles -->
+      <button class="nav-btn" id="btnToggleSound" title="Toggle Sound">🔊</button>
+      <button class="nav-btn" id="btnToggleAudioOnly" title="Toggle Audio/Video Mode">🎧 Video ON</button>
+
+      <!-- The Single Settings & Studio Menu Trigger -->
+      <button class="nav-btn menu-trigger-btn" id="btnOpenSettingsMenu">
+        <span>⚙️ Settings &amp; Studio</span>
       </button>
 
-      <button class="nav-btn" id="btnToggleSound" title="Toggle Sound FX">
-        <span class="icon">🔊</span>
-      </button>
-
-      <!-- Speed Chat Toggle -->
-      <button class="nav-btn speed-toggle" id="btnToggleSpeedMode" title="Toggle 60s Speed Mode">
-        <span class="icon">⏱</span>
-        <span class="label">Speed: Off</span>
-      </button>
-
-      <!-- Quick Studio Effects Drawer Toggle -->
-      <button class="nav-btn" id="btnToggleFxPanel" title="Effects & Filters">
-        <span class="icon">✨</span>
-        <span class="label">Studio FX</span>
-      </button>
-
-      <!-- Primary Hardware Activator -->
+      <!-- Primary Action -->
       <button class="primary-cam-btn" id="btnToggleHardware">
-        <span class="icon">📹</span>
-        <span>Enable Cam &amp; Mic</span>
+        <span>📹 Enable Camera &amp; Mic</span>
       </button>
     </div>
   </header>
 
-  <!-- Floating Studio FX Modal Drawer -->
-  <div class="fx-panel-drawer" id="fxPanelDrawer">
-    <div class="fx-panel-header">
-      <span>Studio Effects &amp; Audio</span>
-      <button class="panel-close-btn" id="btnCloseFxPanel">&times;</button>
-    </div>
-    <div class="fx-panel-body">
-      <div class="fx-field">
-        <label for="vibeSelect">Your Vibe</label>
-        <select id="vibeSelect" class="studio-select">
-          <option value="☕ Chill">☕ Chill</option>
-          <option value="🎧 Jamming">🎧 Jamming</option>
-          <option value="🎮 Gaming">🎮 Gaming</option>
-          <option value="💻 Coding">💻 Coding</option>
-          <option value="✨ Hyped">✨ Hyped</option>
-        </select>
+  <!-- =========================================================
+       SETTINGS & STUDIO POPUP MODAL / DROPDOWN
+       ========================================================= -->
+  <div class="floating-menu-modal" id="settingsMenuModal">
+    <div class="menu-modal-card">
+      <div class="menu-modal-header">
+        <span class="title">⚙️ Settings &amp; Studio Controls</span>
+        <button class="modal-close-icon" id="btnCloseSettingsMenu">&times;</button>
       </div>
 
-      <div class="fx-field">
-        <label for="filterSelect">Camera Filter</label>
-        <select id="filterSelect" class="studio-select">
-          <option value="none">🎬 Normal</option>
-          <option value="grayscale(100%)">🖤 Monochromatic</option>
-          <option value="sepia(80%)">🎞 Retro Film</option>
-          <option value="contrast(140%) brightness(110%)">🌟 High Contrast</option>
-          <option value="hue-rotate(90deg)">👾 Cyber Glow</option>
-        </select>
+      <div class="menu-modal-grid">
+        <!-- Visual & Audio Profiles -->
+        <div class="menu-field">
+          <label for="vibeSelect">Your Vibe</label>
+          <select id="vibeSelect" class="clean-select">
+            <option value="☕ Chill">☕ Chill</option>
+            <option value="🎧 Jamming">🎧 Jamming</option>
+            <option value="🎮 Gaming">🎮 Gaming</option>
+            <option value="💻 Coding">💻 Coding</option>
+            <option value="✨ Hyped">✨ Hyped</option>
+          </select>
+        </div>
+
+        <div class="menu-field">
+          <label for="filterSelect">Camera Visual FX</label>
+          <select id="filterSelect" class="clean-select">
+            <option value="none">🎬 Normal (Default)</option>
+            <option value="grayscale(100%)">🖤 Monochromatic</option>
+            <option value="sepia(80%)">🎞 Retro Film</option>
+            <option value="contrast(140%) brightness(110%)">🌟 High Contrast</option>
+            <option value="hue-rotate(90deg)">👾 Cyber Glow</option>
+          </select>
+        </div>
+
+        <div class="menu-field">
+          <label for="voiceFxSelect">Microphone Voice Pitch</label>
+          <select id="voiceFxSelect" class="clean-select">
+            <option value="normal">🎙 Natural Mic</option>
+            <option value="deep">👹 Deep Demon</option>
+            <option value="telephone">📻 Radio Walkie</option>
+            <option value="cave">🏔 Cavern Reverb</option>
+          </select>
+        </div>
+
+        <div class="menu-field">
+          <label for="arPropSelect">AR Face Accessory</label>
+          <select id="arPropSelect" class="clean-select">
+            <option value="none">🎭 None</option>
+            <option value="👑">👑 Gold Crown</option>
+            <option value="😎">😎 Cool Shades</option>
+            <option value="🐱">🐱 Cat Ears</option>
+            <option value="🥸">🥸 Disguise</option>
+            <option value="💫">💫 Halo</option>
+          </select>
+        </div>
       </div>
 
-      <div class="fx-field">
-        <label for="voiceFxSelect">Voice Modulation</label>
-        <select id="voiceFxSelect" class="studio-select">
-          <option value="normal">🎙 Natural Mic</option>
-          <option value="deep">👹 Deep Pitch</option>
-          <option value="telephone">📻 Walkie Talkie</option>
-          <option value="cave">🏔 Cavern Reverb</option>
-        </select>
-      </div>
-
-      <div class="fx-field">
-        <label for="arPropSelect">AR Face Props</label>
-        <select id="arPropSelect" class="studio-select">
-          <option value="none">🎭 No Prop</option>
-          <option value="👑">👑 Gold Crown</option>
-          <option value="😎">😎 Cool Shades</option>
-          <option value="🐱">🐱 Cat Ears</option>
-          <option value="🥸">🥸 Disguise Glasses</option>
-          <option value="💫">💫 Neon Halo</option>
-        </select>
-      </div>
-
-      <div class="fx-action-grid">
-        <button class="drawer-tool-btn" id="btnRecordClip">📹 Clip (15s)</button>
-        <button class="drawer-tool-btn" id="btnToggleCaptions">💬 Live CC</button>
-        <button class="drawer-tool-btn" id="btnToggleTTS">🗣 Audio TTS</button>
+      <div class="menu-modal-section-title">Encounter &amp; Recording Tools</div>
+      <div class="menu-tools-row">
+        <button class="tool-chip-btn" id="btnToggleSpeedMode">⏱ Speed Chat (60s): Off</button>
+        <button class="tool-chip-btn" id="btnRecordClip">📹 Record Clip (15s)</button>
+        <button class="tool-chip-btn" id="btnToggleCaptions">💬 Live CC: Off</button>
+        <button class="tool-chip-btn" id="btnToggleTTS">🗣 Audio TTS: Off</button>
       </div>
     </div>
   </div>
 
-  <!-- Main Split Layout -->
+  <!-- Main Viewports -->
   <main class="app-workspace">
-    <!-- Video Stage Column -->
     <div class="stage-column" id="stageColumn">
       <div class="video-stage-container" id="videoStageContainer">
         
-        <!-- Remote Stranger Viewport -->
         <div class="remote-video-wrap">
-          
-          <!-- Top Info Badges -->
           <div class="stage-hud-bar">
             <div class="hud-chip status-chip">
               <span class="badge-dot" id="strangerDot"></span>
@@ -147,26 +133,21 @@
               <span class="ping-indicator" id="pingIndicator">📶 --ms</span>
             </div>
 
-            <!-- Speed Timer Center Badge -->
             <div class="speed-timer-badge" id="speedTimerBadge">
               <span class="speed-icon">⏳</span>
               <span id="speedTimerValue">60s</span>
-              <button class="btn-extend-time" id="btnExtendTime" title="Vote to add +60s">+60s Extend</button>
+              <button class="btn-extend-time" id="btnExtendTime">+60s Extend</button>
             </div>
 
-            <div class="hud-chip match-chip" id="strangerTag">Matched: #music</div>
+            <div class="hud-chip match-chip" id="strangerTag">Matched on: #music</div>
           </div>
 
           <video id="remoteVideo" autoplay playsinline></video>
           <canvas id="remoteCanvas"></canvas>
 
-          <!-- Floating Subtitles -->
           <div class="subtitle-overlay" id="subtitleOverlay"></div>
-
-          <!-- Floating Reactions Surface -->
           <div class="reaction-fly-container" id="reactionFlyContainer"></div>
 
-          <!-- Bottom Reactions Deck -->
           <div class="reactions-floating-bar" id="reactionsBar">
             <button class="reaction-trigger-btn" data-emoji="❤️">❤️</button>
             <button class="reaction-trigger-btn" data-emoji="😂">😂</button>
@@ -176,7 +157,6 @@
             <button class="reaction-trigger-btn" id="btnTriggerSoundboard" title="Open Soundboard">🎺</button>
           </div>
 
-          <!-- Soundboard Drawer -->
           <div class="soundboard-drawer" id="soundboardDrawer">
             <button class="soundboard-btn" data-sfx="airhorn">📢 Airhorn</button>
             <button class="soundboard-btn" data-sfx="laser">⚡ Laser</button>
@@ -184,13 +164,12 @@
             <button class="soundboard-btn" data-sfx="victory">🎺 Ta-Da!</button>
           </div>
 
-          <!-- Privacy Shield Blur -->
           <div class="blur-overlay" id="blurOverlay">
             <button id="btnUnblurVideo" class="unblur-btn">👁 Reveal Video</button>
             <span class="blur-tip">Auto-reveals in 5s</span>
           </div>
 
-          <!-- Interactive Modals (Truth or Dare, WYR, Whiteboard, Tic-Tac-Toe) -->
+          <!-- Game & Activity Overlays -->
           <div class="tod-modal-overlay" id="todModal">
             <div class="modal-card tod-box">
               <div class="modal-card-header">
@@ -220,7 +199,7 @@
           <div class="whiteboard-modal-overlay" id="whiteboardModal">
             <div class="whiteboard-header">
               <div class="whiteboard-tools">
-                <span class="tool-title">🎨 Live Shared Doodle</span>
+                <span class="tool-title">🎨 Shared Doodle Pad</span>
                 <input type="color" id="wbColorPicker" value="#38bdf8" />
                 <button class="pill-action-btn" id="btnWbClear">🗑 Clear</button>
               </div>
@@ -251,31 +230,28 @@
           </div>
         </div>
 
-        <!-- Local Video PiP Thumbnail -->
         <div class="local-pip-card" id="localPipCard">
           <div class="local-pip-badge" id="localLabel">
             <span>You</span>
             <span class="vibe-tag" id="myVibeTag">☕ Chill</span>
-            <span id="micSpeakingBadge" class="talking-dot">● Live</span>
+            <span id="micSpeakingBadge" class="talking-dot">● Talking</span>
           </div>
           <div class="ar-prop-overlay" id="arPropOverlay">👑</div>
           <video id="localVideo" class="mirrored" autoplay playsinline muted></video>
           <canvas id="localCanvas"></canvas>
         </div>
 
-        <!-- Floating Desktop Stage Controls Pill -->
         <div class="stage-controls-pill desktop-only">
-          <button id="btnSwitchCamera" title="Switch Front/Rear Cam">🔄</button>
+          <button id="btnSwitchCamera" title="Switch Cam">🔄</button>
           <button id="btnToggleMirror" title="Flip Mirror">🪞</button>
           <button id="btnMuteAudio" title="Mute Mic">🎤</button>
           <button id="btnMuteVideo" title="Stop Video">📷</button>
           <button id="btnToggleScreenShare" title="Share Screen">🖥</button>
-          <button id="btnTriggerPopoutPiP" title="Pop-out Floating Video">🪟</button>
-          <button id="btnToggleFullscreen" title="Toggle Fullscreen Mode">⛶</button>
+          <button id="btnTriggerPopoutPiP" title="Pop-out Video">🪟</button>
+          <button id="btnToggleFullscreen" title="Toggle Fullscreen">⛶</button>
         </div>
       </div>
 
-      <!-- Mobile Media Controls Bar -->
       <div class="mobile-media-toolbar">
         <button id="mBtnSwitchCamera" class="m-tool-btn">🔄 Flip</button>
         <button id="mBtnToggleMirror" class="m-tool-btn">🪞 Mirror</button>
@@ -287,21 +263,42 @@
       </div>
     </div>
 
-    <!-- Chat & Social Rail Column -->
+    <!-- =========================================================
+         RIGHT CHAT RAIL: CLEAN DROPDOWN MENUS FOR GAMES & TOOLS
+         ========================================================= -->
     <aside class="chat-section">
-      <div class="chat-header">
-        <div class="chat-header-title">
-          <span class="title">Conversation</span>
-          <span class="typing-label" id="typingIndicator">Stranger is typing...</span>
+      <div class="chat-header-compact">
+        <div class="chat-header-left">
+          <span class="chat-title">💬 Chat</span>
+          <span class="typing-label" id="typingIndicator">typing...</span>
         </div>
-        <div class="chat-action-chips">
-          <button id="btnOpenTOD" class="mini-tool-btn amber" title="Truth or Dare">🎡 T or D</button>
-          <button id="btnOpenWYR" class="mini-tool-btn pink" title="Would You Rather">🤔 WYR</button>
-          <button id="btnOpenWhiteboard" class="mini-tool-btn cyan" title="Open Doodle Pad">🎨 Doodle</button>
-          <button id="btnOpenGame" class="mini-tool-btn emerald" title="Play Tic-Tac-Toe">🎮 Play</button>
-          <button id="btnSnapshot" class="mini-tool-btn" title="Snap Photo">📸</button>
-          <button id="btnShareRoom" class="mini-tool-btn" title="Share Room Link">🔗</button>
-          <button id="btnExportChat" class="mini-tool-btn" title="Export Log">📋</button>
+
+        <!-- Clean Two-Dropdown Group -->
+        <div class="chat-header-menus">
+          <!-- Games Menu -->
+          <div class="relative-dropdown">
+            <button class="chat-menu-btn emerald-btn" id="btnOpenGamesDropdown">
+              <span>🎮 Games ▾</span>
+            </button>
+            <div class="dropdown-menu-list" id="gamesDropdownList">
+              <button class="dropdown-item" id="btnOpenTOD">🎡 Truth or Dare</button>
+              <button class="dropdown-item" id="btnOpenWYR">🤔 Would You Rather</button>
+              <button class="dropdown-item" id="btnOpenGame">❌ Tic-Tac-Toe</button>
+              <button class="dropdown-item" id="btnOpenWhiteboard">🎨 Doodle Pad</button>
+            </div>
+          </div>
+
+          <!-- Tools Menu -->
+          <div class="relative-dropdown">
+            <button class="chat-menu-btn gray-btn" id="btnOpenToolsDropdown">
+              <span>🛠 Tools ▾</span>
+            </button>
+            <div class="dropdown-menu-list" id="toolsDropdownList">
+              <button class="dropdown-item" id="btnSnapshot">📸 Snap Photo</button>
+              <button class="dropdown-item" id="btnShareRoom">🔗 Room Link</button>
+              <button class="dropdown-item" id="btnExportChat">📋 Export Log</button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -309,11 +306,10 @@
         <div class="message system">Welcome to Web TV 555! Click Start Chat to connect with a stranger.</div>
       </div>
 
-      <!-- Quick Conversation Chips -->
       <div class="quick-replies-deck">
         <button class="quick-chip highlight" id="btnRandomIcebreaker">🎲 Icebreaker</button>
-        <button class="quick-chip" id="btnCoinFlip">🪙 Coin</button>
-        <button class="quick-chip" id="btnDiceRoll">🎲 D6</button>
+        <button class="quick-chip" id="btnCoinFlip">🪙 Flip Coin</button>
+        <button class="quick-chip" id="btnDiceRoll">🎲 Roll D6</button>
         <button class="quick-chip" data-msg="Hey!">👋 Hey</button>
         <button class="quick-chip" data-msg="Where are you from?">📍 Location?</button>
         <button class="quick-chip" data-msg="What are your hobbies?">🎮 Hobbies</button>
@@ -326,7 +322,7 @@
     </aside>
   </main>
 
-  <!-- Modern Interactive Footer Control Deck -->
+  <!-- Controls Footer -->
   <footer class="app-deck">
     <div class="deck-main-actions">
       <button class="btn-primary-action start" id="btnMainAction">
@@ -344,7 +340,6 @@
       </button>
     </div>
 
-    <!-- Matchmaking Filter Pods -->
     <div class="deck-filters">
       <div class="filter-pod">
         <span class="pod-label">I am</span>
@@ -355,15 +350,14 @@
       </div>
 
       <div class="filter-pod">
-        <span class="pod-label">Looking for</span>
+        <span class="pod-label">Match</span>
         <select id="genderSelect" class="pod-select">
-          <option value="both">👥 Everyone</option>
+          <option value="both">👥 Both / Random</option>
           <option value="female">👩 Female</option>
           <option value="male">👨 Male</option>
         </select>
       </div>
 
-      <!-- Tag Interests Pod -->
       <div class="interests-pod" id="interestsContainer" title="Scroll or drag tags">
         <div class="tags-list" id="tagsList"></div>
         <div class="tag-input-wrap">
@@ -374,11 +368,10 @@
     </div>
 
     <div class="deck-trailing-hint">
-      Press <kbd>Esc</kbd> anytime to skip
+      Press <kbd>Esc</kbd> to skip
     </div>
   </footer>
 
-  <!-- External JavaScript Engine -->
   <script src="script.js"></script>
 </body>
 </html>
