@@ -1812,7 +1812,7 @@
 
       <div class="landing-online-badge">
         <span class="status-dot online"></span>
-        <span id="landingOnlineCounter">42,810+</span> Online Now
+        <span id="landingOnlineCounter">42,810</span> Online Now
       </div>
     </div>
 
@@ -1986,6 +1986,14 @@
             <option value="💫">💫 Halo</option>
           </select>
         </div>
+
+        <!-- RELOCATED SCREEN SHARE OPTION (DISABLED) -->
+        <div class="menu-field" style="grid-column: span 2; background: rgba(255,255,255,0.03); padding: 8px 12px; border-radius: 8px; border: 1px dashed rgba(255,255,255,0.12); opacity: 0.65;">
+          <label style="color: #94a3b8;">Screen Sharing</label>
+          <button id="btnSettingsScreenShare" disabled type="button" style="background: #1e293b; color: #64748b; border: 1px solid #334155; padding: 8px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: not-allowed; text-align: left;">
+            🖥 Share Screen (Temporarily Disabled)
+          </button>
+        </div>
       </div>
 
       <div class="menu-modal-section-title">Encounter &amp; Recording Tools</div>
@@ -2149,7 +2157,10 @@
           <button id="btnToggleMirror" title="Flip Mirror">🪞</button>
           <button id="btnMuteAudio" title="Mute Mic">🎤</button>
           <button id="btnMuteVideo" title="Stop Video">📷</button>
-          <button id="btnToggleScreenShare" title="Share Screen">🖥</button>
+          
+          <!-- Kept in DOM, hidden via inline style so existing logic and references stay safe -->
+          <button id="btnToggleScreenShare" title="Share Screen" style="display: none !important;">🖥</button>
+          
           <button id="btnTriggerPopoutPiP" title="Pop-out Video">🪟</button>
           <button id="btnToggleFullscreen" title="Toggle Fullscreen">⛶</button>
         </div>
@@ -2161,7 +2172,10 @@
         <button id="mBtnToggleMirror" class="m-tool-btn">🪞 Mirror</button>
         <button id="mBtnMuteAudio" class="m-tool-btn">🎤 Mic</button>
         <button id="mBtnMuteVideo" class="m-tool-btn">📷 Cam</button>
-        <button id="mBtnToggleScreenShare" class="m-tool-btn">🖥 Share</button>
+        
+        <!-- Kept in DOM, hidden via inline style -->
+        <button id="mBtnToggleScreenShare" class="m-tool-btn" style="display: none !important;">🖥 Share</button>
+        
         <button id="mBtnTriggerPopoutPiP" class="m-tool-btn">🪟 Pop</button>
         <button id="mBtnToggleFullscreen" class="m-tool-btn">⛶ Full</button>
       </div>
@@ -2323,7 +2337,7 @@
     let currentFacingMode = "user";
 
     // Auto-Next Match Engine State
-    let autoNextEnabled = true; // Auto-find next ready partner on disconnect by default
+    let autoNextEnabled = true;
     let autoNextTimeout = null;
     let autoNextCountdownInterval = null;
 
@@ -2546,6 +2560,24 @@
     const mBtnTriggerPopoutPiP = document.getElementById("mBtnTriggerPopoutPiP");
     const mBtnToggleFullscreen = document.getElementById("mBtnToggleFullscreen");
 
+    // ==========================================
+    // PERSISTENT FAKE ONLINE TICKER SIMULATION
+    // ==========================================
+    let simulatedOnlineCount = 42810;
+    function updateFakeOnlineDisplay() {
+      const formatted = simulatedOnlineCount.toLocaleString();
+      if (userCount) userCount.textContent = formatted;
+      const landingCounter = document.getElementById("landingOnlineCounter");
+      if (landingCounter) landingCounter.textContent = formatted;
+    }
+    
+    // Natural slight delta every 3.5 seconds
+    setInterval(() => {
+      const delta = Math.floor(Math.random() * 13) - 6; // -6 to +6 users
+      simulatedOnlineCount = Math.max(41800, Math.min(43900, simulatedOnlineCount + delta));
+      updateFakeOnlineDisplay();
+    }, 3500);
+
     function updateAutoNextUI() {
       if (btnToggleAutoNext) {
         if (autoNextEnabled) {
@@ -2570,7 +2602,6 @@
             autoNextCountdownText.innerHTML = "<span>⏸ Auto-Next paused. Click Next to search.</span>";
           }
         } else if (isStrangerDisconnected) {
-          // If stranger already disconnected and we just turned Auto-Next back ON, start searching
           triggerAutoNextSearch();
         }
       });
@@ -2632,11 +2663,9 @@
       stopScreenSharing();
       stopClipRecording();
 
-      // Clean peer pipes specifically for this disconnect
       if (activeCall) { activeCall.close(); activeCall = null; }
       if (activeDataConnection) { activeDataConnection.close(); activeDataConnection = null; }
 
-      // Dismiss game overlays so view is unobstructed
       if (gameModal) gameModal.style.display = "none";
       gameActive = false;
       if (whiteboardModal) whiteboardModal.style.display = "none";
@@ -2663,12 +2692,10 @@
       btnNextStranger.style.display = "inline-flex";
       btnNextStranger.classList.add("highlight");
 
-      // Display the disconnect countdown overlay
       if (strangerDisconnectedOverlay) strangerDisconnectedOverlay.classList.add("show");
 
       appendMessage("", "Stranger has left the chat.", "system");
 
-      // AUTOMATIC RECONNECTION: Automatically queue and find someone ready!
       if (autoNextEnabled) {
         triggerAutoNextSearch();
       } else {
@@ -3894,10 +3921,10 @@
     });
 
     socket.on("presence_count", (count) => {
-      const formatted = count ? count.toLocaleString() : "42,810+";
-      if (userCount) userCount.textContent = formatted;
-      const landingCounter = document.getElementById("landingOnlineCounter");
-      if (landingCounter) landingCounter.textContent = formatted;
+      if (count && count > 0) {
+        simulatedOnlineCount = count;
+        updateFakeOnlineDisplay();
+      }
     });
 
     socket.on("matched", (payload) => {
@@ -3986,7 +4013,7 @@
       call.on("stream", (remoteMediaStream) => {
         remoteVideo.srcObject = remoteMediaStream;
         remoteVideo.style.display = isAudioOnlyMode ? "none" : "block";
-        remoteCanvas.style.display = isAudioOnlyMode ? "block" : "none";
+        remoteCanvas.style.display = isAudioOnlyMode ? "none" : "block";
         triggerPrivacyShield();
 
         if (call.peerConnection) startStatsPolling(call.peerConnection);
@@ -4154,6 +4181,7 @@
       if (mBtnMuteVideo) mBtnMuteVideo.textContent = camDisabled ? "📷 Show" : "📷 Cam";
     });
 
+    // Screen sharing functions preserved in logic
     async function toggleScreenShare() {
       if (!isScreenSharing) {
         try {
@@ -4568,11 +4596,12 @@
       if (pingIndicator) pingIndicator.style.display = "none";
     }
 
-    // Initialize UI and loop
+    // Initialize UI, loop, and fake presence counter
     updateAutoNextUI();
     renderLandingTags();
     syncCanvasDimensions();
     renderAvatarsLoop();
+    updateFakeOnlineDisplay();
   </script>
 </body>
 </html>
