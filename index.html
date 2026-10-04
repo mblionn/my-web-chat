@@ -513,8 +513,8 @@
       touch-action: none;
     }
 
-    /* "Would You Rather", "Truth or Dare" & "Speed Trivia" Modals */
-    .wyr-modal-overlay, .tod-modal-overlay, .trivia-modal-overlay {
+    /* "Would You Rather" & "Truth or Dare" Cards */
+    .wyr-modal-overlay, .tod-modal-overlay {
       position: absolute;
       inset: 0;
       background: rgba(7, 9, 14, 0.88);
@@ -528,7 +528,7 @@
       padding: 16px;
     }
 
-    .wyr-box, .tod-box, .trivia-box {
+    .wyr-box, .tod-box {
       background: #0f172a;
       border: 1px solid rgba(236, 72, 153, 0.4);
       padding: 18px;
@@ -543,10 +543,6 @@
 
     .tod-box {
       border-color: rgba(245, 158, 11, 0.4);
-    }
-
-    .trivia-box {
-      border-color: rgba(16, 185, 129, 0.4);
     }
 
     .modal-card-header {
@@ -609,30 +605,6 @@
 
     .tod-btn:active {
       transform: scale(0.96);
-    }
-
-    .trivia-options-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .trivia-opt-btn {
-      background: #1e293b;
-      border: 1px solid #334155;
-      color: #f8fafc;
-      padding: 10px;
-      border-radius: 7px;
-      font-size: 0.82rem;
-      font-weight: 700;
-      cursor: pointer;
-      text-align: left;
-      transition: all 0.15s;
-    }
-
-    .trivia-opt-btn:hover {
-      background: #334155;
-      border-color: #64748b;
     }
 
     .card-status-label {
@@ -963,16 +935,6 @@
       margin: 4px 0;
     }
 
-    .chat-img-thumb {
-      display: block;
-      margin-top: 6px;
-      max-width: 190px;
-      max-height: 140px;
-      border-radius: 8px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      cursor: pointer;
-    }
-
     .quick-replies {
       padding: 6px 12px;
       border-top: 1px solid var(--border-color);
@@ -1017,10 +979,9 @@
       display: flex;
       gap: 8px;
       background: #0f172a;
-      align-items: center;
     }
 
-    .chat-input-area input[type="text"] {
+    .chat-input-area input {
       flex: 1;
       background: #07090e;
       border: 1px solid var(--border-color);
@@ -1031,28 +992,11 @@
       outline: none;
     }
 
-    .chat-input-area input[type="text"]:focus {
+    .chat-input-area input:focus {
       border-color: var(--primary);
     }
 
-    .btn-icon-file {
-      background: #1e293b;
-      border: 1px solid #334155;
-      color: #cbd5e1;
-      padding: 8px 10px;
-      border-radius: 7px;
-      cursor: pointer;
-      font-size: 0.95rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .btn-icon-file:hover {
-      background: #334155;
-    }
-
-    .chat-input-area button.send-btn {
+    .chat-input-area button {
       background: var(--primary);
       color: #ffffff;
       border: none;
@@ -1373,7 +1317,6 @@
         <option value="💫">💫 Halo Glow</option>
       </select>
 
-      <button class="tool-header-btn" id="btnToggleStudioGlow" title="Studio Low-Light Boost">💡 Glow</button>
       <button class="tool-header-btn" id="btnRecordClip" title="Record 15s Highlight Video">📹 Clip</button>
       <button class="tool-header-btn" id="btnToggleCaptions" title="Live Closed Captions">💬 CC: Off</button>
       <button class="tool-header-btn" id="btnToggleTTS" title="Read incoming messages aloud">🗣 TTS: Off</button>
@@ -1427,19 +1370,6 @@
           <div class="blur-overlay" id="blurOverlay">
             <button id="btnUnblurVideo" class="unblur-btn">👁 Reveal Video</button>
             <span class="blur-tip">Auto-reveals in 5s</span>
-          </div>
-
-          <!-- "Speed Trivia Duel" Card Overlay -->
-          <div class="trivia-modal-overlay" id="triviaModal">
-            <div class="trivia-box">
-              <div class="modal-card-header" style="color:#10b981;">
-                <span>🧠 Speed Trivia Duel</span>
-                <button class="game-close-btn" id="btnTriviaClose">&times;</button>
-              </div>
-              <div style="font-weight:700; font-size:0.86rem; color:#f8fafc;" id="triviaQuestionText">Question loading...</div>
-              <div class="trivia-options-list" id="triviaOptionsList"></div>
-              <div class="card-status-label" id="triviaStatusLabel">First to buzz with the right answer wins!</div>
-            </div>
           </div>
 
           <!-- "Truth or Dare" Card Overlay -->
@@ -1524,7 +1454,6 @@
           <button id="btnToggleMirror" title="Flip Mirror">🪞</button>
           <button id="btnMuteAudio" title="Mute Mic">🎤</button>
           <button id="btnMuteVideo" title="Stop Video">📷</button>
-          <button id="btnMuteRemoteAudio" title="Mute Stranger's Audio">🔊</button>
           <button id="btnToggleScreenShare" title="Share Screen">🖥</button>
           <button id="btnTriggerPopoutPiP" title="Pop-out Floating Video">🪟</button>
           <button id="btnToggleFullscreen" title="Toggle Fullscreen Mode">⛶</button>
@@ -1537,7 +1466,6 @@
         <button id="mBtnToggleMirror" class="m-tool-btn">🪞 Mirror</button>
         <button id="mBtnMuteAudio" class="m-tool-btn">🎤 Mic</button>
         <button id="mBtnMuteVideo" class="m-tool-btn">📷 Cam</button>
-        <button id="mBtnMuteRemoteAudio" class="m-tool-btn">🔊 Stranger</button>
         <button id="mBtnToggleScreenShare" class="m-tool-btn">🖥 Share</button>
         <button id="mBtnTriggerPopoutPiP" class="m-tool-btn">🪟 Pop</button>
         <button id="mBtnToggleFullscreen" class="m-tool-btn">⛶ Full</button>
@@ -1552,7 +1480,6 @@
           <span class="typing-label" id="typingIndicator">Stranger is typing...</span>
         </div>
         <div class="header-chat-actions">
-          <button id="btnOpenTrivia" class="chat-tool-btn" style="color:#34d399; border-color:#059669;" title="Trivia Duel">🧠 Trivia</button>
           <button id="btnOpenTOD" class="chat-tool-btn" style="color:#fbbf24; border-color:#d97706;" title="Truth or Dare">🎡 T or D</button>
           <button id="btnOpenWYR" class="chat-tool-btn" style="color:#f472b6; border-color:#db2777;" title="Would You Rather">🤔 WYR</button>
           <button id="btnOpenWhiteboard" class="chat-tool-btn" title="Open Doodle Pad">🎨 Doodle</button>
@@ -1578,10 +1505,8 @@
       </div>
 
       <div class="chat-input-area">
-        <input type="file" id="chatImageInput" accept="image/*" style="display:none;" />
-        <button class="btn-icon-file" id="btnAttachImage" title="Share Photo" disabled>📷</button>
         <input type="text" id="chatInput" placeholder="Type a message..." disabled autocomplete="off" />
-        <button class="send-btn" id="btnSendMessage" disabled>Send</button>
+        <button id="btnSendMessage" disabled>Send</button>
       </div>
     </div>
   </main>
@@ -1646,8 +1571,6 @@
     let isMirrored = true;
     let micMuted = false;
     let camDisabled = false;
-    let isRemoteAudioMuted = false;
-    let isStudioGlowActive = false;
     let isAudioOnlyMode = false;
     let soundEnabled = true;
     let ttsEnabled = false;
@@ -1719,17 +1642,8 @@
       "Do 10 rapid push-ups or jumping jacks on camera."
     ];
 
-    const TRIVIA_BANK = [
-      { q: "What is the capital city of Australia?", opts: ["Sydney", "Melbourne", "Canberra", "Brisbane"], ans: 2 },
-      { q: "Which planet in our solar system has the most moons?", opts: ["Jupiter", "Saturn", "Uranus", "Neptune"], ans: 1 },
-      { q: "Who painted the famous artwork 'The Starry Night'?", opts: ["Pablo Picasso", "Vincent van Gogh", "Claude Monet", "Leonardo da Vinci"], ans: 1 },
-      { q: "What is the chemical symbol for Gold?", opts: ["Ag", "Fe", "Au", "Pb"], ans: 2 },
-      { q: "Which animal has three hearts?", opts: ["Octopus", "Giraffe", "Blue Whale", "Elephant"], ans: 0 }
-    ];
-
     let currentWyr = null;
     let myWyrVote = null;
-    let currentTrivia = null;
 
     // Tic-Tac-Toe State
     let tttBoard = Array(9).fill(null);
@@ -1749,7 +1663,6 @@
     const voiceFxSelect = document.getElementById("voiceFxSelect");
     const arPropSelect = document.getElementById("arPropSelect");
     const arPropOverlay = document.getElementById("arPropOverlay");
-    const btnToggleStudioGlow = document.getElementById("btnToggleStudioGlow");
     const btnRecordClip = document.getElementById("btnRecordClip");
     const btnToggleSound = document.getElementById("btnToggleSound");
     const btnToggleAudioOnly = document.getElementById("btnToggleAudioOnly");
@@ -1778,12 +1691,6 @@
     const btnRandomIcebreaker = document.getElementById("btnRandomIcebreaker");
     const btnCoinFlip = document.getElementById("btnCoinFlip");
     const btnDiceRoll = document.getElementById("btnDiceRoll");
-    const btnOpenTrivia = document.getElementById("btnOpenTrivia");
-    const triviaModal = document.getElementById("triviaModal");
-    const btnTriviaClose = document.getElementById("btnTriviaClose");
-    const triviaQuestionText = document.getElementById("triviaQuestionText");
-    const triviaOptionsList = document.getElementById("triviaOptionsList");
-    const triviaStatusLabel = document.getElementById("triviaStatusLabel");
     const btnOpenTOD = document.getElementById("btnOpenTOD");
     const todModal = document.getElementById("todModal");
     const btnTodClose = document.getElementById("btnTodClose");
@@ -1820,8 +1727,6 @@
     const btnReportUser = document.getElementById("btnReportUser");
     const chatContainer = document.getElementById("chatContainer");
     const chatInput = document.getElementById("chatInput");
-    const btnAttachImage = document.getElementById("btnAttachImage");
-    const chatImageInput = document.getElementById("chatImageInput");
     const btnSendMessage = document.getElementById("btnSendMessage");
     const p2pStatus = document.getElementById("p2pStatus");
     const interestsContainer = document.getElementById("interestsContainer");
@@ -1834,7 +1739,6 @@
     const btnToggleMirror = document.getElementById("btnToggleMirror");
     const btnMuteAudio = document.getElementById("btnMuteAudio");
     const btnMuteVideo = document.getElementById("btnMuteVideo");
-    const btnMuteRemoteAudio = document.getElementById("btnMuteRemoteAudio");
     const btnToggleScreenShare = document.getElementById("btnToggleScreenShare");
     const btnTriggerPopoutPiP = document.getElementById("btnTriggerPopoutPiP");
     const btnToggleFullscreen = document.getElementById("btnToggleFullscreen");
@@ -1844,7 +1748,6 @@
     const mBtnToggleMirror = document.getElementById("mBtnToggleMirror");
     const mBtnMuteAudio = document.getElementById("mBtnMuteAudio");
     const mBtnMuteVideo = document.getElementById("mBtnMuteVideo");
-    const mBtnMuteRemoteAudio = document.getElementById("mBtnMuteRemoteAudio");
     const mBtnToggleScreenShare = document.getElementById("mBtnToggleScreenShare");
     const mBtnTriggerPopoutPiP = document.getElementById("mBtnTriggerPopoutPiP");
     const mBtnToggleFullscreen = document.getElementById("mBtnToggleFullscreen");
@@ -1936,32 +1839,6 @@
     voiceFxSelect.addEventListener("change", (e) => {
       applyVoiceFilter(e.target.value);
     });
-
-    // Studio Low-Light Boost
-    btnToggleStudioGlow.addEventListener("click", () => {
-      isStudioGlowActive = !isStudioGlowActive;
-      btnToggleStudioGlow.classList.toggle("active", isStudioGlowActive);
-      btnToggleStudioGlow.textContent = isStudioGlowActive ? "💡 Glow ON" : "💡 Glow";
-      updateVideoFilter();
-    });
-
-    function updateVideoFilter() {
-      const baseFilter = filterSelect.value === "none" ? "" : filterSelect.value;
-      const glowFilter = isStudioGlowActive ? "brightness(1.22) contrast(1.12) saturate(1.18)" : "";
-      localVideo.style.filter = `${baseFilter} ${glowFilter}`.trim() || "none";
-    }
-
-    // Stranger Audio Mute
-    function toggleRemoteAudioMute() {
-      if (!remoteVideo) return;
-      isRemoteAudioMuted = !isRemoteAudioMuted;
-      remoteVideo.muted = isRemoteAudioMuted;
-      btnMuteRemoteAudio.textContent = isRemoteAudioMuted ? "🔇" : "🔊";
-      if (mBtnMuteRemoteAudio) mBtnMuteRemoteAudio.textContent = isRemoteAudioMuted ? "🔇 Unmute" : "🔊 Stranger";
-      appendMessage("", isRemoteAudioMuted ? "Stranger audio muted." : "Stranger audio unmuted.", "system");
-    }
-    btnMuteRemoteAudio.addEventListener("click", toggleRemoteAudioMute);
-    if (mBtnMuteRemoteAudio) mBtnMuteRemoteAudio.addEventListener("click", toggleRemoteAudioMute);
 
     vibeSelect.addEventListener("change", (e) => {
       const vibe = e.target.value;
@@ -2060,16 +1937,6 @@
             gain.gain.exponentialRampToValueAtTime(0.01, now + idx * 0.1 + 0.3);
             osc.start(now + idx * 0.1); osc.stop(now + idx * 0.1 + 0.3);
           });
-        } else if (type === "correct") {
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc.connect(gain); gain.connect(ctx.destination);
-          osc.type = "sine";
-          osc.frequency.setValueAtTime(587.33, now);
-          osc.frequency.exponentialRampToValueAtTime(880, now + 0.12);
-          gain.gain.setValueAtTime(0.25, now);
-          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-          osc.start(now); osc.stop(now + 0.3);
         }
       } catch (err) {
         console.warn("Audio FX error:", err);
@@ -2100,7 +1967,7 @@
     });
 
     // =========================================================================
-    // 3. 15-SECOND VIDEO CLIP RECORDER
+    // 3. 15-SECOND VIDEO CLIP RECORDER (MEDIARECORDER)
     // =========================================================================
     btnRecordClip.addEventListener("click", () => {
       if (isRecordingClip) {
@@ -2226,14 +2093,14 @@
 
     function speakText(text) {
       if (!ttsEnabled || !window.speechSynthesis) return;
-      const clean = text.replace(/🎲|🪙|🎨|💬|🎡|🧠/g, "");
+      const clean = text.replace(/🎲|🪙|🎨|💬|🎡/g, "");
       const utterance = new SpeechSynthesisUtterance(clean);
       utterance.rate = 1.05;
       window.speechSynthesis.speak(utterance);
     }
 
     // =========================================================================
-    // 5. PICTURE-IN-PICTURE & SCREEN SHARING
+    // 5. PICTURE-IN-PICTURE (POPOUT) & SCREEN SHARING
     // =========================================================================
     async function togglePopoutPiP() {
       if (document.pictureInPictureElement) {
@@ -2322,56 +2189,8 @@
       }
     });
 
-    filterSelect.addEventListener("change", updateVideoFilter);
-
     // =========================================================================
-    // 6. SPEED TRIVIA DUEL
-    // =========================================================================
-    function startTriviaDuel(item = null) {
-      if (!isConnected) {
-        appendMessage("", "Connect with someone before starting Trivia!", "system");
-        return;
-      }
-      currentTrivia = item || TRIVIA_BANK[Math.floor(Math.random() * TRIVIA_BANK.length)];
-      triviaQuestionText.textContent = currentTrivia.q;
-      triviaOptionsList.innerHTML = "";
-      triviaStatusLabel.textContent = "First to pick the correct answer wins!";
-      triviaModal.style.display = "flex";
-
-      currentTrivia.opts.forEach((opt, idx) => {
-        const btn = document.createElement("button");
-        btn.className = "trivia-opt-btn";
-        btn.textContent = `${String.fromCharCode(65 + idx)}: ${opt}`;
-        btn.addEventListener("click", () => handleTriviaAnswer(idx));
-        triviaOptionsList.appendChild(btn);
-      });
-
-      if (!item && activeDataConnection && activeDataConnection.open) {
-        activeDataConnection.send({ type: "trivia_start", data: currentTrivia });
-      }
-    }
-
-    btnOpenTrivia.addEventListener("click", () => startTriviaDuel());
-    btnTriviaClose.addEventListener("click", () => {
-      triviaModal.style.display = "none";
-    });
-
-    function handleTriviaAnswer(idx) {
-      if (!currentTrivia) return;
-      if (idx === currentTrivia.ans) {
-        playSound("correct");
-        triviaStatusLabel.textContent = "🎉 Correct! You buzzed in first!";
-        sendChatMessage(`🧠 [Trivia Answer]: Correctly answered: "${currentTrivia.opts[idx]}"!`);
-        if (activeDataConnection && activeDataConnection.open) {
-          activeDataConnection.send({ type: "trivia_won", winner: "Stranger", correctOpt: currentTrivia.opts[idx] });
-        }
-      } else {
-        triviaStatusLabel.textContent = "❌ Incorrect option, try another!";
-      }
-    }
-
-    // =========================================================================
-    // 7. "TRUTH OR DARE" & "WOULD YOU RATHER?"
+    // 6. "TRUTH OR DARE" & "WOULD YOU RATHER?"
     // =========================================================================
     btnOpenTOD.addEventListener("click", () => {
       if (!isConnected) {
@@ -2443,7 +2262,7 @@
     }
 
     // =========================================================================
-    // 8. REACTIONS & SOUNDBOARD
+    // 7. REACTIONS & SOUNDBOARD
     // =========================================================================
     function spawnFloatingEmoji(emoji) {
       const el = document.createElement("div");
@@ -2540,7 +2359,7 @@
     }
 
     // =========================================================================
-    // 9. SYNCHRONIZED LIVE WHITEBOARD (DOODLE PAD)
+    // 8. SYNCHRONIZED LIVE WHITEBOARD (DOODLE PAD)
     // =========================================================================
     function resizeWhiteboard() {
       const rect = whiteboardCanvas.getBoundingClientRect();
@@ -2639,7 +2458,7 @@
     whiteboardCanvas.addEventListener("touchend", () => { isDrawing = false; });
 
     // =========================================================================
-    // 10. TIC-TAC-TOE MINI-GAME
+    // 9. TIC-TAC-TOE MINI-GAME
     // =========================================================================
     function openGameModal(isStarter = true) {
       if (!isConnected) {
@@ -2733,32 +2552,8 @@
     }
 
     // =========================================================================
-    // 11. INLINE PHOTO SHARING, COIN FLIP, DICE, ICEBREAKERS & DIRECT ROOM
+    // 10. COIN FLIP, DICE, ICEBREAKERS & DIRECT ROOM
     // =========================================================================
-    btnAttachImage.addEventListener("click", () => {
-      chatImageInput.click();
-    });
-
-    chatImageInput.addEventListener("change", (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      if (file.size > 800000) {
-        alert("Please pick an image smaller than 800KB for fast P2P transfer.");
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const base64Data = event.target.result;
-        appendMessage("You", "", "you", base64Data);
-        if (activeDataConnection && activeDataConnection.open) {
-          activeDataConnection.send({ type: "image_share", data: base64Data });
-        }
-      };
-      reader.readAsDataURL(file);
-      chatImageInput.value = "";
-    });
-
     btnCoinFlip.addEventListener("click", () => {
       if (!isConnected) return;
       const result = Math.random() > 0.5 ? "🪙 Heads!" : "🪙 Tails!";
@@ -2828,7 +2623,7 @@
     }
 
     // =========================================================================
-    // 12. PRIVACY BLUR SHIELD & SNAPSHOT
+    // 11. PRIVACY BLUR SHIELD & SNAPSHOT
     // =========================================================================
     function triggerPrivacyShield() {
       blurOverlay.style.display = "flex";
@@ -2899,7 +2694,7 @@
     });
 
     // =========================================================================
-    // 13. SOCKET.IO PRESENCE & MATCHMAKING
+    // 12. SOCKET.IO PRESENCE & MATCHMAKING
     // =========================================================================
     socket.on("connect", () => {
       p2pStatus.textContent = "Server: Connected";
@@ -2949,7 +2744,6 @@
 
       chatInput.disabled = false;
       btnSendMessage.disabled = false;
-      btnAttachImage.disabled = false;
       chatInput.focus();
 
       if (payload.partnerTags && payload.partnerTags.length > 0) {
@@ -2970,7 +2764,7 @@
     });
 
     // =========================================================================
-    // 14. WEBRTC ENGINE (PEERJS)
+    // 13. WEBRTC ENGINE (PEERJS)
     // =========================================================================
     function initializePeer() {
       peer = new Peer({
@@ -3015,7 +2809,6 @@
         remoteVideo.srcObject = remoteMediaStream;
         remoteVideo.style.display = isAudioOnlyMode ? "none" : "block";
         remoteCanvas.style.display = isAudioOnlyMode ? "block" : "none";
-        remoteVideo.muted = isRemoteAudioMuted;
         triggerPrivacyShield();
 
         if (call.peerConnection) {
@@ -3038,9 +2831,6 @@
           playSound("message");
           speakText(data.text);
           typingIndicator.style.display = "none";
-        } else if (data.type === "image_share") {
-          appendMessage("Stranger", "", "stranger", data.data);
-          playSound("message");
         } else if (data.type === "typing") {
           typingIndicator.style.display = data.status ? "inline" : "none";
         } else if (data.type === "vibe_sync") {
@@ -3052,10 +2842,6 @@
           spawnFloatingEmoji(data.emoji);
         } else if (data.type === "sfx") {
           playSound(data.sfx);
-        } else if (data.type === "trivia_start") {
-          startTriviaDuel(data.data);
-        } else if (data.type === "trivia_won") {
-          triviaStatusLabel.textContent = `Stranger buzzed in first and got it right! (${data.correctOpt})`;
         } else if (data.type === "tod_card") {
           todPromptText.textContent = data.text;
           todModal.style.display = "flex";
@@ -3112,7 +2898,6 @@
       whiteboardModal.style.display = "none";
       wyrModal.style.display = "none";
       todModal.style.display = "none";
-      triviaModal.style.display = "none";
       subtitleOverlay.style.display = "none";
       typingIndicator.style.display = "none";
       appendMessage("", "Stranger has disconnected.", "system");
@@ -3120,7 +2905,7 @@
     }
 
     // =========================================================================
-    // 15. MATCHMAKING ACTIONS (WITH FAST SKIP & REPORT)
+    // 14. MATCHMAKING ACTIONS (WITH FAST SKIP & REPORT)
     // =========================================================================
     function startMatchmaking() {
       if (!myPeerId) {
@@ -3139,7 +2924,6 @@
       whiteboardModal.style.display = "none";
       wyrModal.style.display = "none";
       todModal.style.display = "none";
-      triviaModal.style.display = "none";
 
       strangerDot.className = "badge-dot waiting";
       strangerLabel.textContent = "Looking for someone...";
@@ -3188,7 +2972,6 @@
       whiteboardModal.style.display = "none";
       wyrModal.style.display = "none";
       todModal.style.display = "none";
-      triviaModal.style.display = "none";
 
       strangerDot.className = "badge-dot";
       strangerLabel.textContent = "Disconnected";
@@ -3201,7 +2984,6 @@
 
       chatInput.disabled = true;
       btnSendMessage.disabled = true;
-      btnAttachImage.disabled = true;
 
       remoteVideo.style.display = "none";
       remoteCanvas.style.display = "block";
@@ -3249,7 +3031,7 @@
     });
 
     // =========================================================================
-    // 16. CAMERA & HARDWARE ACCESS
+    // 15. CAMERA & HARDWARE ACCESS
     // =========================================================================
     async function activateCamera() {
       const constraints = {
@@ -3295,7 +3077,6 @@
       localLabel.querySelector("span").textContent = "You (Live)";
 
       setupMicVisualizer(stream);
-      updateVideoFilter();
 
       if (activeCall && activeCall.peerConnection) {
         const videoTrack = stream.getVideoTracks()[0];
@@ -3352,6 +3133,10 @@
       if (mBtnMuteVideo) mBtnMuteVideo.textContent = camDisabled ? "📷 Show" : "📷 Cam";
     });
 
+    filterSelect.addEventListener("change", (e) => {
+      localVideo.style.filter = e.target.value;
+    });
+
     function createFallbackStream() {
       const fallbackCanvas = document.createElement("canvas");
       fallbackCanvas.width = 320;
@@ -3363,7 +3148,7 @@
     }
 
     // =========================================================================
-    // 17. PROCEDURAL AVATAR RENDERER
+    // 16. PROCEDURAL AVATAR RENDERER
     // =========================================================================
     let animStep = 0;
     function renderAvatarsLoop() {
@@ -3534,7 +3319,7 @@
     window.addEventListener("resize", syncCanvasDimensions);
 
     // =========================================================================
-    // 18. TAGS SYSTEM
+    // 17. TAGS SYSTEM
     // =========================================================================
     function renderTags() {
       tagsList.innerHTML = "";
@@ -3589,29 +3374,21 @@
     });
 
     // =========================================================================
-    // 19. CHAT ENGINE & TYPING DETECTION
+    // 18. CHAT ENGINE & TYPING DETECTION
     // =========================================================================
-    function appendMessage(sender, text, type = "stranger", imageSrc = null) {
+    function appendMessage(sender, text, type = "stranger") {
       const now = new Date();
       const timeStr = now.getHours().toString().padStart(2, "0") + ":" + now.getMinutes().toString().padStart(2, "0");
 
       const msgDiv = document.createElement("div");
       msgDiv.className = `message ${type}`;
-
       if (type === "system") {
         msgDiv.textContent = text;
         chatHistoryLog.push(`[${timeStr}] (System): ${text}`);
       } else {
-        let contentHtml = `<span class="time">${timeStr}</span><span class="sender">${sender}:</span> ${escapeHTML(text)}`;
-        if (imageSrc) {
-          contentHtml += `<br><img class="chat-img-thumb" src="${imageSrc}" alt="Shared Image" onclick="window.open('${imageSrc}')" />`;
-          chatHistoryLog.push(`[${timeStr}] ${sender}: [Image Attached]`);
-        } else {
-          chatHistoryLog.push(`[${timeStr}] ${sender}: ${text}`);
-        }
-        msgDiv.innerHTML = contentHtml;
+        msgDiv.innerHTML = `<span class="time">${timeStr}</span><span class="sender">${sender}:</span> ${escapeHTML(text)}`;
+        chatHistoryLog.push(`[${timeStr}] ${sender}: ${text}`);
       }
-
       chatContainer.appendChild(msgDiv);
       chatContainer.scrollTop = chatContainer.scrollHeight;
     }
@@ -3656,7 +3433,7 @@
     });
 
     // =========================================================================
-    // 20. INSTANT DOM BOOTSTRAP
+    // 19. INSTANT DOM BOOTSTRAP
     // =========================================================================
     syncCanvasDimensions();
     renderAvatarsLoop();
