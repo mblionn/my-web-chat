@@ -3,24 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>Web TV 555 - Talk to Strangers!</title>
+  <title>Web TV 555 - Talk to Strangers! Live Video & Chat</title>
 
-  <!-- High-Speed Global CDNs for Real-time Peer Connectivity -->
+  <!-- High-Speed CDNs for WebRTC peer signaling & data transport -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 
   <style>
     :root {
-      --bg-base: #07090e;
-      --bg-surface: #0f1523;
-      --bg-card: rgba(18, 26, 43, 0.95);
-      --omegle-blue: #0284c7;
-      --omegle-orange: #ea580c;
+      --bg-base: #060911;
+      --bg-surface: #0e1526;
+      --bg-card: rgba(18, 27, 46, 0.96);
       --border-subtle: rgba(255, 255, 255, 0.08);
       --border-accent: rgba(59, 130, 246, 0.35);
       --primary: #3b82f6;
       --primary-hover: #2563eb;
       --danger: #ef4444;
+      --danger-hover: #dc2626;
       --success: #10b981;
       --warning: #f59e0b;
       --pink: #ec4899;
@@ -39,7 +38,7 @@
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       -webkit-tap-highlight-color: transparent;
     }
 
@@ -56,10 +55,11 @@
       position: relative;
     }
 
+    /* Landing Entrance Overlay */
     .landing-overlay {
       position: fixed;
       inset: 0;
-      background: radial-gradient(circle at 50% 20%, #111a2e 0%, #06080e 100%);
+      background: radial-gradient(circle at 50% 20%, #111a30 0%, #06080f 100%);
       z-index: 1000;
       display: flex;
       flex-direction: column;
@@ -72,7 +72,7 @@
 
     .landing-overlay.hidden {
       opacity: 0;
-      transform: translateY(-20px) scale(0.98);
+      transform: translateY(-16px) scale(0.98);
       pointer-events: none;
       visibility: hidden;
     }
@@ -137,12 +137,12 @@
       padding: 28px 24px;
       display: flex;
       flex-direction: column;
-      gap: 22px;
+      gap: 20px;
     }
 
     .landing-hero-banner {
       border-bottom: 1px solid var(--border-subtle);
-      padding-bottom: 18px;
+      padding-bottom: 16px;
       text-align: center;
     }
 
@@ -245,7 +245,7 @@
       gap: 8px;
       min-height: 38px;
       align-items: center;
-      padding: 6px 0;
+      padding: 4px 0;
     }
 
     .landing-tag-chip {
@@ -412,9 +412,10 @@
       text-align: center;
     }
 
+    /* Live Studio Header */
     .app-header {
       height: 56px;
-      background: rgba(15, 21, 35, 0.95);
+      background: rgba(14, 21, 38, 0.95);
       backdrop-filter: var(--glass-blur);
       -webkit-backdrop-filter: var(--glass-blur);
       border-bottom: 1px solid var(--border-subtle);
@@ -430,6 +431,15 @@
       display: flex;
       align-items: center;
       gap: 12px;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 1.15rem;
+      font-weight: 900;
+      user-select: none;
     }
 
     .status-pills {
@@ -529,10 +539,11 @@
       box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
     }
 
+    /* Settings & Studio Popup Modal */
     .floating-menu-modal {
       position: fixed;
       inset: 0;
-      background: rgba(5, 8, 15, 0.84);
+      background: rgba(5, 8, 15, 0.85);
       backdrop-filter: var(--glass-blur);
       -webkit-backdrop-filter: var(--glass-blur);
       z-index: 9999 !important;
@@ -664,6 +675,7 @@
       border-color: #60a5fa;
     }
 
+    /* Workspace Stage & Video Layout */
     .app-workspace {
       flex: 1;
       display: flex;
@@ -822,7 +834,7 @@
       cursor: default;
     }
 
-    /* Picture in Picture (PiP) Card */
+    /* Picture-in-Picture (PiP) Card */
     .local-pip-card {
       position: absolute;
       bottom: 14px;
@@ -1057,6 +1069,7 @@
 
     .mobile-media-toolbar { display: none; }
 
+    /* Right Chat Column */
     .chat-section {
       flex: 3;
       min-width: 320px;
@@ -1288,6 +1301,7 @@
       cursor: not-allowed;
     }
 
+    /* Footer Deck */
     .app-deck {
       height: 64px;
       background: rgba(15, 21, 35, 0.95);
@@ -1319,7 +1333,7 @@
       align-items: center;
       gap: 8px;
       white-space: nowrap;
-      box-shadow: 0 4px 14px var(--primary-glow);
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
     }
 
     .btn-primary-action.stop {
@@ -1475,6 +1489,7 @@
       color: #e2e8f0;
     }
 
+    /* Stage Interactive Modals */
     .tod-modal-overlay, .wyr-modal-overlay, .game-modal-overlay, .whiteboard-modal-overlay {
       position: absolute;
       inset: 0;
@@ -1692,7 +1707,7 @@
 
       <div class="landing-online-badge">
         <span class="status-dot online"></span>
-        <span id="landingOnlineCounter">38,410+</span> Online Now
+        <span id="landingOnlineCounter">42,810+</span> Online Now
       </div>
     </div>
 
@@ -1727,7 +1742,7 @@
         </select>
       </div>
 
-      <!-- What do you wanna talk about? (Interests) -->
+      <!-- Interests Topic Tags Builder -->
       <div class="interests-section">
         <div class="interests-header">
           <span class="sec-title">What do you wanna talk about?</span>
@@ -1764,12 +1779,12 @@
       <!-- Launch Action Buttons -->
       <div class="landing-buttons-deck">
         <button class="btn-start-mode text-mode" id="btnStartTextChat">
-          <span>💬 Text Chat</span>
+          <span>💬 Start Text Chat</span>
           <span class="sub-label">Instant Messaging Only</span>
         </button>
 
         <button class="btn-start-mode video-mode" id="btnStartVideoChat">
-          <span>📹 Video Chat</span>
+          <span>📹 Start Video Chat</span>
           <span class="sub-label">Camera &amp; Voice Match</span>
         </button>
       </div>
@@ -1782,16 +1797,16 @@
 
   <header class="app-header">
     <div class="header-left">
-      <div class="logo">
-        <span class="logo-icon">⚡</span>
-        <span class="logo-text">Web TV</span>
-        <span class="logo-badge">555</span>
+      <div class="logo-container">
+        <span style="font-size:1.2rem;">⚡</span>
+        <span style="background: linear-gradient(135deg, #ffffff 40%, #93c5fd 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Web TV</span>
+        <span style="background: linear-gradient(135deg, #2563eb, #7c3aed); color:#fff; font-size:0.75rem; padding:2px 8px; border-radius:6px; font-weight:800;">555</span>
       </div>
 
       <div class="status-pills">
         <div class="pill online-pill">
           <span class="status-dot online"></span>
-          <span id="userCount">38,410</span> Online
+          <span id="userCount">42,810</span> Online
         </div>
         <div class="pill streak-pill" id="streakBadge" title="Strangers met this session">
           <span>⚡</span> <span id="strangersMetCount">0</span> Met
@@ -1812,7 +1827,6 @@
     </div>
   </header>
 
-  <!-- Settings & Studio Modal -->
   <div class="floating-menu-modal" id="settingsMenuModal">
     <div class="menu-modal-card">
       <div class="menu-modal-header">
@@ -1905,6 +1919,7 @@
           <div class="subtitle-overlay" id="subtitleOverlay"></div>
           <div class="reaction-fly-container" id="reactionFlyContainer"></div>
 
+          <!-- Stage Reactions Bar -->
           <div class="reactions-floating-bar" id="reactionsBar">
             <button class="reaction-trigger-btn" data-emoji="❤️">❤️</button>
             <button class="reaction-trigger-btn" data-emoji="😂">😂</button>
@@ -2129,6 +2144,7 @@
   </footer>
 
   <script>
+    /* Polyfill for roundRect across browsers */
     if (!CanvasRenderingContext2D.prototype.roundRect) {
       CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, radii) {
         if (!radii) { this.rect(x, y, w, h); return; }
@@ -2383,6 +2399,7 @@
     const mBtnTriggerPopoutPiP = document.getElementById("mBtnTriggerPopoutPiP");
     const mBtnToggleFullscreen = document.getElementById("mBtnToggleFullscreen");
 
+    /* Tag Rendering & Management */
     function renderLandingTags() {
       if (!landingTagsBox) return;
       landingTagsBox.innerHTML = "";
@@ -2437,7 +2454,7 @@
 
     function enterRoom(mode) {
       if (!chkAgreement.checked) {
-        alert("Please confirm the 18+ community guidelines to enter.");
+        showFloatingSubtitle("Please accept the community guidelines to enter.");
         return;
       }
 
@@ -2446,11 +2463,9 @@
       userDisplayName = enteredName || "You";
       if (myDisplayNameSpan) myDisplayNameSpan.textContent = userDisplayName;
 
-      // Sync gender preferences from front page to in-app controls
       if (myGenderSelect) myGenderSelect.value = landingMyGenderSelect.value;
       if (genderSelect) genderSelect.value = landingMatchPrefSelect.value;
 
-      // Smoothly hide front landing page
       landingOverlay.classList.add("hidden");
 
       if (mode === "text") {
@@ -2484,6 +2499,7 @@
       });
     }
 
+    // Settings Modal
     if (btnOpenSettingsMenu && settingsMenuModal) {
       btnOpenSettingsMenu.addEventListener("click", (e) => {
         e.preventDefault();
@@ -2506,6 +2522,7 @@
       });
     }
 
+    // Dropdown Handlers
     if (btnOpenGamesDropdown && gamesDropdownList) {
       btnOpenGamesDropdown.addEventListener("click", (e) => {
         e.preventDefault();
@@ -2598,7 +2615,7 @@
         if (micAnimFrame) cancelAnimationFrame(micAnimFrame);
         checkMicLevel();
       } catch (e) {
-        console.warn("Mic visualizer note:", e);
+        console.warn("Audio Context init note:", e);
       }
     }
 
@@ -2757,8 +2774,7 @@
 
     if (btnOpenTOD) {
       btnOpenTOD.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
+        e.preventDefault(); e.stopPropagation();
         if (todModal) todModal.style.display = "flex";
       });
     }
@@ -2793,8 +2809,7 @@
 
     if (btnOpenWYR) {
       btnOpenWYR.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
+        e.preventDefault(); e.stopPropagation();
         startWyrGame();
       });
     }
@@ -2841,8 +2856,7 @@
 
     if (btnOpenGame) {
       btnOpenGame.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
+        e.preventDefault(); e.stopPropagation();
         openGameModal(true);
         if (activeDataConnection && activeDataConnection.open) {
           activeDataConnection.send({ type: "game_invite" });
@@ -2934,10 +2948,10 @@
       return false;
     }
 
+    // Whiteboard drawing synchronization
     if (btnOpenWhiteboard) {
       btnOpenWhiteboard.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
+        e.preventDefault(); e.stopPropagation();
         if (whiteboardModal) {
           whiteboardModal.style.display = "flex";
           resizeWhiteboard();
@@ -3115,48 +3129,25 @@
           return;
         }
         const logText = chatHistoryLog.join("\n");
-        navigator.clipboard.writeText(logText).then(() => {
-          appendMessage("", "Chat transcript copied to clipboard!", "system");
-        }).catch(() => {
-          const blob = new Blob([logText], { type: "text/plain" });
-          const a = document.createElement("a");
-          a.href = URL.createObjectURL(blob);
-          a.download = `webtv555-chat-${Date.now()}.txt`;
-          a.click();
-        });
+        document.execCommand('copy');
+        const blob = new Blob([logText], { type: "text/plain" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = `webtv555-chat-${Date.now()}.txt`;
+        a.click();
+        appendMessage("", "Chat transcript copied & downloaded!", "system");
       });
     }
 
     if (btnShareRoom) {
       btnShareRoom.addEventListener("click", () => {
         if (!myPeerId) {
-          alert("Peer ID not initialized yet. Wait a moment.");
+          appendMessage("", "Peer connection still establishing, try again shortly.", "system");
           return;
         }
         const inviteUrl = `${window.location.origin}${window.location.pathname}#room=${myPeerId}`;
-        navigator.clipboard.writeText(inviteUrl).then(() => {
-          appendMessage("", `Room link copied! Share to reconnect directly: ${inviteUrl}`, "system");
-        }).catch(() => {
-          prompt("Copy this link to invite a friend directly:", inviteUrl);
-        });
+        appendMessage("", `Direct room link: ${inviteUrl}`, "system");
       });
-    }
-
-    function checkDirectInviteRoom() {
-      const hash = window.location.hash;
-      if (hash.startsWith("#room=")) {
-        const targetPeerId = hash.replace("#room=", "").trim();
-        if (targetPeerId && targetPeerId !== myPeerId) {
-          appendMessage("", `Direct room link detected! Dialing peer: ${targetPeerId}`, "system");
-          setTimeout(() => {
-            const streamToSend = (localStream && !camDisabled) ? (isScreenSharing && screenStream ? screenStream : localStream) : createFallbackStream();
-            const call = peer.call(targetPeerId, streamToSend);
-            bindCallEvents(call);
-            const conn = peer.connect(targetPeerId);
-            bindDataEvents(conn);
-          }, 1500);
-        }
-      }
     }
 
     function triggerPrivacyShield() {
@@ -3322,6 +3313,144 @@
       }
     }
 
+    // 15s Highlight Video Clip Recorder
+    if (btnRecordClip) {
+      btnRecordClip.addEventListener("click", () => {
+        if (isRecordingClip) {
+          stopClipRecording();
+          return;
+        }
+
+        const streamToRecord = (remoteVideo && remoteVideo.srcObject && isConnected) ? remoteVideo.srcObject : localStream;
+        if (!streamToRecord) {
+          showFloatingSubtitle("Enable camera or connect first to record a clip.");
+          return;
+        }
+
+        try {
+          recordedChunks = [];
+          mediaRecorder = new MediaRecorder(streamToRecord, { mimeType: "video/webm" });
+
+          mediaRecorder.ondataavailable = (e) => {
+            if (e.data.size > 0) recordedChunks.push(e.data);
+          };
+
+          mediaRecorder.onstop = () => {
+            const blob = new Blob(recordedChunks, { type: "video/webm" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `webtv555-highlight-${Date.now()}.webm`;
+            a.click();
+            appendMessage("", "Highlight video clip downloaded successfully!", "system");
+          };
+
+          mediaRecorder.start();
+          isRecordingClip = true;
+          btnRecordClip.textContent = "🔴 Recording (15s)";
+          btnRecordClip.classList.add("active");
+
+          clearTimeout(recordTimeout);
+          recordTimeout = setTimeout(() => {
+            if (isRecordingClip) stopClipRecording();
+          }, 15000);
+        } catch (err) {
+          console.warn("MediaRecorder note:", err);
+          showFloatingSubtitle("Recording not supported on this browser.");
+        }
+      });
+    }
+
+    function stopClipRecording() {
+      if (!isRecordingClip) return;
+      isRecordingClip = false;
+      clearTimeout(recordTimeout);
+      if (mediaRecorder && mediaRecorder.state !== "inactive") {
+        mediaRecorder.stop();
+      }
+      if (btnRecordClip) {
+        btnRecordClip.textContent = "📹 Record Clip (15s)";
+        btnRecordClip.classList.remove("active");
+      }
+    }
+
+    // Live Captions & TTS
+    function setupLiveCaptions() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        if (btnToggleCaptions) btnToggleCaptions.style.display = "none";
+        return;
+      }
+
+      speechRecognizer = new SpeechRecognition();
+      speechRecognizer.continuous = true;
+      speechRecognizer.interimResults = true;
+      speechRecognizer.lang = "en-US";
+
+      speechRecognizer.onresult = (event) => {
+        let transcript = "";
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          transcript += event.results[i][0].transcript;
+        }
+        if (transcript.trim()) {
+          showFloatingSubtitle("You: " + transcript);
+          if (activeDataConnection && activeDataConnection.open) {
+            activeDataConnection.send({ type: "caption", text: transcript });
+          }
+        }
+      };
+
+      speechRecognizer.onerror = (e) => {
+        console.warn("Speech recognition note:", e.error);
+      };
+    }
+    setupLiveCaptions();
+
+    function showFloatingSubtitle(text) {
+      if (!subtitleOverlay) return;
+      subtitleOverlay.textContent = text;
+      subtitleOverlay.style.display = "block";
+      clearTimeout(subtitleTimer);
+      subtitleTimer = setTimeout(() => {
+        subtitleOverlay.style.display = "none";
+      }, 4000);
+    }
+
+    if (btnToggleCaptions) {
+      btnToggleCaptions.addEventListener("click", () => {
+        if (!speechRecognizer) {
+          showFloatingSubtitle("Live Captions not supported on this device.");
+          return;
+        }
+        captionsEnabled = !captionsEnabled;
+        btnToggleCaptions.textContent = captionsEnabled ? "💬 Live CC: On" : "💬 Live CC: Off";
+        btnToggleCaptions.classList.toggle("active", captionsEnabled);
+
+        if (captionsEnabled) {
+          try { speechRecognizer.start(); } catch (e) {}
+        } else {
+          try { speechRecognizer.stop(); } catch (e) {}
+          if (subtitleOverlay) subtitleOverlay.style.display = "none";
+        }
+      });
+    }
+
+    if (btnToggleTTS) {
+      btnToggleTTS.addEventListener("click", () => {
+        ttsEnabled = !ttsEnabled;
+        btnToggleTTS.textContent = ttsEnabled ? "🗣 Audio TTS: On" : "🗣 Audio TTS: Off";
+        btnToggleTTS.classList.toggle("active", ttsEnabled);
+      });
+    }
+
+    function speakText(text) {
+      if (!ttsEnabled || !window.speechSynthesis) return;
+      const clean = text.replace(/🎲|🪙|🎨|💬|🎡/g, "");
+      const utterance = new SpeechSynthesisUtterance(clean);
+      utterance.rate = 1.05;
+      window.speechSynthesis.speak(utterance);
+    }
+
     socket.on("connect", () => {
       p2pStatus.textContent = "Connected";
       p2pStatus.style.color = "#10b981";
@@ -3337,7 +3466,7 @@
     });
 
     socket.on("presence_count", (count) => {
-      const formatted = count ? count.toLocaleString() : "38,410+";
+      const formatted = count ? count.toLocaleString() : "42,810+";
       if (userCount) userCount.textContent = formatted;
       const landingCounter = document.getElementById("landingOnlineCounter");
       if (landingCounter) landingCounter.textContent = formatted;
@@ -3400,7 +3529,6 @@
 
       peer.on("open", (id) => {
         myPeerId = id;
-        checkDirectInviteRoom();
       });
 
       peer.on("call", (call) => {
@@ -3657,7 +3785,7 @@
         const stream = await navigator.mediaDevices.getUserMedia(constraints);
         handleStreamSuccess(stream);
       } catch (err) {
-        console.warn("Combined hardware failed, attempting video-only fallback:", err);
+        console.warn("Camera fallback applied:", err);
         try {
           const videoOnlyStream = await navigator.mediaDevices.getUserMedia({
             video: { facingMode: currentFacingMode }
@@ -3726,6 +3854,87 @@
       if (btnMuteVideo) btnMuteVideo.textContent = camDisabled ? "🚫" : "📷";
       if (mBtnMuteVideo) mBtnMuteVideo.textContent = camDisabled ? "📷 Show" : "📷 Cam";
     });
+
+    async function toggleScreenShare() {
+      if (!isScreenSharing) {
+        try {
+          screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+          const screenTrack = screenStream.getVideoTracks()[0];
+
+          if (activeCall && activeCall.peerConnection) {
+            const sender = activeCall.peerConnection.getSenders().find((s) => s.track && s.track.kind === "video");
+            if (sender) sender.replaceTrack(screenTrack);
+          }
+
+          localVideo.srcObject = screenStream;
+          localVideo.classList.remove("mirrored");
+          isScreenSharing = true;
+          if (btnToggleScreenShare) btnToggleScreenShare.textContent = "🖥 Active";
+          if (mBtnToggleScreenShare) mBtnToggleScreenShare.textContent = "🖥 Stop";
+
+          screenTrack.onended = () => stopScreenSharing();
+        } catch (e) {
+          console.warn("Screen share note:", e);
+        }
+      } else {
+        stopScreenSharing();
+      }
+    }
+
+    function stopScreenSharing() {
+      if (!isScreenSharing) return;
+      if (screenStream) {
+        screenStream.getTracks().forEach((t) => t.stop());
+        screenStream = null;
+      }
+      if (localStream) {
+        const camTrack = localStream.getVideoTracks()[0];
+        if (activeCall && activeCall.peerConnection && camTrack) {
+          const sender = activeCall.peerConnection.getSenders().find((s) => s.track && s.track.kind === "video");
+          if (sender) sender.replaceTrack(camTrack);
+        }
+        localVideo.srcObject = localStream;
+        if (isMirrored) localVideo.classList.add("mirrored");
+      }
+      isScreenSharing = false;
+      if (btnToggleScreenShare) btnToggleScreenShare.textContent = "🖥";
+      if (mBtnToggleScreenShare) mBtnToggleScreenShare.textContent = "🖥 Share";
+    }
+
+    bindMediaAction(btnToggleScreenShare, mBtnToggleScreenShare, toggleScreenShare);
+
+    async function togglePopoutPiP() {
+      if (document.pictureInPictureElement) {
+        await document.exitPictureInPicture();
+      } else if (remoteVideo && remoteVideo.readyState >= 2) {
+        try { await remoteVideo.requestPictureInPicture(); } catch (e) { console.warn("PiP note:", e); }
+      } else {
+        showFloatingSubtitle("Connect to a stranger video stream first to pop out.");
+      }
+    }
+    bindMediaAction(btnTriggerPopoutPiP, mBtnTriggerPopoutPiP, togglePopoutPiP);
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        videoStageContainer.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen();
+      }
+    }
+    bindMediaAction(btnToggleFullscreen, mBtnToggleFullscreen, toggleFullscreen);
+
+    if (arPropSelect) {
+      arPropSelect.addEventListener("change", (e) => {
+        const val = e.target.value;
+        if (!arPropOverlay) return;
+        if (val === "none") {
+          arPropOverlay.style.display = "none";
+        } else {
+          arPropOverlay.textContent = val;
+          arPropOverlay.style.display = "block";
+        }
+      });
+    }
 
     function createFallbackStream() {
       const fallbackCanvas = document.createElement("canvas");
