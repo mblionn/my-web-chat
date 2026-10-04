@@ -2255,18 +2255,32 @@
       </div>
 
       <!-- Dedicated Mobile Toolbar -->
-      <div class="mobile-media-toolbar">
-        <button id="mBtnSwitchCamera" class="m-tool-btn">🔄 Flip</button>
-        <button id="mBtnToggleMirror" class="m-tool-btn">🪞 Mirror</button>
-        <button id="mBtnMuteAudio" class="m-tool-btn">🎤 Mic</button>
-        <button id="mBtnMuteVideo" class="m-tool-btn">📷 Cam</button>
-        
-        <!-- Preserved in DOM, hidden via CSS -->
-        <button id="mBtnToggleScreenShare" class="m-tool-btn" style="display: none !important;">🖥 Share</button>
-        
-        <button id="mBtnTriggerPopoutPiP" class="m-tool-btn">🪟 Pop</button>
-        <button id="mBtnToggleFullscreen" class="m-tool-btn">⛶ Full</button>
-      </div>
+      <!-- Mobile Quick Tools Trigger & Pop-up Action Menu -->
+<div class="mobile-media-toolbar">
+  <button id="btnToggleMobileMenu" class="mobile-menu-trigger-btn" type="button">
+    <span>🎛️ Media Controls</span>
+    <span id="mobileMenuArrow" style="font-size: 0.75rem; transition: transform 0.2s;">▲</span>
+  </button>
+</div>
+
+<!-- Floating Action Sheet for Mobile -->
+<div id="mobileActionSheet" class="mobile-action-sheet">
+  <div class="action-sheet-header">
+    <span>Quick Stage Tools</span>
+    <button id="btnCloseMobileSheet" class="action-sheet-close">&times;</button>
+  </div>
+  <div class="action-sheet-grid">
+    <button id="mBtnSwitchCamera" class="sheet-action-item">🔄 <span>Flip Cam</span></button>
+    <button id="mBtnToggleMirror" class="sheet-action-item">🪞 <span>Mirror</span></button>
+    <button id="mBtnMuteAudio" class="sheet-action-item">🎤 <span>Mute Mic</span></button>
+    <button id="mBtnMuteVideo" class="sheet-action-item">📷 <span>Stop Cam</span></button>
+    <button id="mBtnTriggerPopoutPiP" class="sheet-action-item">🪟 <span>Pop-out PiP</span></button>
+    <button id="mBtnToggleFullscreen" class="sheet-action-item">⛶ <span>Fullscreen</span></button>
+    
+    <!-- Preserved in DOM so existing code stays intact -->
+    <button id="mBtnToggleScreenShare" style="display: none !important;"></button>
+  </div>
+</div>
     </div>
 
     <!-- Right Chat Column -->
