@@ -5324,41 +5324,59 @@ window.addEventListener("click", (e) => {
     updateFakeOnlineDisplay();
 
     // ==========================================
-// MOBILE HEADER THREE-DOTS MENU TRIGGER
+// BULLETPROOF MOBILE HEADER DROPDOWN HANDLER
 // ==========================================
-const btnToggleMobileHeaderMenu = document.getElementById("btnToggleMobileHeaderMenu");
-const mobileHeaderDropdown = document.getElementById("mobileHeaderDropdown");
+document.addEventListener("DOMContentLoaded", () => {
+  initMobileHeaderDropdown();
+});
 
-if (btnToggleMobileHeaderMenu && mobileHeaderDropdown) {
-  btnToggleMobileHeaderMenu.onclick = (e) => {
+// Also run immediately in case DOM is already parsed
+initMobileHeaderDropdown();
+
+function initMobileHeaderDropdown() {
+  const dotsBtn = document.getElementById("btnToggleMobileHeaderMenu");
+  const dropdown = document.getElementById("mobileHeaderDropdown");
+
+  if (!dotsBtn || !dropdown) return;
+
+  // Make sure header allows dropdown to overflow visually
+  const header = document.querySelector(".app-header");
+  if (header) {
+    header.style.overflow = "visible";
+  }
+
+  // Toggle on click
+  dotsBtn.onclick = (e) => {
     e.stopPropagation();
-    mobileHeaderDropdown.classList.toggle("show");
+    const isHidden = dropdown.style.display === "none" || dropdown.style.display === "";
+    dropdown.style.display = isHidden ? "flex" : "none";
   };
 
-  // Close dropdown when clicking anywhere outside
-  window.addEventListener("click", (e) => {
-    if (!mobileHeaderDropdown.contains(e.target) && e.target !== btnToggleMobileHeaderMenu) {
-      mobileHeaderDropdown.classList.remove("show");
+  // Close when tapping anywhere outside
+  document.addEventListener("click", (e) => {
+    if (!dropdown.contains(e.target) && e.target !== dotsBtn) {
+      dropdown.style.display = "none";
     }
   });
 
-  // Forward menu clicks to existing buttons
-  const forwardClick = (itemId, targetId) => {
-    const item = document.getElementById(itemId);
+  // Action helper
+  const bindAction = (btnId, targetId) => {
+    const btn = document.getElementById(btnId);
     const target = document.getElementById(targetId);
-    if (item && target) {
-      item.onclick = () => {
-        mobileHeaderDropdown.classList.remove("show");
+    if (btn && target) {
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        dropdown.style.display = "none";
         target.click();
       };
     }
   };
 
-  forwardClick("mHeaderToggleSound", "btnToggleSound");
-  forwardClick("mHeaderToggleAudioOnly", "btnToggleAudioOnly");
-  forwardClick("mHeaderOpenSettings", "btnOpenSettingsMenu");
-  forwardClick("mHeaderToggleHardware", "btnToggleHardware");
-  forwardClick("mHeaderReturnHome", "btnReturnHome");
+  bindAction("mHeaderToggleSound", "btnToggleSound");
+  bindAction("mHeaderToggleAudioOnly", "btnToggleAudioOnly");
+  bindAction("mHeaderOpenSettings", "btnOpenSettingsMenu");
+  bindAction("mHeaderToggleHardware", "btnToggleHardware");
+  bindAction("mHeaderReturnHome", "btnReturnHome");
 }
   </script>
 </body>
