@@ -2487,6 +2487,7 @@
     <button class="m-header-item danger" id="mHeaderReturnHome">🚪 Exit to Home</button>
   </div>
 </div>
+<button id="btnToggleMobileHeaderMenu" type="button" style="background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 8px; padding: 4px 10px; font-size: 1.1rem; cursor: pointer;">⋮</button>
       <!-- Auto-Next Toggle Button -->
       <button class="nav-btn autonext-toggle-btn" id="btnToggleAutoNext" title="Toggle Automatic Stranger Searching on Disconnect">
         <span id="autoNextDot" class="status-dot online"></span>
@@ -5427,6 +5428,68 @@ function initMobileHeaderDropdown() {
 }
 
 initMobileHeaderDropdown();
+// ==========================================
+// MOBILE HEADER MODAL HANDLER
+// ==========================================
+const btnToggleHeader = document.getElementById("btnToggleMobileHeaderMenu");
+const headerModal = document.getElementById("mobileHeaderModal");
+const btnCloseHeader = document.getElementById("btnCloseHeaderModal");
+
+if (btnToggleHeader && headerModal) {
+  // Open modal
+  btnToggleHeader.onclick = (e) => {
+    e.stopPropagation();
+    headerModal.style.display = "flex";
+  };
+
+  // Close modal with (X)
+  if (btnCloseHeader) {
+    btnCloseHeader.onclick = () => {
+      headerModal.style.display = "none";
+    };
+  }
+
+  // Close modal when tapping backdrop
+  headerModal.onclick = (e) => {
+    if (e.target === headerModal) {
+      headerModal.style.display = "none";
+    }
+  };
+
+  // Connect actions to buttons
+  const linkModalBtn = (modalBtnId, realBtnId) => {
+    const mBtn = document.getElementById(modalBtnId);
+    const rBtn = document.getElementById(realBtnId);
+    if (mBtn && rBtn) {
+      mBtn.onclick = () => {
+        headerModal.style.display = "none";
+        rBtn.click();
+      };
+    }
+  };
+
+  linkModalBtn("mHeaderToggleSound", "btnToggleSound");
+  linkModalBtn("mHeaderToggleAudioOnly", "btnToggleAudioOnly");
+  linkModalBtn("mHeaderOpenSettings", "btnOpenSettingsMenu");
+  linkModalBtn("mHeaderToggleHardware", "btnToggleHardware");
+  linkModalBtn("mHeaderReturnHome", "btnReturnHome");
+}
   </script>
+  <!-- Mobile Header Fullscreen Overlay -->
+<div id="mobileHeaderModal" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 99999999; align-items: center; justify-content: center; padding: 20px;">
+  <div style="background: #0f172a; border: 1px solid rgba(255, 255, 255, 0.16); border-radius: 16px; width: 100%; max-width: 320px; padding: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.9); display: flex; flex-direction: column; gap: 8px;">
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; margin-bottom: 4px;">
+      <span style="font-weight: 800; font-size: 0.95rem; color: #f8fafc;">Header Options</span>
+      <button id="btnCloseHeaderModal" type="button" style="background: none; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer; line-height: 1;">&times;</button>
+    </div>
+
+    <button id="mHeaderToggleSound" type="button" style="background: #1e293b; border: 1px solid #334155; color: #f8fafc; border-radius: 10px; padding: 12px; font-weight: 700; text-align: left; cursor: pointer;">🔊 Sound</button>
+    <button id="mHeaderToggleAudioOnly" type="button" style="background: #1e293b; border: 1px solid #334155; color: #f8fafc; border-radius: 10px; padding: 12px; font-weight: 700; text-align: left; cursor: pointer;">🎧 Video Mode</button>
+    <button id="mHeaderOpenSettings" type="button" style="background: #1e293b; border: 1px solid #334155; color: #f8fafc; border-radius: 10px; padding: 12px; font-weight: 700; text-align: left; cursor: pointer;">⚙️ Settings &amp; Studio</button>
+    <button id="mHeaderToggleHardware" type="button" style="background: #1e293b; border: 1px solid #334155; color: #f8fafc; border-radius: 10px; padding: 12px; font-weight: 700; text-align: left; cursor: pointer;">📹 Enable Cam &amp; Mic</button>
+    <button id="mHeaderReturnHome" type="button" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5; border-radius: 10px; padding: 12px; font-weight: 700; text-align: left; cursor: pointer;">🚪 Exit to Home</button>
+  </div>
+</div>
 </body>
 </html>
