@@ -70,6 +70,101 @@
   width: 0 !important;
   height: 0 !important;
 }
+/* ==========================================
+   HORIZONTAL SCROLLING: HEADER & FOOTER
+   ========================================== */
+
+/* 1. Header Horizontal Scroll */
+.app-header {
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  white-space: nowrap !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 16px !important;
+  padding: 0 16px 4px 16px !important;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(59, 130, 246, 0.45) rgba(255, 255, 255, 0.04);
+}
+
+.app-header .header-left,
+.app-header .header-right {
+  display: flex !important;
+  align-items: center !important;
+  flex-shrink: 0 !important;
+  flex-wrap: nowrap !important;
+  gap: 8px !important;
+}
+
+.app-header .nav-btn,
+.app-header .primary-cam-btn,
+.app-header .pill {
+  flex-shrink: 0 !important;
+  white-space: nowrap !important;
+}
+
+/* 2. Footer Deck Horizontal Scroll */
+.app-deck {
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  white-space: nowrap !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  flex-wrap: nowrap !important;
+  gap: 14px !important;
+  padding: 8px 16px 8px 16px !important;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(59, 130, 246, 0.45) rgba(255, 255, 255, 0.04);
+}
+
+.app-deck .deck-main-actions,
+.app-deck .deck-filters {
+  display: flex !important;
+  align-items: center !important;
+  flex-shrink: 0 !important;
+  flex-wrap: nowrap !important;
+  gap: 8px !important;
+}
+
+.app-deck .filter-pod,
+.app-deck .interests-pod,
+.app-deck .btn-primary-action,
+.app-deck .btn-secondary-action,
+.app-deck .btn-danger-action {
+  flex-shrink: 0 !important;
+  white-space: nowrap !important;
+}
+
+/* 3. Modern Scrollbar Track & Thumb for Header and Footer */
+.app-header::-webkit-scrollbar,
+.app-deck::-webkit-scrollbar {
+  height: 4px !important;
+  display: block !important;
+}
+
+.app-header::-webkit-scrollbar-track,
+.app-deck::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 9999px;
+}
+
+.app-header::-webkit-scrollbar-thumb,
+.app-deck::-webkit-scrollbar-thumb {
+  background: rgba(59, 130, 246, 0.4);
+  border-radius: 9999px;
+  transition: background 0.2s ease;
+}
+
+.app-header::-webkit-scrollbar-thumb:hover,
+.app-deck::-webkit-scrollbar-thumb:hover {
+  background: #3b82f6;
+}
 
 /* Specific enhancement for the quick replies chip deck */
 .quick-replies-deck {
