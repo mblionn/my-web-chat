@@ -478,6 +478,11 @@
       box-shadow: 0 0 8px var(--warning);
     }
 
+    .status-dot.offline {
+      background: var(--danger);
+      box-shadow: 0 0 8px var(--danger);
+    }
+
     .header-right {
       display: flex;
       align-items: center;
@@ -780,6 +785,11 @@
       box-shadow: 0 0 10px var(--warning);
     }
 
+    .badge-dot.offline {
+      background: var(--danger);
+      box-shadow: 0 0 10px var(--danger);
+    }
+
     .call-timer, .ping-indicator {
       font-family: monospace;
       font-size: 0.76rem;
@@ -1050,6 +1060,90 @@
     }
 
     .blur-tip { font-size: 0.74rem; color: #94a3b8; }
+
+    /* Stranger Disconnected Callout Overlay (User-Controlled Next) */
+    .stranger-disconnected-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(5, 8, 17, 0.75);
+      backdrop-filter: blur(8px);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      z-index: 28;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .stranger-disconnected-overlay.show {
+      display: flex !important;
+    }
+
+    .stranger-disconnected-card {
+      background: #0f172a;
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8);
+      border-radius: var(--radius-lg);
+      padding: 24px 28px;
+      max-width: 380px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .stranger-disconnected-card .title {
+      font-size: 1.15rem;
+      font-weight: 900;
+      color: #fca5a5;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .stranger-disconnected-card .desc {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .stranger-disconnected-actions {
+      display: flex;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .btn-stage-next {
+      flex: 1;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #fff;
+      border: none;
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      font-weight: 800;
+      font-size: 0.92rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+    }
+
+    .btn-stage-stop {
+      flex: 1;
+      background: #1e293b;
+      color: #cbd5e1;
+      border: 1px solid #334155;
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      font-weight: 800;
+      font-size: 0.92rem;
+      cursor: pointer;
+    }
 
     .subtitle-overlay {
       position: absolute;
@@ -1353,6 +1447,16 @@
       display: none;
       align-items: center;
       gap: 8px;
+      box-shadow: 0 4px 14px rgba(225, 29, 72, 0.35);
+    }
+
+    .btn-secondary-action.highlight {
+      animation: pulseAttention 1s infinite alternate;
+    }
+
+    @keyframes pulseAttention {
+      0% { transform: scale(1); filter: brightness(1); }
+      100% { transform: scale(1.05); filter: brightness(1.2); }
     }
 
     .kbd-hint {
@@ -1697,6 +1801,7 @@
 </head>
 <body>
 
+  <!-- Landing Entrance Overlay -->
   <div class="landing-overlay" id="landingOverlay">
     <div class="landing-top-nav">
       <div class="landing-logo">
@@ -1795,6 +1900,7 @@
     </div>
   </div>
 
+  <!-- Studio Header -->
   <header class="app-header">
     <div class="header-left">
       <div class="logo-container">
@@ -1827,6 +1933,7 @@
     </div>
   </header>
 
+  <!-- Studio Settings Modal -->
   <div class="floating-menu-modal" id="settingsMenuModal">
     <div class="menu-modal-card">
       <div class="menu-modal-header">
@@ -1890,6 +1997,7 @@
     </div>
   </div>
 
+  <!-- Workspace Stage -->
   <main class="app-workspace">
     <div class="stage-column" id="stageColumn">
       <div class="video-stage-container" id="videoStageContainer">
@@ -1915,6 +2023,24 @@
 
           <video id="remoteVideo" autoplay playsinline></video>
           <canvas id="remoteCanvas"></canvas>
+
+          <!-- User-Controlled Disconnected Overlay -->
+          <div class="stranger-disconnected-overlay" id="strangerDisconnectedOverlay">
+            <div class="stranger-disconnected-card">
+              <div class="title">
+                <span>👋 Stranger Disconnected</span>
+              </div>
+              <p class="desc">The other person has left the conversation. Your camera is still on, and your chat log is saved. You can choose to find a new stranger whenever you are ready.</p>
+              <div class="stranger-disconnected-actions">
+                <button class="btn-stage-next" id="btnOverlayNext">
+                  <span>⏭ Next Stranger</span>
+                </button>
+                <button class="btn-stage-stop" id="btnOverlayStop">
+                  <span>⏹ Stop</span>
+                </button>
+              </div>
+            </div>
+          </div>
 
           <div class="subtitle-overlay" id="subtitleOverlay"></div>
           <div class="reaction-fly-container" id="reactionFlyContainer"></div>
@@ -2038,6 +2164,7 @@
       </div>
     </div>
 
+    <!-- Right Chat Column -->
     <aside class="chat-section">
       <div class="chat-header-compact">
         <div class="chat-header-left">
@@ -2094,6 +2221,7 @@
     </aside>
   </main>
 
+  <!-- Footer Deck -->
   <footer class="app-deck">
     <div class="deck-main-actions">
       <button class="btn-primary-action start" id="btnMainAction">
@@ -2143,6 +2271,7 @@
     </div>
   </footer>
 
+  <!-- Single-File Complete JavaScript Engine -->
   <script>
     /* Polyfill for roundRect across browsers */
     if (!CanvasRenderingContext2D.prototype.roundRect) {
@@ -2182,6 +2311,7 @@
 
     let isSearching = false;
     let isConnected = false;
+    let isStrangerDisconnected = false; // Tracks if stranger left while user remains in control
     let isMirrored = true;
     let micMuted = false;
     let camDisabled = false;
@@ -2366,6 +2496,11 @@
     const userCount = document.getElementById("userCount");
     const p2pStatus = document.getElementById("p2pStatus");
 
+    // Stranger Disconnected Overlay Elements
+    const strangerDisconnectedOverlay = document.getElementById("strangerDisconnectedOverlay");
+    const btnOverlayNext = document.getElementById("btnOverlayNext");
+    const btnOverlayStop = document.getElementById("btnOverlayStop");
+
     const btnMainAction = document.getElementById("btnMainAction");
     const btnNextStranger = document.getElementById("btnNextStranger");
     const btnReportUser = document.getElementById("btnReportUser");
@@ -2484,17 +2619,12 @@
       startMatchmaking();
     }
 
-    if (btnStartTextChat) {
-      btnStartTextChat.addEventListener("click", () => enterRoom("text"));
-    }
-
-    if (btnStartVideoChat) {
-      btnStartVideoChat.addEventListener("click", () => enterRoom("video"));
-    }
+    if (btnStartTextChat) btnStartTextChat.addEventListener("click", () => enterRoom("text"));
+    if (btnStartVideoChat) btnStartVideoChat.addEventListener("click", () => enterRoom("video"));
 
     if (btnReturnHome) {
       btnReturnHome.addEventListener("click", () => {
-        disconnectStranger();
+        stopAllChatting();
         landingOverlay.classList.remove("hidden");
       });
     }
@@ -2772,6 +2902,7 @@
       });
     }
 
+    /* Modal Mini-Games */
     if (btnOpenTOD) {
       btnOpenTOD.addEventListener("click", (e) => {
         e.preventDefault(); e.stopPropagation();
@@ -3114,7 +3245,7 @@
     if (btnRandomIcebreaker) {
       btnRandomIcebreaker.addEventListener("click", () => {
         if (!isConnected) {
-          appendMessage("", "Start a chat first before sending an icebreaker question!", "system");
+          appendMessage("", "Connect with a stranger first before sending an icebreaker question!", "system");
           return;
         }
         const randomQ = ICEBREAKER_PROMPTS[Math.floor(Math.random() * ICEBREAKER_PROMPTS.length)];
@@ -3168,7 +3299,7 @@
 
     if (btnSnapshot) {
       btnSnapshot.addEventListener("click", () => {
-        if (!isConnected) {
+        if (!isConnected && !isStrangerDisconnected) {
           appendMessage("", "Connect with someone first before snapping a memory!", "system");
           return;
         }
@@ -3480,6 +3611,10 @@
 
       isSearching = false;
       isConnected = true;
+      isStrangerDisconnected = false;
+
+      // Hide disconnect overlay if it was visible
+      if (strangerDisconnectedOverlay) strangerDisconnectedOverlay.classList.remove("show");
 
       strangersMet++;
       if (strangersMetCount) strangersMetCount.textContent = strangersMet;
@@ -3494,9 +3629,11 @@
       btnMainAction.innerHTML = '<span class="icon">⏹</span><span>Stop</span>';
       btnMainAction.classList.add("stop");
       btnNextStranger.style.display = "inline-flex";
+      btnNextStranger.classList.remove("highlight");
       btnReportUser.style.display = "inline-flex";
 
       chatInput.disabled = false;
+      chatInput.placeholder = "Type a message...";
       btnSendMessage.disabled = false;
       chatInput.focus();
 
@@ -3639,16 +3776,24 @@
       conn.on("close", handleStrangerLeft);
     }
 
+    /* CRITICAL FIX: Handle Stranger Leaving Without Resetting / Auto-Restarting Remaining User */
     function handleStrangerLeft() {
       if (!isConnected) return;
       isConnected = false;
+      isStrangerDisconnected = true;
+
       playSound("leave");
       stopCallTimer();
       stopSpeedCountdown();
       stopStatsPolling();
       stopScreenSharing();
       stopClipRecording();
-      if (strangerVibeTag) strangerVibeTag.style.display = "none";
+
+      // Close WebRTC handles specifically for this peer
+      if (activeCall) { activeCall.close(); activeCall = null; }
+      if (activeDataConnection) { activeDataConnection.close(); activeDataConnection = null; }
+
+      // Dismiss game modals so they don't block the screen
       if (gameModal) gameModal.style.display = "none";
       gameActive = false;
       if (whiteboardModal) whiteboardModal.style.display = "none";
@@ -3656,8 +3801,48 @@
       if (todModal) todModal.style.display = "none";
       if (subtitleOverlay) subtitleOverlay.style.display = "none";
       if (typingIndicator) typingIndicator.style.display = "none";
-      appendMessage("", "Stranger has disconnected.", "system");
-      disconnectStranger();
+
+      // Reset remote video display to procedural canvas
+      remoteVideo.style.display = "none";
+      remoteCanvas.style.display = "block";
+      if (remoteVideo.srcObject) {
+        remoteVideo.srcObject = null;
+      }
+
+      // Update HUD status to indicate stranger left
+      strangerDot.className = "badge-dot offline";
+      strangerLabel.textContent = "Stranger Left (Offline)";
+      if (strangerVibeTag) strangerVibeTag.style.display = "none";
+      if (strangerTag) strangerTag.style.display = "none";
+
+      // Disable chat input but preserve history
+      chatInput.disabled = true;
+      chatInput.placeholder = "Stranger disconnected";
+      btnSendMessage.disabled = true;
+
+      // Keep Next and Stop buttons prominent so user decides what to do next
+      btnMainAction.innerHTML = '<span class="icon">⏹</span><span>Stop</span>';
+      btnMainAction.classList.add("stop");
+      btnNextStranger.style.display = "inline-flex";
+      btnNextStranger.classList.add("highlight"); // Highlight Next so it's obvious
+
+      // Show stage overlay with choice
+      if (strangerDisconnectedOverlay) strangerDisconnectedOverlay.classList.add("show");
+
+      appendMessage("", "Stranger has disconnected. Click Next to find someone new, or Stop to finish.", "system");
+    }
+
+    // Connect Stage Overlay Actions
+    if (btnOverlayNext) {
+      btnOverlayNext.addEventListener("click", () => {
+        skipToNextStranger();
+      });
+    }
+
+    if (btnOverlayStop) {
+      btnOverlayStop.addEventListener("click", () => {
+        stopAllChatting();
+      });
     }
 
     function startMatchmaking() {
@@ -3665,13 +3850,20 @@
         appendMessage("", "Establishing network handshake, please wait...", "system");
         return;
       }
+
+      // Hide disconnected overlay if active
+      if (strangerDisconnectedOverlay) strangerDisconnectedOverlay.classList.remove("show");
+
       isSearching = true;
       isConnected = false;
+      isStrangerDisconnected = false;
+
       stopCallTimer();
       stopSpeedCountdown();
       stopStatsPolling();
       stopScreenSharing();
       stopClipRecording();
+
       if (strangerVibeTag) strangerVibeTag.style.display = "none";
       if (gameModal) gameModal.style.display = "none";
       gameActive = false;
@@ -3682,10 +3874,16 @@
       strangerDot.className = "badge-dot waiting";
       strangerLabel.textContent = "Looking for someone...";
       strangerTag.style.display = "none";
+
       btnMainAction.innerHTML = '<span class="icon">⏹</span><span>Cancel</span>';
       btnMainAction.classList.add("stop");
       btnNextStranger.style.display = "none";
+      btnNextStranger.classList.remove("highlight");
       btnReportUser.style.display = "none";
+
+      chatInput.disabled = true;
+      chatInput.placeholder = "Searching for stranger...";
+      btnSendMessage.disabled = true;
 
       remoteVideo.style.display = "none";
       remoteCanvas.style.display = "block";
@@ -3704,18 +3902,24 @@
       });
     }
 
-    function disconnectStranger() {
+    // Stops chatting completely when user hits Stop or Cancel
+    function stopAllChatting() {
       if (activeCall) { activeCall.close(); activeCall = null; }
       if (activeDataConnection) { activeDataConnection.close(); activeDataConnection = null; }
 
       socket.emit("leave_queue");
+
       isConnected = false;
       isSearching = false;
+      isStrangerDisconnected = false;
+
       stopCallTimer();
       stopSpeedCountdown();
       stopStatsPolling();
       stopScreenSharing();
       stopClipRecording();
+
+      if (strangerDisconnectedOverlay) strangerDisconnectedOverlay.classList.remove("show");
       if (strangerVibeTag) strangerVibeTag.style.display = "none";
       if (gameModal) gameModal.style.display = "none";
       gameActive = false;
@@ -3730,9 +3934,11 @@
       btnMainAction.innerHTML = '<span class="icon">▶</span><span>Start Chat</span>';
       btnMainAction.classList.remove("stop");
       btnNextStranger.style.display = "none";
+      btnNextStranger.classList.remove("highlight");
       btnReportUser.style.display = "none";
 
       chatInput.disabled = true;
+      chatInput.placeholder = "Type a message...";
       btnSendMessage.disabled = true;
 
       remoteVideo.style.display = "none";
@@ -3740,10 +3946,17 @@
       if (blurOverlay) blurOverlay.style.display = "none";
       clearTimeout(blurTimeout);
       if (typingIndicator) typingIndicator.style.display = "none";
+
+      appendMessage("", "Chat ended. Click Start Chat whenever you want to begin again.", "system");
     }
 
     function skipToNextStranger() {
-      disconnectStranger();
+      if (activeCall) { activeCall.close(); activeCall = null; }
+      if (activeDataConnection) { activeDataConnection.close(); activeDataConnection = null; }
+      socket.emit("leave_queue");
+
+      if (strangerDisconnectedOverlay) strangerDisconnectedOverlay.classList.remove("show");
+
       setTimeout(startMatchmaking, 200);
     }
 
@@ -3762,15 +3975,18 @@
     if (btnMainAction) {
       btnMainAction.addEventListener("click", () => {
         if (!localStream && chosenMode !== "text") activateCamera();
-        if (isConnected || isSearching) disconnectStranger();
-        else startMatchmaking();
+        if (isConnected || isSearching || isStrangerDisconnected) {
+          stopAllChatting();
+        } else {
+          startMatchmaking();
+        }
       });
     }
 
     window.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
-        if (isConnected) skipToNextStranger();
-        else if (isSearching) disconnectStranger();
+        if (isConnected || isStrangerDisconnected) skipToNextStranger();
+        else if (isSearching) stopAllChatting();
       }
     });
 
@@ -3960,7 +4176,7 @@
 
       if (remoteCanvas && remoteVideo.style.display !== "block") {
         const targetGender = genderSelect && genderSelect.value === "female" ? "female" : "male";
-        const accentColor = isSearching ? "#f59e0b" : "#3b82f6";
+        const accentColor = isSearching ? "#f59e0b" : (isStrangerDisconnected ? "#ef4444" : "#3b82f6");
         drawCharacter(remoteCanvas, targetGender, breath, isBlinking, accentColor, "#f1c27d");
       }
 
@@ -4063,12 +4279,18 @@
       ctx.arc(cx, cy + headRadius * 0.22, headRadius * 0.22, 0.15 * Math.PI, 0.85 * Math.PI);
       ctx.stroke();
 
-      if (canvas === remoteCanvas && isSearching) {
+      if (canvas === remoteCanvas) {
         ctx.fillStyle = "#94a3b8";
         ctx.font = "600 13px sans-serif";
         ctx.textAlign = "center";
-        const dotCount = Math.floor((animStep * 1.5) % 4);
-        ctx.fillText(`Scanning for strangers${".".repeat(dotCount)}`, cx, h - 30);
+
+        if (isSearching) {
+          const dotCount = Math.floor((animStep * 1.5) % 4);
+          ctx.fillText(`Scanning for strangers${".".repeat(dotCount)}`, cx, h - 30);
+        } else if (isStrangerDisconnected) {
+          ctx.fillStyle = "#fca5a5";
+          ctx.fillText("Stranger disconnected (Offline)", cx, h - 30);
+        }
       }
     }
 
