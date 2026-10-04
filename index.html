@@ -1731,6 +1731,39 @@
     }
 @media (max-width: 900px) {
 
+  /* Make bottom filter deck and topic tags smoothly scrollable horizontally */
+  .deck-filters {
+    display: flex !important;
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    gap: 8px !important;
+    width: 100% !important;
+    padding: 4px 2px 6px 2px !important;
+    scrollbar-width: none; /* Hide scrollbar on Firefox */
+  }
+
+  /* Hide default scrollbar track on Chrome, Safari & Edge */
+  .deck-filters::-webkit-scrollbar {
+    display: none !important;
+    height: 0 !important;
+  }
+
+  /* Prevent gender dropdown pods and tags container from shrinking */
+  .deck-filters .filter-pod {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+  }
+
+  .deck-filters .interests-pod {
+    flex-shrink: 0 !important;
+    max-width: none !important;
+    white-space: nowrap !important;
+    overflow-x: visible !important;
+  }
   /* Make Top Header horizontally scrollable on mobile screens */
   .app-header {
     overflow-x: auto !important;
