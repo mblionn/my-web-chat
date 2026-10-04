@@ -876,22 +876,6 @@
       display: block;
     }
 
-    .local-pip-badge {
-      position: absolute;
-      top: 6px;
-      left: 6px;
-      background: rgba(0, 0, 0, 0.75);
-      backdrop-filter: blur(6px);
-      padding: 3px 8px;
-      border-radius: 6px;
-      font-size: 0.7rem;
-      font-weight: 700;
-      z-index: 5;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      user-select: none;
-    }
 
     .talking-dot {
       font-size: 0.62rem;
@@ -1945,15 +1929,31 @@
   }
 
   /* 3. Floating Mobile Local PiP: Frosted glass pill style with elevation */
-  .local-pip-card {
-    width: 116px !important;
-    height: 88px !important;
-    bottom: 10px !important;
-    right: 10px !important;
-    border-radius: 14px !important;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.75), inset 0 0 8px rgba(0, 0, 0, 0.4) !important;
-    transition: transform 0.15s ease, border-color 0.1s ease !important;
-  }
+  /* Allow floating badges to sit outside the video box boundaries */
+.local-pip-card {
+  overflow: visible !important;
+}
+
+/* Ensure the video element itself stays cleanly clipped to the rounded corners */
+.local-pip-card video,
+.local-pip-card canvas {
+  border-radius: inherit;
+  overflow: hidden;
+}
+
+/* Float the 'You: Chill' badge completely above the PiP card */
+.local-pip-badge {
+  position: absolute;
+  top: -30px !important;
+  left: 0 !important;
+  bottom: auto !important;
+  background: rgba(15, 23, 42, 0.88) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-pill) !important;
+  padding: 3px 10px !important;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
 
   .local-pip-card:active {
     transform: scale(0.95);
