@@ -1869,6 +1869,14 @@
   display: none !important;
 }
 @media (max-width: 900px) {
+
+  #mobileHeaderModal {
+  display: none !important;
+  }
+
+#mobileHeaderModal[style*="display: flex"] {
+  display: flex !important;
+}
 /* Reveal the trigger pill on mobile viewports */
   .mobile-media-toolbar {
     display: flex !important;
@@ -2364,13 +2372,7 @@
   <button id="btnToggleMobileHeaderMenu" class="mobile-header-dots-btn" type="button" title="More Header Options">
     ⋮
   </button>
-  <div id="mobileHeaderDropdown" class="mobile-header-dropdown">
-    <button class="m-header-item" id="mHeaderToggleSound">🔊 Sound</button>
-    <button class="m-header-item" id="mHeaderToggleAudioOnly">🎧 Video Mode</button>
-    <button class="m-header-item" id="mHeaderOpenSettings">⚙️ Settings &amp; Studio</button>
-    <button class="m-header-item" id="mHeaderToggleHardware">📹 Enable Cam &amp; Mic</button>
-    <button class="m-header-item danger" id="mHeaderReturnHome">🚪 Exit to Home</button>
-  </div>
+ 
 </div>
       <!-- Auto-Next Toggle Button -->
       <button class="nav-btn autonext-toggle-btn" id="btnToggleAutoNext" title="Toggle Automatic Stranger Searching on Disconnect">
