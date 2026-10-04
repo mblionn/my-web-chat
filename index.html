@@ -217,6 +217,45 @@
       display: block;
     }
 
+    /* Privacy Blur Shield */
+    .blur-overlay {
+      position: absolute;
+      inset: 0;
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      background: rgba(0, 0, 0, 0.45);
+      z-index: 15;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .unblur-btn {
+      background: rgba(15, 23, 42, 0.85);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.5);
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 0.84rem;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+      transition: all 0.2s ease;
+    }
+
+    .unblur-btn:hover {
+      background: #0284c7;
+      color: #fff;
+    }
+
+    .blur-tip {
+      font-size: 0.74rem;
+      color: #94a3b8;
+    }
+
     .video-badge {
       position: absolute;
       top: 12px;
@@ -371,14 +410,51 @@
     }
 
     .chat-header {
-      padding: 12px 16px;
+      padding: 10px 14px;
       border-bottom: 1px solid var(--border-color);
-      font-size: 0.88rem;
-      font-weight: 800;
       display: flex;
       align-items: center;
       justify-content: space-between;
       user-select: none;
+    }
+
+    .chat-header-title {
+      font-size: 0.88rem;
+      font-weight: 800;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .typing-label {
+      font-size: 0.72rem;
+      color: #38bdf8;
+      font-weight: 600;
+      display: none;
+    }
+
+    .header-chat-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .snapshot-btn {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #f8fafc;
+      padding: 4px 9px;
+      border-radius: 6px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .snapshot-btn:hover {
+      background: #334155;
     }
 
     .messages-container {
@@ -791,6 +867,12 @@
           <div class="video-match-tag" id="strangerTag">Matched on: #music</div>
           <video id="remoteVideo" autoplay playsinline></video>
           <canvas id="remoteCanvas"></canvas>
+
+          <!-- Auto-Blur Privacy Overlay -->
+          <div class="blur-overlay" id="blurOverlay">
+            <button id="btnUnblurVideo" class="unblur-btn">👁 Reveal Video</button>
+            <span class="blur-tip">Auto-reveals in 5s</span>
+          </div>
         </div>
 
         <!-- Local PiP (Face display only) -->
@@ -821,8 +903,14 @@
     <!-- Chat Drawer -->
     <div class="chat-section">
       <div class="chat-header">
-        <span>💬 Text Conversation</span>
-        <span id="p2pStatus" style="font-size: 0.74rem; color: #10b981;">Railway: Connecting...</span>
+        <div class="chat-header-title">
+          <span>💬 Text Conversation</span>
+          <span class="typing-label" id="typingIndicator">Stranger is typing...</span>
+        </div>
+        <div class="header-chat-actions">
+          <button id="btnSnapshot" class="snapshot-btn" title="Capture call memory">📸 Snap</button>
+          <span id="p2pStatus" style="font-size: 0.74rem; color: #10b981;">Railway: Connecting...</span>
+        </div>
       </div>
 
       <div class="messages-container" id="chatContainer">
@@ -906,6 +994,8 @@
 
     let userTags = ["chatting", "music"];
     const blockedPeers = new Set();
+    let blurTimeout = null;
+    let typingTimer = null;
 
     // UI Cache
     const filterSelect = document.getElementById("filterSelect");
@@ -917,6 +1007,10 @@
     const remoteVideo = document.getElementById("remoteVideo");
     const localCanvas = document.getElementById("localCanvas");
     const remoteCanvas = document.getElementById("remoteCanvas");
+    const blurOverlay = document.getElementById("blurOverlay");
+    const btnUnblurVideo = document.getElementById("btnUnblurVideo");
+    const typingIndicator = document.getElementById("typingIndicator");
+    const btnSnapshot = document.getElementById("btnSnapshot");
     const strangerDot = document.getElementById("strangerDot");
     const strangerLabel = document.getElementById("strangerLabel");
     const strangerTag = document.getElementById("strangerTag");
@@ -947,7 +1041,7 @@
     const mBtnMuteVideo = document.getElementById("mBtnMuteVideo");
 
     // =========================================================================
-    // 2. SYNTHESIZED WEB AUDIO SOUND FX (ZERO MP3 ASSETS)
+    // 2. SYNTHESIZED WEB AUDIO ENGINE
     // =========================================================================
     let audioCtx = null;
     function getAudioContext() {
@@ -972,16 +1066,14 @@
         const now = ctx.currentTime;
 
         if (type === "match") {
-          // Cheerful two-tone chime
           osc.type = "sine";
-          osc.frequency.setValueAtTime(523.25, now); // C5
-          osc.frequency.exponentialRampToValueAtTime(783.99, now + 0.12); // G5
+          osc.frequency.setValueAtTime(523.25, now);
+          osc.frequency.exponentialRampToValueAtTime(783.99, now + 0.12);
           gain.gain.setValueAtTime(0.25, now);
           gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
           osc.start(now);
           osc.stop(now + 0.35);
         } else if (type === "message") {
-          // Bubble pop
           osc.type = "triangle";
           osc.frequency.setValueAtTime(400, now);
           osc.frequency.exponentialRampToValueAtTime(800, now + 0.08);
@@ -990,7 +1082,6 @@
           osc.start(now);
           osc.stop(now + 0.15);
         } else if (type === "leave") {
-          // Descending disconnect tone
           osc.type = "sine";
           osc.frequency.setValueAtTime(320, now);
           osc.frequency.exponentialRampToValueAtTime(140, now + 0.2);
@@ -1011,7 +1102,86 @@
     });
 
     // =========================================================================
-    // 3. SOCKET.IO EVENTS (RAILWAY)
+    // 3. PRIVACY BLUR SHIELD
+    // =========================================================================
+    function triggerPrivacyShield() {
+      blurOverlay.style.display = "flex";
+      clearTimeout(blurTimeout);
+      blurTimeout = setTimeout(() => {
+        blurOverlay.style.display = "none";
+      }, 5000);
+    }
+
+    btnUnblurVideo.addEventListener("click", () => {
+      blurOverlay.style.display = "none";
+      clearTimeout(blurTimeout);
+    });
+
+    // =========================================================================
+    // 4. INSTANT PHOTO SNAPSHOT
+    // =========================================================================
+    btnSnapshot.addEventListener("click", () => {
+      if (!isConnected) {
+        appendMessage("", "Connect with someone first before snapping a memory!", "system");
+        return;
+      }
+
+      const snapCanvas = document.createElement("canvas");
+      snapCanvas.width = 1280;
+      snapCanvas.height = 720;
+      const sCtx = snapCanvas.getContext("2d");
+
+      // Background fill
+      sCtx.fillStyle = "#000";
+      sCtx.fillRect(0, 0, 1280, 720);
+
+      // Draw Remote Video
+      if (remoteVideo.style.display === "block" && remoteVideo.videoWidth) {
+        sCtx.drawImage(remoteVideo, 0, 0, 1280, 720);
+      } else {
+        sCtx.drawImage(remoteCanvas, 0, 0, 1280, 720);
+      }
+
+      // Draw Local PiP on top right corner
+      const pipW = 260;
+      const pipH = 195;
+      const pipX = 1280 - pipW - 24;
+      const pipY = 24;
+
+      sCtx.fillStyle = "#1e293b";
+      sCtx.lineWidth = 4;
+      sCtx.strokeStyle = "#3b82f6";
+      sCtx.strokeRect(pipX, pipY, pipW, pipH);
+
+      if (localVideo.style.display === "block" && localVideo.videoWidth) {
+        sCtx.save();
+        if (isMirrored) {
+          sCtx.translate(pipX + pipW, pipY);
+          sCtx.scale(-1, 1);
+          sCtx.drawImage(localVideo, 0, 0, pipW, pipH);
+        } else {
+          sCtx.drawImage(localVideo, pipX, pipY, pipW, pipH);
+        }
+        sCtx.restore();
+      }
+
+      // Watermark Pill
+      sCtx.fillStyle = "rgba(15, 23, 42, 0.85)";
+      sCtx.roundRect(24, 650, 210, 44, 8);
+      sCtx.fill();
+      sCtx.fillStyle = "#38bdf8";
+      sCtx.font = "bold 20px sans-serif";
+      sCtx.fillText("Web TV 555", 42, 679);
+
+      // Download
+      const link = document.createElement("a");
+      link.download = `webtv555-memory-${Date.now()}.png`;
+      link.href = snapCanvas.toDataURL("image/png");
+      link.click();
+    });
+
+    // =========================================================================
+    // 5. SOCKET.IO PRESENCE & MATCHMAKING
     // =========================================================================
     socket.on("connect", () => {
       p2pStatus.textContent = "Railway: Connected";
@@ -1028,7 +1198,6 @@
     });
 
     socket.on("matched", (payload) => {
-      // Check blocklist
       if (blockedPeers.has(payload.partnerPeerId)) {
         skipToNextStranger();
         return;
@@ -1068,7 +1237,7 @@
     });
 
     // =========================================================================
-    // 4. WEBRTC ENGINE (PEERJS)
+    // 6. WEBRTC ENGINE (PEERJS)
     // =========================================================================
     function initializePeer() {
       peer = new Peer({
@@ -1112,6 +1281,7 @@
         remoteVideo.srcObject = remoteMediaStream;
         remoteVideo.style.display = "block";
         remoteCanvas.style.display = "none";
+        triggerPrivacyShield();
       });
       call.on("close", handleStrangerLeft);
       call.on("error", handleStrangerLeft);
@@ -1123,6 +1293,9 @@
         if (data.type === "chat") {
           appendMessage("Stranger", data.text, "stranger");
           playSound("message");
+          typingIndicator.style.display = "none";
+        } else if (data.type === "typing") {
+          typingIndicator.style.display = data.status ? "inline" : "none";
         }
       });
       conn.on("close", handleStrangerLeft);
@@ -1132,12 +1305,13 @@
       if (!isConnected) return;
       isConnected = false;
       playSound("leave");
+      typingIndicator.style.display = "none";
       appendMessage("", "Stranger has disconnected.", "system");
       disconnectStranger();
     }
 
     // =========================================================================
-    // 5. MATCHMAKING ACTIONS (WITH FAST SKIP & REPORT)
+    // 7. MATCHMAKING ACTIONS (WITH FAST SKIP & REPORT)
     // =========================================================================
     function startMatchmaking() {
       if (!myPeerId) {
@@ -1157,6 +1331,8 @@
 
       remoteVideo.style.display = "none";
       remoteCanvas.style.display = "block";
+      blurOverlay.style.display = "none";
+      clearTimeout(blurTimeout);
 
       appendMessage("", "Looking for an active stranger...", "system");
 
@@ -1197,6 +1373,9 @@
 
       remoteVideo.style.display = "none";
       remoteCanvas.style.display = "block";
+      blurOverlay.style.display = "none";
+      clearTimeout(blurTimeout);
+      typingIndicator.style.display = "none";
     }
 
     function skipToNextStranger() {
@@ -1238,7 +1417,7 @@
     });
 
     // =========================================================================
-    // 6. CAMERA & MIC ENGINE WITH RESILIENT FALLBACKS
+    // 8. CAMERA & HARDWARE ACCESS
     // =========================================================================
     async function activateCamera() {
       const constraints = {
@@ -1352,7 +1531,7 @@
     }
 
     // =========================================================================
-    // 7. PROCEDURAL AVATAR RENDERER WITH RADAR & DYNAMIC STUDIO LIGHTING
+    // 9. PROCEDURAL AVATAR RENDERER WITH RADAR WAVES
     // =========================================================================
     let animStep = 0;
     function renderAvatarsLoop() {
@@ -1381,7 +1560,7 @@
 
       ctx.clearRect(0, 0, w, h);
 
-      // 1. Subtle Radial Vignette Gradient
+      // Subtle Radial Vignette
       const bgGrad = ctx.createRadialGradient(w / 2, h * 0.44, 20, w / 2, h * 0.44, Math.max(w, h) * 0.7);
       bgGrad.addColorStop(0, "#131b2e");
       bgGrad.addColorStop(1, "#07090e");
@@ -1392,7 +1571,7 @@
       const cy = h * 0.44 + breath;
       const headRadius = Math.min(w, h) * 0.15;
 
-      // 2. Animated Sonar / Radar Rings while searching
+      // Radar Pulse Rings while Searching
       if (canvas === remoteCanvas && isSearching) {
         for (let i = 0; i < 3; i++) {
           const waveRadius = (headRadius * 1.3) + ((animStep * 28 + i * 55) % (Math.min(w, h) * 0.48));
@@ -1405,7 +1584,7 @@
         }
       }
 
-      // 3. Proportional Torso & Shoulders (Natural curvature)
+      // Torso & Shoulders
       const torsoW = headRadius * 2.6;
       const torsoTop = cy + headRadius * 0.75;
       
@@ -1423,7 +1602,7 @@
       ctx.fillStyle = shirtGrad;
       ctx.fill();
 
-      // Subtle V-Neck Accent
+      // V-Neck Accent
       ctx.beginPath();
       ctx.moveTo(cx - headRadius * 0.35, torsoTop + breath);
       ctx.lineTo(cx, torsoTop + headRadius * 0.45 + breath);
@@ -1432,7 +1611,7 @@
       ctx.fill();
       ctx.restore();
 
-      // 4. Neck with Soft Drop Shadow
+      // Neck
       ctx.fillStyle = "rgba(0, 0, 0, 0.15)";
       ctx.fillRect(cx - headRadius * 0.22, cy + headRadius * 0.5, headRadius * 0.44, headRadius * 0.4);
 
@@ -1441,7 +1620,7 @@
       ctx.roundRect(cx - headRadius * 0.2, cy + headRadius * 0.55, headRadius * 0.4, headRadius * 0.45, [0, 0, 8, 8]);
       ctx.fill();
 
-      // 5. Head Shape with Radial Shading
+      // Head Shape with Radial Shading
       const headGrad = ctx.createRadialGradient(cx - headRadius * 0.2, cy - headRadius * 0.2, 5, cx, cy, headRadius);
       headGrad.addColorStop(0, "#fde68a");
       headGrad.addColorStop(0.7, skinColor);
@@ -1457,7 +1636,7 @@
       ctx.shadowBlur = 0;
       ctx.shadowOffsetY = 0;
 
-      // 6. Styled Hair
+      // Styled Hair
       ctx.fillStyle = gender === "female" ? "#451a03" : "#1e293b";
       ctx.beginPath();
       if (gender === "female") {
@@ -1473,7 +1652,7 @@
       }
       ctx.fill();
 
-      // 7. Expressive Eyes & Specular Highlights
+      // Eyes & Highlights
       const eyeOffset = headRadius * 0.35;
       const eyeY = cy + headRadius * 0.05;
 
@@ -1501,7 +1680,7 @@
         ctx.fill();
       }
 
-      // 8. Soft Smile
+      // Smile
       ctx.strokeStyle = gender === "female" ? "#be123c" : "#78350f";
       ctx.lineWidth = 2.5;
       ctx.lineCap = "round";
@@ -1509,7 +1688,7 @@
       ctx.arc(cx, cy + headRadius * 0.22, headRadius * 0.24, 0.15 * Math.PI, 0.85 * Math.PI);
       ctx.stroke();
 
-      // 9. Floating Search Text on Remote Canvas
+      // Scanning indicator text
       if (canvas === remoteCanvas && isSearching) {
         ctx.fillStyle = "#94a3b8";
         ctx.font = "600 13px -apple-system, BlinkMacSystemFont, sans-serif";
@@ -1533,7 +1712,7 @@
     window.addEventListener("resize", syncCanvasDimensions);
 
     // =========================================================================
-    // 8. TAGS SYSTEM
+    // 10. TAGS SYSTEM
     // =========================================================================
     function renderTags() {
       tagsList.innerHTML = "";
@@ -1588,7 +1767,7 @@
     });
 
     // =========================================================================
-    // 9. CHAT ENGINE
+    // 11. CHAT ENGINE & TYPING DETECTION
     // =========================================================================
     function appendMessage(sender, text, type = "stranger") {
       const now = new Date();
@@ -1609,12 +1788,25 @@
       return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
 
+    chatInput.addEventListener("input", () => {
+      if (activeDataConnection && activeDataConnection.open) {
+        activeDataConnection.send({ type: "typing", status: true });
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(() => {
+          if (activeDataConnection && activeDataConnection.open) {
+            activeDataConnection.send({ type: "typing", status: false });
+          }
+        }, 1200);
+      }
+    });
+
     function sendChatMessage(text = null) {
       const msg = text || chatInput.value.trim();
       if (!msg || !isConnected) return;
       appendMessage("You", msg, "you");
       chatInput.value = "";
       if (activeDataConnection && activeDataConnection.open) {
+        activeDataConnection.send({ type: "typing", status: false });
         activeDataConnection.send({ type: "chat", text: msg });
       }
     }
@@ -1631,7 +1823,7 @@
     });
 
     // =========================================================================
-    // 10. INSTANT DOM BOOTSTRAP
+    // 12. INSTANT DOM BOOTSTRAP
     // =========================================================================
     syncCanvasDimensions();
     renderAvatarsLoop();
