@@ -5360,40 +5360,53 @@ initMobileHeaderDropdown();
 // ==========================================
 // MOBILE HEADER DROPDOWN HANDLER (TOP LAYER)
 // ==========================================
+// ==========================================
+// VIEWPORT-FLOATING HEADER DROPDOWN (ALWAYS ON TOP)
+// ==========================================
 function initMobileHeaderDropdown() {
   const dotsBtn = document.getElementById("btnToggleMobileHeaderMenu");
   const dropdown = document.getElementById("mobileHeaderDropdown");
 
   if (!dotsBtn || !dropdown) return;
 
-  // Make sure header allows dropdown to overflow visually
-  const header = document.querySelector(".app-header");
-  if (header) {
-    header.style.overflow = "visible";
-    header.style.zIndex = "99999";
+  // Move dropdown directly to body to bypass any parent stacking contexts
+  if (dropdown.parentElement !== document.body) {
+    document.body.appendChild(dropdown);
   }
 
-  // Toggle on click with highest z-index
+  // Position and toggle dropdown
   dotsBtn.onclick = (e) => {
     e.stopPropagation();
     const isHidden = dropdown.style.display === "none" || dropdown.style.display === "";
+
     if (isHidden) {
+      const rect = dotsBtn.getBoundingClientRect();
+      
+      dropdown.style.position = "fixed";
+      dropdown.style.top = `${rect.bottom + 8}px`;
+      dropdown.style.right = `${window.innerWidth - rect.right}px`;
+      dropdown.style.left = "auto";
+      dropdown.style.zIndex = "2147483647"; // Max browser z-index
       dropdown.style.display = "flex";
-      dropdown.style.zIndex = "999999";
-      dropdown.style.position = "absolute";
+      dropdown.style.flexDirection = "column";
+      dropdown.style.background = "#0f172a";
+      dropdown.style.border = "1px solid rgba(255, 255, 255, 0.16)";
+      dropdown.style.borderRadius = "12px";
+      dropdown.style.padding = "6px";
+      dropdown.style.boxShadow = "0 16px 40px rgba(0, 0, 0, 0.95)";
     } else {
       dropdown.style.display = "none";
     }
   };
 
-  // Close when tapping anywhere outside
+  // Close when clicking anywhere outside
   document.addEventListener("click", (e) => {
     if (!dropdown.contains(e.target) && e.target !== dotsBtn) {
       dropdown.style.display = "none";
     }
   });
 
-  // Action helper
+  // Action dispatcher
   const bindAction = (btnId, targetId) => {
     const btn = document.getElementById(btnId);
     const target = document.getElementById(targetId);
@@ -5413,7 +5426,6 @@ function initMobileHeaderDropdown() {
   bindAction("mHeaderReturnHome", "btnReturnHome");
 }
 
-// Run immediately
 initMobileHeaderDropdown();
   </script>
 </body>
