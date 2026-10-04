@@ -1868,7 +1868,97 @@
 #mobileActionSheet {
   display: none !important;
 }
+/* Keep mobile dots menu hidden on desktop */
+.mobile-header-menu-wrap {
+  display: none;
+}
 @media (max-width: 900px) {
+
+  /* ==========================================
+     MOBILE HEADER OVERFLOW DROPDOWN
+     ========================================== */
+  .mobile-header-menu-wrap {
+    position: relative;
+    display: inline-block;
+  }
+
+  .mobile-header-dots-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #f8fafc;
+    border-radius: 8px;
+    padding: 4px 10px;
+    font-size: 1.15rem;
+    font-weight: 900;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mobile-header-dots-btn:active {
+    background: rgba(59, 130, 246, 0.3);
+  }
+
+  /* Hide raw extra buttons on mobile */
+  .header-right > .nav-btn:not(.autonext-toggle-btn),
+  .header-right > .primary-cam-btn {
+    display: none !important;
+  }
+
+  .mobile-header-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: #0f172a;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 12px;
+    min-width: 190px;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.85);
+    padding: 6px;
+    z-index: 99999 !important;
+    animation: dropDownSlide 0.15s ease-out;
+  }
+
+  .mobile-header-dropdown.show {
+    display: flex !important;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  @keyframes dropDownSlide {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .m-header-item {
+    background: none;
+    border: none;
+    color: #cbd5e1;
+    padding: 10px 12px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-align: left;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+    transition: background 0.15s ease;
+  }
+
+  .m-header-item:hover,
+  .m-header-item:active {
+    background: #1e293b;
+    color: #ffffff;
+  }
+
+  .m-header-item.danger {
+    color: #fca5a5;
+  }
+  .m-header-item.danger:hover,
+  .m-header-item.danger:active {
+    background: rgba(239, 68, 68, 0.2);
+  }
 /* Reveal the trigger pill on mobile viewports */
   .mobile-media-toolbar {
     display: flex !important;
@@ -2359,6 +2449,19 @@
     </div>
     
     <div class="header-right">
+      <!-- Inside .header-right in <header class="app-header"> -->
+<div class="mobile-header-menu-wrap">
+  <button id="btnToggleMobileHeaderMenu" class="mobile-header-dots-btn" type="button" title="More Header Options">
+    ⋮
+  </button>
+  <div id="mobileHeaderDropdown" class="mobile-header-dropdown">
+    <button class="m-header-item" id="mHeaderToggleSound">🔊 Sound</button>
+    <button class="m-header-item" id="mHeaderToggleAudioOnly">🎧 Video Mode</button>
+    <button class="m-header-item" id="mHeaderOpenSettings">⚙️ Settings &amp; Studio</button>
+    <button class="m-header-item" id="mHeaderToggleHardware">📹 Enable Cam &amp; Mic</button>
+    <button class="m-header-item danger" id="mHeaderReturnHome">🚪 Exit to Home</button>
+  </div>
+</div>
       <!-- Auto-Next Toggle Button -->
       <button class="nav-btn autonext-toggle-btn" id="btnToggleAutoNext" title="Toggle Automatic Stranger Searching on Disconnect">
         <span id="autoNextDot" class="status-dot online"></span>
@@ -5219,6 +5322,44 @@ window.addEventListener("click", (e) => {
     syncCanvasDimensions();
     renderAvatarsLoop();
     updateFakeOnlineDisplay();
+
+    // ==========================================
+// MOBILE HEADER THREE-DOTS MENU TRIGGER
+// ==========================================
+const btnToggleMobileHeaderMenu = document.getElementById("btnToggleMobileHeaderMenu");
+const mobileHeaderDropdown = document.getElementById("mobileHeaderDropdown");
+
+if (btnToggleMobileHeaderMenu && mobileHeaderDropdown) {
+  btnToggleMobileHeaderMenu.onclick = (e) => {
+    e.stopPropagation();
+    mobileHeaderDropdown.classList.toggle("show");
+  };
+
+  // Close dropdown when clicking anywhere outside
+  window.addEventListener("click", (e) => {
+    if (!mobileHeaderDropdown.contains(e.target) && e.target !== btnToggleMobileHeaderMenu) {
+      mobileHeaderDropdown.classList.remove("show");
+    }
+  });
+
+  // Forward menu clicks to existing buttons
+  const forwardClick = (itemId, targetId) => {
+    const item = document.getElementById(itemId);
+    const target = document.getElementById(targetId);
+    if (item && target) {
+      item.onclick = () => {
+        mobileHeaderDropdown.classList.remove("show");
+        target.click();
+      };
+    }
+  };
+
+  forwardClick("mHeaderToggleSound", "btnToggleSound");
+  forwardClick("mHeaderToggleAudioOnly", "btnToggleAudioOnly");
+  forwardClick("mHeaderOpenSettings", "btnOpenSettingsMenu");
+  forwardClick("mHeaderToggleHardware", "btnToggleHardware");
+  forwardClick("mHeaderReturnHome", "btnReturnHome");
+}
   </script>
 </body>
 </html>
