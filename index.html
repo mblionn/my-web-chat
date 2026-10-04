@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>Web TV 555 - Talk to Strangers! Live Video & Chat</title>
 
-  <!-- High-Speed CDNs for WebRTC peer signaling & data transport -->
+  <!-- High-Speed CDNs for WebRTC & Socket signaling -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 
@@ -95,10 +95,7 @@
       letter-spacing: -0.5px;
     }
 
-    .landing-logo .brand-icon {
-      font-size: 1.8rem;
-    }
-
+    .landing-logo .brand-icon { font-size: 1.8rem; }
     .landing-logo .title-txt {
       background: linear-gradient(135deg, #ffffff 40%, #93c5fd 100%);
       -webkit-background-clip: text;
@@ -191,9 +188,7 @@
       transition: border-color 0.15s;
     }
 
-    .landing-input:focus {
-      border-color: var(--primary);
-    }
+    .landing-input:focus { border-color: var(--primary); }
 
     .landing-select {
       background: #090e19;
@@ -268,14 +263,9 @@
       font-size: 0.9rem;
     }
 
-    .landing-tag-chip .del-tag:hover {
-      color: #ef4444;
-    }
+    .landing-tag-chip .del-tag:hover { color: #ef4444; }
 
-    .add-tag-form {
-      display: flex;
-      gap: 8px;
-    }
+    .add-tag-form { display: flex; gap: 8px; }
 
     .add-tag-form input {
       flex: 1;
@@ -299,9 +289,7 @@
       cursor: pointer;
     }
 
-    .btn-add-topic:hover {
-      background: var(--primary);
-    }
+    .btn-add-topic:hover { background: var(--primary); }
 
     .quick-popular-tags {
       display: flex;
@@ -382,10 +370,6 @@
       filter: brightness(1.1);
     }
 
-    .btn-start-mode:active {
-      transform: translateY(0);
-    }
-
     .btn-start-mode.text-mode {
       background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
       color: #ffffff;
@@ -412,7 +396,7 @@
       text-align: center;
     }
 
-    /* Live Studio Header */
+    /* Studio Header */
     .app-header {
       height: 56px;
       background: rgba(14, 21, 38, 0.95);
@@ -510,6 +494,19 @@
       color: var(--text-main);
     }
 
+    /* Auto-Next Header Toggle Pill */
+    .autonext-toggle-btn {
+      background: rgba(16, 185, 129, 0.16) !important;
+      color: #34d399 !important;
+      border-color: rgba(16, 185, 129, 0.45) !important;
+    }
+
+    .autonext-toggle-btn.paused {
+      background: rgba(100, 116, 139, 0.16) !important;
+      color: #94a3b8 !important;
+      border-color: rgba(100, 116, 139, 0.35) !important;
+    }
+
     .menu-trigger-btn {
       background: rgba(59, 130, 246, 0.15) !important;
       color: #60a5fa !important;
@@ -544,7 +541,7 @@
       box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
     }
 
-    /* Settings & Studio Popup Modal */
+    /* Floating Studio Settings Modal */
     .floating-menu-modal {
       position: fixed;
       inset: 0;
@@ -558,9 +555,7 @@
       padding: 16px;
     }
 
-    .floating-menu-modal.show {
-      display: flex !important;
-    }
+    .floating-menu-modal.show { display: flex !important; }
 
     .menu-modal-card {
       background: #0f172a;
@@ -680,7 +675,7 @@
       border-color: #60a5fa;
     }
 
-    /* Workspace Stage & Video Layout */
+    /* Workspace Stage */
     .app-workspace {
       flex: 1;
       display: flex;
@@ -844,7 +839,7 @@
       cursor: default;
     }
 
-    /* Picture-in-Picture (PiP) Card */
+    /* Picture-in-Picture (PiP) Local Box */
     .local-pip-card {
       position: absolute;
       bottom: 14px;
@@ -982,9 +977,7 @@
       transition: transform 0.15s ease;
     }
 
-    .reaction-trigger-btn:active {
-      transform: scale(1.35);
-    }
+    .reaction-trigger-btn:active { transform: scale(1.35); }
 
     .reaction-fly-container {
       position: absolute;
@@ -1061,11 +1054,11 @@
 
     .blur-tip { font-size: 0.74rem; color: #94a3b8; }
 
-    /* Stranger Disconnected Callout Overlay (User-Controlled Next) */
+    /* Stranger Disconnected & Auto-Next Countdown Stage Overlay */
     .stranger-disconnected-overlay {
       position: absolute;
       inset: 0;
-      background: rgba(5, 8, 17, 0.75);
+      background: rgba(5, 8, 17, 0.78);
       backdrop-filter: blur(8px);
       display: none;
       flex-direction: column;
@@ -1077,43 +1070,61 @@
       text-align: center;
     }
 
-    .stranger-disconnected-overlay.show {
-      display: flex !important;
-    }
+    .stranger-disconnected-overlay.show { display: flex !important; }
 
     .stranger-disconnected-card {
       background: #0f172a;
-      border: 1px solid rgba(239, 68, 68, 0.35);
+      border: 1px solid rgba(59, 130, 246, 0.4);
       box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8);
       border-radius: var(--radius-lg);
       padding: 24px 28px;
-      max-width: 380px;
+      max-width: 400px;
       width: 100%;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 14px;
+      gap: 12px;
+      animation: popCard 0.2s ease-out;
+    }
+
+    @keyframes popCard {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
     }
 
     .stranger-disconnected-card .title {
       font-size: 1.15rem;
       font-weight: 900;
-      color: #fca5a5;
+      color: #f8fafc;
       display: flex;
       align-items: center;
       gap: 8px;
     }
 
+    .autonext-countdown-text {
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      padding: 6px 14px;
+      border-radius: var(--radius-pill);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
     .stranger-disconnected-card .desc {
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       color: var(--text-secondary);
-      line-height: 1.5;
+      line-height: 1.45;
     }
 
     .stranger-disconnected-actions {
       display: flex;
       gap: 10px;
       width: 100%;
+      margin-top: 4px;
     }
 
     .btn-stage-next {
@@ -1264,9 +1275,7 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    .dropdown-menu-list.show {
-      display: flex !important;
-    }
+    .dropdown-menu-list.show { display: flex !important; }
 
     .dropdown-item {
       background: none;
@@ -1525,10 +1534,7 @@
       overflow-x: auto;
     }
 
-    .tags-list {
-      display: flex;
-      gap: 6px;
-    }
+    .tags-list { display: flex; gap: 6px; }
 
     .tag-badge {
       background: rgba(37, 99, 235, 0.25);
@@ -1593,7 +1599,7 @@
       color: #e2e8f0;
     }
 
-    /* Stage Interactive Modals */
+    /* Modal Mini-Games */
     .tod-modal-overlay, .wyr-modal-overlay, .game-modal-overlay, .whiteboard-modal-overlay {
       position: absolute;
       inset: 0;
@@ -1635,10 +1641,7 @@
       cursor: pointer;
     }
 
-    .tod-action-row {
-      display: flex;
-      gap: 10px;
-    }
+    .tod-action-row { display: flex; gap: 10px; }
 
     .tod-btn {
       flex: 1;
@@ -1793,15 +1796,12 @@
         width: 100%;
         overflow-x: auto;
       }
-      .landing-form-grid {
-        grid-template-columns: 1fr;
-      }
+      .landing-form-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Landing Entrance Overlay -->
   <div class="landing-overlay" id="landingOverlay">
     <div class="landing-top-nav">
       <div class="landing-logo">
@@ -1819,10 +1819,10 @@
     <div class="landing-content-card">
       <div class="landing-hero-banner">
         <h1>Talk to strangers 1-on-1!</h1>
-        <p>Web TV 555 pairs you with a random stranger. Matches are strictly anonymous unless you choose to share your details. Be respectful, have fun, and enjoy live encounters!</p>
+        <p>Web TV 555 pairs you with random strangers. Matches are anonymous. Auto-Next instantly finds a new partner the moment someone disconnects!</p>
       </div>
 
-      <!-- Entrance Profile Config -->
+      <!-- Profile Config -->
       <div class="landing-form-grid">
         <div class="form-group">
           <label for="landingNameInput">Your Display Name</label>
@@ -1854,9 +1854,7 @@
           <span class="sec-subtitle">Add your favorite hobbies or topics</span>
         </div>
 
-        <div class="landing-tags-box" id="landingTagsBox">
-          <!-- Active tags rendered here -->
-        </div>
+        <div class="landing-tags-box" id="landingTagsBox"></div>
 
         <div class="add-tag-form">
           <input type="text" id="landingTagInput" placeholder="Add topic (e.g. music, gaming, movies)..." autocomplete="off" />
@@ -1875,13 +1873,11 @@
         </div>
       </div>
 
-      <!-- 18+ & Conduct agreement -->
       <label class="landing-terms-row">
         <input type="checkbox" id="chkAgreement" checked />
         <span>I am 18+ or have parental consent, and agree to follow respectful community guidelines.</span>
       </label>
 
-      <!-- Launch Action Buttons -->
       <div class="landing-buttons-deck">
         <button class="btn-start-mode text-mode" id="btnStartTextChat">
           <span>💬 Start Text Chat</span>
@@ -1900,7 +1896,6 @@
     </div>
   </div>
 
-  <!-- Studio Header -->
   <header class="app-header">
     <div class="header-left">
       <div class="logo-container">
@@ -1925,6 +1920,12 @@
     </div>
     
     <div class="header-right">
+      <!-- Auto-Next Toggle Button -->
+      <button class="nav-btn autonext-toggle-btn" id="btnToggleAutoNext" title="Toggle Automatic Stranger Searching on Disconnect">
+        <span id="autoNextDot" class="status-dot online"></span>
+        <span id="autoNextLabel">Auto-Next: ON</span>
+      </button>
+
       <button class="nav-btn" id="btnToggleSound" title="Toggle Sound">🔊 Sound</button>
       <button class="nav-btn" id="btnToggleAudioOnly" title="Toggle Audio/Video Mode">🎧 Video ON</button>
       <button class="nav-btn menu-trigger-btn" id="btnOpenSettingsMenu">⚙️ Settings &amp; Studio</button>
@@ -1997,7 +1998,6 @@
     </div>
   </div>
 
-  <!-- Workspace Stage -->
   <main class="app-workspace">
     <div class="stage-column" id="stageColumn">
       <div class="video-stage-container" id="videoStageContainer">
@@ -2024,19 +2024,22 @@
           <video id="remoteVideo" autoplay playsinline></video>
           <canvas id="remoteCanvas"></canvas>
 
-          <!-- User-Controlled Disconnected Overlay -->
+          <!-- Auto-Next Countdown & Disconnection Stage Overlay -->
           <div class="stranger-disconnected-overlay" id="strangerDisconnectedOverlay">
             <div class="stranger-disconnected-card">
               <div class="title">
-                <span>👋 Stranger Disconnected</span>
+                <span>👋 Stranger Left</span>
               </div>
-              <p class="desc">The other person has left the conversation. Your camera is still on, and your chat log is saved. You can choose to find a new stranger whenever you are ready.</p>
+              <div class="autonext-countdown-text" id="autoNextCountdownText">
+                <span>⚡ Auto-finding next stranger in <b>1.5s</b>...</span>
+              </div>
+              <p class="desc" id="autoNextDesc">Connecting you automatically with someone ready to chat! Your camera and settings remain active.</p>
               <div class="stranger-disconnected-actions">
                 <button class="btn-stage-next" id="btnOverlayNext">
-                  <span>⏭ Next Stranger</span>
+                  <span>⏭ Next Now (Esc)</span>
                 </button>
                 <button class="btn-stage-stop" id="btnOverlayStop">
-                  <span>⏹ Stop</span>
+                  <span>⏹ Stop Search</span>
                 </button>
               </div>
             </div>
@@ -2221,7 +2224,6 @@
     </aside>
   </main>
 
-  <!-- Footer Deck -->
   <footer class="app-deck">
     <div class="deck-main-actions">
       <button class="btn-primary-action start" id="btnMainAction">
@@ -2271,9 +2273,8 @@
     </div>
   </footer>
 
-  <!-- Single-File Complete JavaScript Engine -->
   <script>
-    /* Polyfill for roundRect across browsers */
+    /* Canvas roundRect polyfill */
     if (!CanvasRenderingContext2D.prototype.roundRect) {
       CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, radii) {
         if (!radii) { this.rect(x, y, w, h); return; }
@@ -2304,14 +2305,14 @@
     let screenStream = null;
     let isScreenSharing = false;
 
-    // User Profile & Landing State
+    // Profile & Mode State
     let userDisplayName = "Stranger";
     let userTags = ["music", "chill"];
-    let chosenMode = "video"; // 'text' or 'video'
+    let chosenMode = "video";
 
     let isSearching = false;
     let isConnected = false;
-    let isStrangerDisconnected = false; // Tracks if stranger left while user remains in control
+    let isStrangerDisconnected = false;
     let isMirrored = true;
     let micMuted = false;
     let camDisabled = false;
@@ -2321,7 +2322,12 @@
     let captionsEnabled = false;
     let currentFacingMode = "user";
 
-    // Speed Chat State
+    // Auto-Next Match Engine State
+    let autoNextEnabled = true; // Auto-find next ready partner on disconnect by default
+    let autoNextTimeout = null;
+    let autoNextCountdownInterval = null;
+
+    // Speed Chat
     let isSpeedMode = false;
     let speedSecondsRemaining = 60;
     let speedTimerInterval = null;
@@ -2343,7 +2349,7 @@
     let callSecondsElapsed = 0;
     let statsPollInterval = null;
 
-    // Audio DSP & Web Speech
+    // Audio DSP & Voice
     let audioCtx = null;
     let micAnalyser = null;
     let micDataArray = null;
@@ -2352,7 +2358,7 @@
     let micFilterNode = null;
     let speechRecognizer = null;
 
-    // Mini-Games State
+    // Games State
     let currentWyr = null;
     let myWyrVote = null;
     let tttBoard = Array(9).fill(null);
@@ -2411,6 +2417,10 @@
     const btnStartVideoChat = document.getElementById("btnStartVideoChat");
     const btnReturnHome = document.getElementById("btnReturnHome");
     const myDisplayNameSpan = document.getElementById("myDisplayNameSpan");
+
+    const btnToggleAutoNext = document.getElementById("btnToggleAutoNext");
+    const autoNextDot = document.getElementById("autoNextDot");
+    const autoNextLabel = document.getElementById("autoNextLabel");
 
     const vibeSelect = document.getElementById("vibeSelect");
     const filterSelect = document.getElementById("filterSelect");
@@ -2496,8 +2506,10 @@
     const userCount = document.getElementById("userCount");
     const p2pStatus = document.getElementById("p2pStatus");
 
-    // Stranger Disconnected Overlay Elements
+    // Auto-Next & Disconnected Overlay
     const strangerDisconnectedOverlay = document.getElementById("strangerDisconnectedOverlay");
+    const autoNextCountdownText = document.getElementById("autoNextCountdownText");
+    const autoNextDesc = document.getElementById("autoNextDesc");
     const btnOverlayNext = document.getElementById("btnOverlayNext");
     const btnOverlayStop = document.getElementById("btnOverlayStop");
 
@@ -2534,7 +2546,298 @@
     const mBtnTriggerPopoutPiP = document.getElementById("mBtnTriggerPopoutPiP");
     const mBtnToggleFullscreen = document.getElementById("mBtnToggleFullscreen");
 
-    /* Tag Rendering & Management */
+    function updateAutoNextUI() {
+      if (btnToggleAutoNext) {
+        if (autoNextEnabled) {
+          btnToggleAutoNext.classList.remove("paused");
+          autoNextDot.className = "status-dot online";
+          autoNextLabel.textContent = "Auto-Next: ON";
+        } else {
+          btnToggleAutoNext.classList.add("paused");
+          autoNextDot.className = "status-dot offline";
+          autoNextLabel.textContent = "Auto-Next: OFF";
+        }
+      }
+    }
+
+    if (btnToggleAutoNext) {
+      btnToggleAutoNext.addEventListener("click", () => {
+        autoNextEnabled = !autoNextEnabled;
+        updateAutoNextUI();
+        if (!autoNextEnabled) {
+          cancelAutoNextTimer();
+          if (autoNextCountdownText) {
+            autoNextCountdownText.innerHTML = "<span>⏸ Auto-Next paused. Click Next to search.</span>";
+          }
+        } else if (isStrangerDisconnected) {
+          // If stranger already disconnected and we just turned Auto-Next back ON, start searching
+          triggerAutoNextSearch();
+        }
+      });
+    }
+
+    function cancelAutoNextTimer() {
+      if (autoNextTimeout) {
+        clearTimeout(autoNextTimeout);
+        autoNextTimeout = null;
+      }
+      if (autoNextCountdownInterval) {
+        clearInterval(autoNextCountdownInterval);
+        autoNextCountdownInterval = null;
+      }
+    }
+
+    function triggerAutoNextSearch() {
+      cancelAutoNextTimer();
+      let timeLeft = 1.5;
+
+      if (!autoNextEnabled) {
+        if (autoNextCountdownText) {
+          autoNextCountdownText.innerHTML = "<span>⏸ Auto-Next is OFF. Click Next whenever ready.</span>";
+        }
+        return;
+      }
+
+      if (autoNextCountdownText) {
+        autoNextCountdownText.innerHTML = `<span>⚡ Auto-finding next stranger in <b>${timeLeft.toFixed(1)}s</b>...</span>`;
+      }
+
+      autoNextCountdownInterval = setInterval(() => {
+        timeLeft -= 0.1;
+        if (timeLeft <= 0) {
+          clearInterval(autoNextCountdownInterval);
+          autoNextCountdownInterval = null;
+        } else if (autoNextCountdownText) {
+          autoNextCountdownText.innerHTML = `<span>⚡ Auto-finding next stranger in <b>${timeLeft.toFixed(1)}s</b>...</span>`;
+        }
+      }, 100);
+
+      autoNextTimeout = setTimeout(() => {
+        cancelAutoNextTimer();
+        if (autoNextEnabled && (isStrangerDisconnected || !isConnected)) {
+          skipToNextStranger();
+        }
+      }, 1500);
+    }
+
+    function handleStrangerLeft() {
+      if (!isConnected) return;
+      isConnected = false;
+      isStrangerDisconnected = true;
+
+      playSound("leave");
+      stopCallTimer();
+      stopSpeedCountdown();
+      stopStatsPolling();
+      stopScreenSharing();
+      stopClipRecording();
+
+      // Clean peer pipes specifically for this disconnect
+      if (activeCall) { activeCall.close(); activeCall = null; }
+      if (activeDataConnection) { activeDataConnection.close(); activeDataConnection = null; }
+
+      // Dismiss game overlays so view is unobstructed
+      if (gameModal) gameModal.style.display = "none";
+      gameActive = false;
+      if (whiteboardModal) whiteboardModal.style.display = "none";
+      if (wyrModal) wyrModal.style.display = "none";
+      if (todModal) todModal.style.display = "none";
+      if (subtitleOverlay) subtitleOverlay.style.display = "none";
+      if (typingIndicator) typingIndicator.style.display = "none";
+
+      remoteVideo.style.display = "none";
+      remoteCanvas.style.display = "block";
+      if (remoteVideo.srcObject) remoteVideo.srcObject = null;
+
+      strangerDot.className = "badge-dot offline";
+      strangerLabel.textContent = "Stranger Disconnected";
+      if (strangerVibeTag) strangerVibeTag.style.display = "none";
+      if (strangerTag) strangerTag.style.display = "none";
+
+      chatInput.disabled = true;
+      chatInput.placeholder = "Stranger disconnected";
+      btnSendMessage.disabled = true;
+
+      btnMainAction.innerHTML = '<span class="icon">⏹</span><span>Stop</span>';
+      btnMainAction.classList.add("stop");
+      btnNextStranger.style.display = "inline-flex";
+      btnNextStranger.classList.add("highlight");
+
+      // Display the disconnect countdown overlay
+      if (strangerDisconnectedOverlay) strangerDisconnectedOverlay.classList.add("show");
+
+      appendMessage("", "Stranger has left the chat.", "system");
+
+      // AUTOMATIC RECONNECTION: Automatically queue and find someone ready!
+      if (autoNextEnabled) {
+        triggerAutoNextSearch();
+      } else {
+        if (autoNextCountdownText) {
+          autoNextCountdownText.innerHTML = "<span>Auto-Next is paused. Click Next to search.</span>";
+        }
+      }
+    }
+
+    if (btnOverlayNext) {
+      btnOverlayNext.addEventListener("click", () => {
+        cancelAutoNextTimer();
+        skipToNextStranger();
+      });
+    }
+
+    if (btnOverlayStop) {
+      btnOverlayStop.addEventListener("click", () => {
+        cancelAutoNextTimer();
+        stopAllChatting();
+      });
+    }
+
+    function startMatchmaking() {
+      if (!myPeerId) {
+        appendMessage("", "Establishing network handshake, please wait...", "system");
+        return;
+      }
+
+      cancelAutoNextTimer();
+      if (strangerDisconnectedOverlay) strangerDisconnectedOverlay.classList.remove("show");
+
+      isSearching = true;
+      isConnected = false;
+      isStrangerDisconnected = false;
+
+      stopCallTimer();
+      stopSpeedCountdown();
+      stopStatsPolling();
+      stopScreenSharing();
+      stopClipRecording();
+
+      if (strangerVibeTag) strangerVibeTag.style.display = "none";
+      if (gameModal) gameModal.style.display = "none";
+      gameActive = false;
+      if (whiteboardModal) whiteboardModal.style.display = "none";
+      if (wyrModal) wyrModal.style.display = "none";
+      if (todModal) todModal.style.display = "none";
+
+      strangerDot.className = "badge-dot waiting";
+      strangerLabel.textContent = "Finding someone ready...";
+      strangerTag.style.display = "none";
+
+      btnMainAction.innerHTML = '<span class="icon">⏹</span><span>Cancel</span>';
+      btnMainAction.classList.add("stop");
+      btnNextStranger.style.display = "none";
+      btnNextStranger.classList.remove("highlight");
+      btnReportUser.style.display = "none";
+
+      chatInput.disabled = true;
+      chatInput.placeholder = "Searching for someone ready...";
+      btnSendMessage.disabled = true;
+
+      remoteVideo.style.display = "none";
+      remoteCanvas.style.display = "block";
+      if (blurOverlay) blurOverlay.style.display = "none";
+      clearTimeout(blurTimeout);
+
+      appendMessage("", "Looking for an active stranger who is ready to chat...", "system");
+
+      socket.emit("join_queue", {
+        peerId: myPeerId,
+        userName: userDisplayName,
+        mode: chosenMode,
+        gender: myGenderSelect ? myGenderSelect.value : "male",
+        matchPref: genderSelect ? genderSelect.value : "both",
+        tags: userTags
+      });
+    }
+
+    function stopAllChatting() {
+      cancelAutoNextTimer();
+      if (activeCall) { activeCall.close(); activeCall = null; }
+      if (activeDataConnection) { activeDataConnection.close(); activeDataConnection = null; }
+
+      socket.emit("leave_queue");
+
+      isConnected = false;
+      isSearching = false;
+      isStrangerDisconnected = false;
+
+      stopCallTimer();
+      stopSpeedCountdown();
+      stopStatsPolling();
+      stopScreenSharing();
+      stopClipRecording();
+
+      if (strangerDisconnectedOverlay) strangerDisconnectedOverlay.classList.remove("show");
+      if (strangerVibeTag) strangerVibeTag.style.display = "none";
+      if (gameModal) gameModal.style.display = "none";
+      gameActive = false;
+      if (whiteboardModal) whiteboardModal.style.display = "none";
+      if (wyrModal) wyrModal.style.display = "none";
+      if (todModal) todModal.style.display = "none";
+
+      strangerDot.className = "badge-dot";
+      strangerLabel.textContent = "Disconnected";
+      strangerTag.style.display = "none";
+
+      btnMainAction.innerHTML = '<span class="icon">▶</span><span>Start Chat</span>';
+      btnMainAction.classList.remove("stop");
+      btnNextStranger.style.display = "none";
+      btnNextStranger.classList.remove("highlight");
+      btnReportUser.style.display = "none";
+
+      chatInput.disabled = true;
+      chatInput.placeholder = "Type a message...";
+      btnSendMessage.disabled = true;
+
+      remoteVideo.style.display = "none";
+      remoteCanvas.style.display = "block";
+      if (blurOverlay) blurOverlay.style.display = "none";
+      clearTimeout(blurTimeout);
+      if (typingIndicator) typingIndicator.style.display = "none";
+
+      appendMessage("", "Chat stopped. Click Start Chat whenever you want to begin.", "system");
+    }
+
+    function skipToNextStranger() {
+      cancelAutoNextTimer();
+      if (activeCall) { activeCall.close(); activeCall = null; }
+      if (activeDataConnection) { activeDataConnection.close(); activeDataConnection = null; }
+      socket.emit("leave_queue");
+
+      if (strangerDisconnectedOverlay) strangerDisconnectedOverlay.classList.remove("show");
+
+      setTimeout(startMatchmaking, 150);
+    }
+
+    if (btnNextStranger) btnNextStranger.addEventListener("click", skipToNextStranger);
+
+    if (btnReportUser) {
+      btnReportUser.addEventListener("click", () => {
+        if (activeCall && activeCall.peer) {
+          blockedPeers.add(activeCall.peer);
+          appendMessage("", "User reported & blocked for this session.", "system");
+        }
+        skipToNextStranger();
+      });
+    }
+
+    if (btnMainAction) {
+      btnMainAction.addEventListener("click", () => {
+        if (!localStream && chosenMode !== "text") activateCamera();
+        if (isConnected || isSearching || isStrangerDisconnected) {
+          stopAllChatting();
+        } else {
+          startMatchmaking();
+        }
+      });
+    }
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        if (isConnected || isStrangerDisconnected) skipToNextStranger();
+        else if (isSearching) stopAllChatting();
+      }
+    });
+
     function renderLandingTags() {
       if (!landingTagsBox) return;
       landingTagsBox.innerHTML = "";
@@ -2629,19 +2932,17 @@
       });
     }
 
-    // Settings Modal
+    // Settings Modal Handlers
     if (btnOpenSettingsMenu && settingsMenuModal) {
       btnOpenSettingsMenu.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
+        e.preventDefault(); e.stopPropagation();
         settingsMenuModal.classList.add("show");
       });
     }
 
     if (btnCloseSettingsMenu && settingsMenuModal) {
       btnCloseSettingsMenu.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
+        e.preventDefault(); e.stopPropagation();
         settingsMenuModal.classList.remove("show");
       });
     }
@@ -2652,11 +2953,10 @@
       });
     }
 
-    // Dropdown Handlers
+    // Dropdown Toggles
     if (btnOpenGamesDropdown && gamesDropdownList) {
       btnOpenGamesDropdown.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
+        e.preventDefault(); e.stopPropagation();
         if (toolsDropdownList) toolsDropdownList.classList.remove("show");
         gamesDropdownList.classList.toggle("show");
       });
@@ -2664,8 +2964,7 @@
 
     if (btnOpenToolsDropdown && toolsDropdownList) {
       btnOpenToolsDropdown.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
+        e.preventDefault(); e.stopPropagation();
         if (gamesDropdownList) gamesDropdownList.classList.remove("show");
         toolsDropdownList.classList.toggle("show");
       });
@@ -2902,7 +3201,6 @@
       });
     }
 
-    /* Modal Mini-Games */
     if (btnOpenTOD) {
       btnOpenTOD.addEventListener("click", (e) => {
         e.preventDefault(); e.stopPropagation();
@@ -3079,7 +3377,6 @@
       return false;
     }
 
-    // Whiteboard drawing synchronization
     if (btnOpenWhiteboard) {
       btnOpenWhiteboard.addEventListener("click", (e) => {
         e.preventDefault(); e.stopPropagation();
@@ -3394,7 +3691,7 @@
 
         if (speedSecondsRemaining <= 0) {
           stopSpeedCountdown();
-          appendMessage("", "⏱ Speed time is up! Auto-skipping to next stranger...", "system");
+          appendMessage("", "⏱ Speed time is up! Moving to next stranger...", "system");
           skipToNextStranger();
         }
       }, 1000);
@@ -3609,11 +3906,11 @@
         return;
       }
 
+      cancelAutoNextTimer();
       isSearching = false;
       isConnected = true;
       isStrangerDisconnected = false;
 
-      // Hide disconnect overlay if it was visible
       if (strangerDisconnectedOverlay) strangerDisconnectedOverlay.classList.remove("show");
 
       strangersMet++;
@@ -3775,220 +4072,6 @@
       });
       conn.on("close", handleStrangerLeft);
     }
-
-    /* CRITICAL FIX: Handle Stranger Leaving Without Resetting / Auto-Restarting Remaining User */
-    function handleStrangerLeft() {
-      if (!isConnected) return;
-      isConnected = false;
-      isStrangerDisconnected = true;
-
-      playSound("leave");
-      stopCallTimer();
-      stopSpeedCountdown();
-      stopStatsPolling();
-      stopScreenSharing();
-      stopClipRecording();
-
-      // Close WebRTC handles specifically for this peer
-      if (activeCall) { activeCall.close(); activeCall = null; }
-      if (activeDataConnection) { activeDataConnection.close(); activeDataConnection = null; }
-
-      // Dismiss game modals so they don't block the screen
-      if (gameModal) gameModal.style.display = "none";
-      gameActive = false;
-      if (whiteboardModal) whiteboardModal.style.display = "none";
-      if (wyrModal) wyrModal.style.display = "none";
-      if (todModal) todModal.style.display = "none";
-      if (subtitleOverlay) subtitleOverlay.style.display = "none";
-      if (typingIndicator) typingIndicator.style.display = "none";
-
-      // Reset remote video display to procedural canvas
-      remoteVideo.style.display = "none";
-      remoteCanvas.style.display = "block";
-      if (remoteVideo.srcObject) {
-        remoteVideo.srcObject = null;
-      }
-
-      // Update HUD status to indicate stranger left
-      strangerDot.className = "badge-dot offline";
-      strangerLabel.textContent = "Stranger Left (Offline)";
-      if (strangerVibeTag) strangerVibeTag.style.display = "none";
-      if (strangerTag) strangerTag.style.display = "none";
-
-      // Disable chat input but preserve history
-      chatInput.disabled = true;
-      chatInput.placeholder = "Stranger disconnected";
-      btnSendMessage.disabled = true;
-
-      // Keep Next and Stop buttons prominent so user decides what to do next
-      btnMainAction.innerHTML = '<span class="icon">⏹</span><span>Stop</span>';
-      btnMainAction.classList.add("stop");
-      btnNextStranger.style.display = "inline-flex";
-      btnNextStranger.classList.add("highlight"); // Highlight Next so it's obvious
-
-      // Show stage overlay with choice
-      if (strangerDisconnectedOverlay) strangerDisconnectedOverlay.classList.add("show");
-
-      appendMessage("", "Stranger has disconnected. Click Next to find someone new, or Stop to finish.", "system");
-    }
-
-    // Connect Stage Overlay Actions
-    if (btnOverlayNext) {
-      btnOverlayNext.addEventListener("click", () => {
-        skipToNextStranger();
-      });
-    }
-
-    if (btnOverlayStop) {
-      btnOverlayStop.addEventListener("click", () => {
-        stopAllChatting();
-      });
-    }
-
-    function startMatchmaking() {
-      if (!myPeerId) {
-        appendMessage("", "Establishing network handshake, please wait...", "system");
-        return;
-      }
-
-      // Hide disconnected overlay if active
-      if (strangerDisconnectedOverlay) strangerDisconnectedOverlay.classList.remove("show");
-
-      isSearching = true;
-      isConnected = false;
-      isStrangerDisconnected = false;
-
-      stopCallTimer();
-      stopSpeedCountdown();
-      stopStatsPolling();
-      stopScreenSharing();
-      stopClipRecording();
-
-      if (strangerVibeTag) strangerVibeTag.style.display = "none";
-      if (gameModal) gameModal.style.display = "none";
-      gameActive = false;
-      if (whiteboardModal) whiteboardModal.style.display = "none";
-      if (wyrModal) wyrModal.style.display = "none";
-      if (todModal) todModal.style.display = "none";
-
-      strangerDot.className = "badge-dot waiting";
-      strangerLabel.textContent = "Looking for someone...";
-      strangerTag.style.display = "none";
-
-      btnMainAction.innerHTML = '<span class="icon">⏹</span><span>Cancel</span>';
-      btnMainAction.classList.add("stop");
-      btnNextStranger.style.display = "none";
-      btnNextStranger.classList.remove("highlight");
-      btnReportUser.style.display = "none";
-
-      chatInput.disabled = true;
-      chatInput.placeholder = "Searching for stranger...";
-      btnSendMessage.disabled = true;
-
-      remoteVideo.style.display = "none";
-      remoteCanvas.style.display = "block";
-      if (blurOverlay) blurOverlay.style.display = "none";
-      clearTimeout(blurTimeout);
-
-      appendMessage("", "Looking for an active stranger...", "system");
-
-      socket.emit("join_queue", {
-        peerId: myPeerId,
-        userName: userDisplayName,
-        mode: chosenMode,
-        gender: myGenderSelect ? myGenderSelect.value : "male",
-        matchPref: genderSelect ? genderSelect.value : "both",
-        tags: userTags
-      });
-    }
-
-    // Stops chatting completely when user hits Stop or Cancel
-    function stopAllChatting() {
-      if (activeCall) { activeCall.close(); activeCall = null; }
-      if (activeDataConnection) { activeDataConnection.close(); activeDataConnection = null; }
-
-      socket.emit("leave_queue");
-
-      isConnected = false;
-      isSearching = false;
-      isStrangerDisconnected = false;
-
-      stopCallTimer();
-      stopSpeedCountdown();
-      stopStatsPolling();
-      stopScreenSharing();
-      stopClipRecording();
-
-      if (strangerDisconnectedOverlay) strangerDisconnectedOverlay.classList.remove("show");
-      if (strangerVibeTag) strangerVibeTag.style.display = "none";
-      if (gameModal) gameModal.style.display = "none";
-      gameActive = false;
-      if (whiteboardModal) whiteboardModal.style.display = "none";
-      if (wyrModal) wyrModal.style.display = "none";
-      if (todModal) todModal.style.display = "none";
-
-      strangerDot.className = "badge-dot";
-      strangerLabel.textContent = "Disconnected";
-      strangerTag.style.display = "none";
-
-      btnMainAction.innerHTML = '<span class="icon">▶</span><span>Start Chat</span>';
-      btnMainAction.classList.remove("stop");
-      btnNextStranger.style.display = "none";
-      btnNextStranger.classList.remove("highlight");
-      btnReportUser.style.display = "none";
-
-      chatInput.disabled = true;
-      chatInput.placeholder = "Type a message...";
-      btnSendMessage.disabled = true;
-
-      remoteVideo.style.display = "none";
-      remoteCanvas.style.display = "block";
-      if (blurOverlay) blurOverlay.style.display = "none";
-      clearTimeout(blurTimeout);
-      if (typingIndicator) typingIndicator.style.display = "none";
-
-      appendMessage("", "Chat ended. Click Start Chat whenever you want to begin again.", "system");
-    }
-
-    function skipToNextStranger() {
-      if (activeCall) { activeCall.close(); activeCall = null; }
-      if (activeDataConnection) { activeDataConnection.close(); activeDataConnection = null; }
-      socket.emit("leave_queue");
-
-      if (strangerDisconnectedOverlay) strangerDisconnectedOverlay.classList.remove("show");
-
-      setTimeout(startMatchmaking, 200);
-    }
-
-    if (btnNextStranger) btnNextStranger.addEventListener("click", skipToNextStranger);
-
-    if (btnReportUser) {
-      btnReportUser.addEventListener("click", () => {
-        if (activeCall && activeCall.peer) {
-          blockedPeers.add(activeCall.peer);
-          appendMessage("", "User reported & blocked for this session.", "system");
-        }
-        skipToNextStranger();
-      });
-    }
-
-    if (btnMainAction) {
-      btnMainAction.addEventListener("click", () => {
-        if (!localStream && chosenMode !== "text") activateCamera();
-        if (isConnected || isSearching || isStrangerDisconnected) {
-          stopAllChatting();
-        } else {
-          startMatchmaking();
-        }
-      });
-    }
-
-    window.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") {
-        if (isConnected || isStrangerDisconnected) skipToNextStranger();
-        else if (isSearching) stopAllChatting();
-      }
-    });
 
     async function activateCamera() {
       const constraints = {
@@ -4286,10 +4369,10 @@
 
         if (isSearching) {
           const dotCount = Math.floor((animStep * 1.5) % 4);
-          ctx.fillText(`Scanning for strangers${".".repeat(dotCount)}`, cx, h - 30);
+          ctx.fillText(`Scanning for someone ready${".".repeat(dotCount)}`, cx, h - 30);
         } else if (isStrangerDisconnected) {
-          ctx.fillStyle = "#fca5a5";
-          ctx.fillText("Stranger disconnected (Offline)", cx, h - 30);
+          ctx.fillStyle = "#38bdf8";
+          ctx.fillText("Finding next stranger...", cx, h - 30);
         }
       }
     }
@@ -4469,7 +4552,7 @@
               if (report.currentRoundTripTime !== undefined) {
                 const ms = Math.round(report.currentRoundTripTime * 1000);
                 pingIndicator.textContent = `📶 ${ms}ms`;
-                pingIndicator.style.color = ms < 80 ? "#10b981" : ms < 180 ? "#f59e0b" : "#ef4444";
+                pingIndicator.style.color = ms < 80 ? "#10b981" : (ms < 180 ? "#f59e0b" : "#ef4444");
               }
             }
           });
@@ -4485,6 +4568,8 @@
       if (pingIndicator) pingIndicator.style.display = "none";
     }
 
+    // Initialize UI and loop
+    updateAutoNextUI();
     renderLandingTags();
     syncCanvasDimensions();
     renderAvatarsLoop();
