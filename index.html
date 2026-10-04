@@ -1731,6 +1731,45 @@
     }
 @media (max-width: 900px) {
 
+  /* Make Top Header horizontally scrollable on mobile screens */
+  .app-header {
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    white-space: nowrap;
+    padding: 0 10px !important;
+    scrollbar-width: none; /* Hide default scrollbar on Firefox */
+  }
+
+  /* Hide default scrollbar on Chrome, Safari & Edge */
+  .app-header::-webkit-scrollbar {
+    display: none !important;
+    height: 0 !important;
+  }
+
+  .header-left {
+    flex-shrink: 0 !important;
+    margin-right: 12px;
+  }
+
+  .header-right {
+    display: flex !important;
+    align-items: center !important;
+    flex-shrink: 0 !important;
+    gap: 6px !important;
+    overflow: visible !important;
+  }
+
+  /* Prevent buttons from squishing or breaking into multiple lines */
+  .header-right .nav-btn,
+  .header-right .primary-cam-btn {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    font-size: 0.76rem !important;
+    padding: 6px 10px !important;
+  }
+
   /* 1. App Workspace Container: Edge-to-edge mobile feel */
   .app-workspace {
     flex-direction: column;
