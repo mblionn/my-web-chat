@@ -2,375 +2,228 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>Web TV 555 - Live Random Video Chat</title>
-  
-  <!-- CDNs -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Web TV 555 - Studio</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
-
-  <!-- External Stylesheet -->
-  <link rel="stylesheet" href="style.css" />
 </head>
-<body>
+<body style="margin:0; padding:0; background:#07090e; color:#f8fafc; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display:flex; flex-direction:column; height:100vh; overflow:hidden;">
 
-  <!-- App Header -->
-  <header class="app-header">
-    <div class="header-left">
-      <div class="logo">
-        <span class="logo-icon">⚡</span>
-        <span class="logo-text">Web TV</span>
-        <span class="logo-badge">555</span>
-      </div>
-
-      <div class="status-pills">
-        <div class="pill online-pill">
-          <span class="status-dot online"></span>
-          <span id="userCount">1</span> Online
-        </div>
-        <div class="pill streak-pill" id="streakBadge" title="Strangers met this session">
-          <span>⚡</span> <span id="strangersMetCount">0</span> Met
-        </div>
-        <div class="pill server-pill" id="serverStatusBadge">
-          <span class="status-dot warning" id="serverDot"></span>
-          <span id="p2pStatus">Connecting...</span>
-        </div>
-      </div>
+  <!-- Header -->
+  <header style="height:56px; background:#0f172a; border-bottom:1px solid #1e293b; display:flex; align-items:center; justify-content:space-between; padding:0 16px; flex-shrink:0;">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <span style="font-size:1.2rem; font-weight:900; color:#fff;">⚡ Web TV <span style="background:linear-gradient(135deg,#2563eb,#7c3aed); color:#fff; font-size:0.75rem; padding:2px 7px; border-radius:5px;">555</span></span>
+      <span id="userCountBadge" style="font-size:0.78rem; color:#94a3b8; background:rgba(255,255,255,0.05); padding:4px 10px; border-radius:20px; border:1px solid #1e293b;">🟢 <span id="userCount">1</span> Online</span>
+      <span id="p2pStatus" style="font-size:0.78rem; color:#f59e0b; background:rgba(255,255,255,0.05); padding:4px 10px; border-radius:20px; border:1px solid #1e293b;">Connecting...</span>
     </div>
-    
-    <div class="header-right">
-      <button class="nav-btn" id="btnToggleSound" title="Toggle Sound">🔊</button>
-      <button class="nav-btn" id="btnToggleAudioOnly" title="Toggle Audio/Video Mode">🎧 Video ON</button>
 
-      <!-- Clean Settings Trigger -->
-      <button class="nav-btn menu-trigger-btn" id="btnOpenSettingsMenu">
-        <span>⚙️ Settings &amp; Studio</span>
-      </button>
-
-      <!-- Primary Action -->
-      <button class="primary-cam-btn" id="btnToggleHardware">
-        <span>📹 Enable Camera &amp; Mic</span>
-      </button>
+    <div style="display:flex; align-items:center; gap:8px;">
+      <button id="btnOpenSettings" style="background:#1e293b; color:#cbd5e1; border:1px solid #334155; padding:7px 12px; border-radius:8px; font-weight:700; font-size:0.8rem; cursor:pointer;">⚙️ Settings</button>
+      <button id="btnToggleHardware" style="background:#10b981; color:#fff; border:none; padding:8px 16px; border-radius:8px; font-weight:800; font-size:0.82rem; cursor:pointer;">📹 Enable Cam &amp; Mic</button>
     </div>
   </header>
 
-  <!-- Settings & Studio Modal -->
-  <div class="floating-menu-modal" id="settingsMenuModal">
-    <div class="menu-modal-card">
-      <div class="menu-modal-header">
-        <span class="title">⚙️ Settings &amp; Studio Controls</span>
-        <button class="modal-close-icon" id="btnCloseSettingsMenu">&times;</button>
+  <!-- Settings Modal (Popup) -->
+  <div id="settingsModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#0f172a; border:1px solid #334155; border-radius:14px; padding:20px; width:90%; max-width:400px; display:flex; flex-direction:column; gap:12px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #1e293b; padding-bottom:8px;">
+        <span style="font-weight:800;">⚙️️ Studio Settings</span>
+        <button id="btnCloseSettings" style="background:none; border:none; color:#94a3b8; font-size:1.4rem; cursor:pointer;">&times;</button>
       </div>
-
-      <div class="menu-modal-grid">
-        <div class="menu-field">
-          <label for="vibeSelect">Your Vibe</label>
-          <select id="vibeSelect" class="clean-select">
-            <option value="☕ Chill">☕ Chill</option>
-            <option value="🎧 Jamming">🎧 Jamming</option>
-            <option value="🎮 Gaming">🎮 Gaming</option>
-            <option value="💻 Coding">💻 Coding</option>
-            <option value="✨ Hyped">✨ Hyped</option>
-          </select>
-        </div>
-
-        <div class="menu-field">
-          <label for="filterSelect">Camera Visual FX</label>
-          <select id="filterSelect" class="clean-select">
-            <option value="none">🎬 Normal (Default)</option>
-            <option value="grayscale(100%)">🖤 Monochromatic</option>
-            <option value="sepia(80%)">🎞 Retro Film</option>
-            <option value="contrast(140%) brightness(110%)">🌟 High Contrast</option>
-            <option value="hue-rotate(90deg)">👾 Cyber Glow</option>
-          </select>
-        </div>
-
-        <div class="menu-field">
-          <label for="voiceFxSelect">Microphone Voice Pitch</label>
-          <select id="voiceFxSelect" class="clean-select">
-            <option value="normal">🎙 Natural Mic</option>
-            <option value="deep">👹 Deep Demon</option>
-            <option value="telephone">📻 Radio Walkie</option>
-            <option value="cave">🏔 Cavern Reverb</option>
-          </select>
-        </div>
-
-        <div class="menu-field">
-          <label for="arPropSelect">AR Face Accessory</label>
-          <select id="arPropSelect" class="clean-select">
-            <option value="none">🎭 None</option>
-            <option value="👑">👑 Gold Crown</option>
-            <option value="😎">😎 Cool Shades</option>
-            <option value="🐱">🐱 Cat Ears</option>
-            <option value="🥸">🥸 Disguise</option>
-            <option value="💫">💫 Halo</option>
-          </select>
-        </div>
+      <div>
+        <label style="font-size:0.75rem; color:#94a3b8; font-weight:700;">Camera Visual Filter</label>
+        <select id="filterSelect" style="width:100%; background:#1e293b; color:#fff; border:1px solid #334155; padding:8px; border-radius:6px; margin-top:4px;">
+          <option value="none">Normal</option>
+          <option value="grayscale(100%)">Black &amp; White</option>
+          <option value="sepia(80%)">Retro</option>
+          <option value="contrast(140%)">High Contrast</option>
+        </select>
       </div>
-
-      <div class="menu-modal-section-title">Encounter &amp; Recording Tools</div>
-      <div class="menu-tools-row">
-        <button class="tool-chip-btn" id="btnToggleSpeedMode">⏱ Speed Chat (60s): Off</button>
-        <button class="tool-chip-btn" id="btnRecordClip">📹 Record Clip (15s)</button>
-        <button class="tool-chip-btn" id="btnToggleCaptions">💬 Live CC: Off</button>
-        <button class="tool-chip-btn" id="btnToggleTTS">🗣 Audio TTS: Off</button>
+      <div>
+        <label style="font-size:0.75rem; color:#94a3b8; font-weight:700;">Vibe</label>
+        <select id="vibeSelect" style="width:100%; background:#1e293b; color:#fff; border:1px solid #334155; padding:8px; border-radius:6px; margin-top:4px;">
+          <option value="☕ Chill">☕ Chill</option>
+          <option value="🎮 Gaming">🎮 Gaming</option>
+          <option value="🎧 Jamming">🎧 Jamming</option>
+        </select>
       </div>
     </div>
   </div>
 
-  <!-- Main Viewports -->
-  <main class="app-workspace">
-    <div class="stage-column" id="stageColumn">
-      <div class="video-stage-container" id="videoStageContainer">
-        
-        <div class="remote-video-wrap">
-          <div class="stage-hud-bar">
-            <div class="hud-chip status-chip">
-              <span class="badge-dot" id="strangerDot"></span>
-              <span id="strangerLabel">Disconnected</span>
-              <span class="vibe-tag" id="strangerVibeTag" style="display:none;">☕ Chill</span>
-              <span class="call-timer" id="callTimer">00:00</span>
-              <span class="ping-indicator" id="pingIndicator">📶 --ms</span>
-            </div>
+  <!-- Workspace Split -->
+  <main style="flex:1; display:flex; padding:10px; gap:10px; overflow:hidden; min-height:0;">
+    <!-- Stage Area -->
+    <div style="flex:7; position:relative; background:#000; border-radius:12px; border:1px solid #1e293b; overflow:hidden; display:flex; align-items:center; justify-content:center;">
+      <span id="strangerLabel" style="position:absolute; top:12px; left:12px; background:rgba(15,23,42,0.85); padding:6px 14px; border-radius:20px; font-size:0.8rem; font-weight:700; border:1px solid #334155; z-index:10;">🔴 Disconnected</span>
+      
+      <video id="remoteVideo" autoplay playsinline style="width:100%; height:100%; object-fit:cover; display:none;"></video>
+      <canvas id="remoteCanvas" style="width:100%; height:100%; display:block;"></canvas>
 
-            <div class="speed-timer-badge" id="speedTimerBadge">
-              <span class="speed-icon">⏳</span>
-              <span id="speedTimerValue">60s</span>
-              <button class="btn-extend-time" id="btnExtendTime">+60s Extend</button>
-            </div>
-
-            <div class="hud-chip match-chip" id="strangerTag">Matched on: #music</div>
-          </div>
-
-          <video id="remoteVideo" autoplay playsinline></video>
-          <canvas id="remoteCanvas"></canvas>
-
-          <div class="subtitle-overlay" id="subtitleOverlay"></div>
-          <div class="reaction-fly-container" id="reactionFlyContainer"></div>
-
-          <div class="reactions-floating-bar" id="reactionsBar">
-            <button class="reaction-trigger-btn" data-emoji="❤️">❤️</button>
-            <button class="reaction-trigger-btn" data-emoji="😂">😂</button>
-            <button class="reaction-trigger-btn" data-emoji="🔥">🔥</button>
-            <button class="reaction-trigger-btn" data-emoji="👏">👏</button>
-            <button class="reaction-trigger-btn" data-emoji="😮">😮</button>
-            <button class="reaction-trigger-btn" id="btnTriggerSoundboard" title="Open Soundboard">🎺</button>
-          </div>
-
-          <div class="soundboard-drawer" id="soundboardDrawer">
-            <button class="soundboard-btn" data-sfx="airhorn">📢 Airhorn</button>
-            <button class="soundboard-btn" data-sfx="laser">⚡ Laser</button>
-            <button class="soundboard-btn" data-sfx="applause">👏 Claps</button>
-            <button class="soundboard-btn" data-sfx="victory">🎺 Ta-Da!</button>
-          </div>
-
-          <div class="blur-overlay" id="blurOverlay">
-            <button id="btnUnblurVideo" class="unblur-btn">👁 Reveal Video</button>
-            <span class="blur-tip">Auto-reveals in 5s</span>
-          </div>
-
-          <!-- Modals for Games & Doodle -->
-          <div class="tod-modal-overlay" id="todModal">
-            <div class="modal-card tod-box">
-              <div class="modal-card-header">
-                <span>🎡 Truth or Dare</span>
-                <button class="modal-close-btn" id="btnTodClose">&times;</button>
-              </div>
-              <div class="tod-action-row">
-                <button class="tod-btn truth-btn" id="btnPickTruth">📖 Truth</button>
-                <button class="tod-btn dare-btn" id="btnPickDare">⚡ Dare</button>
-              </div>
-              <div class="card-status-label" id="todPromptText">Choose Truth or Dare to pick a live challenge!</div>
-            </div>
-          </div>
-
-          <div class="wyr-modal-overlay" id="wyrModal">
-            <div class="modal-card wyr-box">
-              <div class="modal-card-header">
-                <span>🤔 Would You Rather?</span>
-                <button class="modal-close-btn" id="btnWyrClose">&times;</button>
-              </div>
-              <button class="wyr-btn opt-a" id="btnWyrOptA">Option A</button>
-              <button class="wyr-btn opt-b" id="btnWyrOptB">Option B</button>
-              <div class="card-status-label" id="wyrStatusLabel">Pick an answer to see what the stranger picked!</div>
-            </div>
-          </div>
-
-          <div class="whiteboard-modal-overlay" id="whiteboardModal">
-            <div class="whiteboard-header">
-              <div class="whiteboard-tools">
-                <span class="tool-title">🎨 Shared Doodle Pad</span>
-                <input type="color" id="wbColorPicker" value="#38bdf8" />
-                <button class="pill-action-btn" id="btnWbClear">🗑 Clear</button>
-              </div>
-              <button class="modal-close-btn" id="btnWbClose">&times;</button>
-            </div>
-            <canvas id="whiteboardCanvas"></canvas>
-          </div>
-
-          <div class="game-modal-overlay" id="gameModal">
-            <div class="modal-card game-box">
-              <div class="modal-card-header">
-                <span>🎮 Tic-Tac-Toe</span>
-                <button class="modal-close-btn" id="btnGameClose">&times;</button>
-              </div>
-              <div class="game-status-label" id="gameStatusLabel">Your turn (X)</div>
-              <div class="ttt-grid" id="tttGrid">
-                <div class="ttt-cell" data-idx="0"></div>
-                <div class="ttt-cell" data-idx="1"></div>
-                <div class="ttt-cell" data-idx="2"></div>
-                <div class="ttt-cell" data-idx="3"></div>
-                <div class="ttt-cell" data-idx="4"></div>
-                <div class="ttt-cell" data-idx="5"></div>
-                <div class="ttt-cell" data-idx="6"></div>
-                <div class="ttt-cell" data-idx="7"></div>
-                <div class="ttt-cell" data-idx="8"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Local Video PiP -->
-        <div class="local-pip-card" id="localPipCard">
-          <div class="local-pip-badge" id="localLabel">
-            <span>You</span>
-            <span class="vibe-tag" id="myVibeTag">☕ Chill</span>
-            <span id="micSpeakingBadge" class="talking-dot">● Talking</span>
-          </div>
-          <div class="ar-prop-overlay" id="arPropOverlay">👑</div>
-          <video id="localVideo" class="mirrored" autoplay playsinline muted></video>
-          <canvas id="localCanvas"></canvas>
-        </div>
-
-        <!-- Floating Stage Controls -->
-        <div class="stage-controls-pill desktop-only">
-          <button id="btnSwitchCamera" title="Switch Cam">🔄</button>
-          <button id="btnToggleMirror" title="Flip Mirror">🪞</button>
-          <button id="btnMuteAudio" title="Mute Mic">🎤</button>
-          <button id="btnMuteVideo" title="Stop Video">📷</button>
-          <button id="btnToggleScreenShare" title="Share Screen">🖥</button>
-          <button id="btnTriggerPopoutPiP" title="Pop-out Video">🪟</button>
-          <button id="btnToggleFullscreen" title="Toggle Fullscreen">⛶</button>
-        </div>
-      </div>
-
-      <div class="mobile-media-toolbar">
-        <button id="mBtnSwitchCamera" class="m-tool-btn">🔄 Flip</button>
-        <button id="mBtnToggleMirror" class="m-tool-btn">🪞 Mirror</button>
-        <button id="mBtnMuteAudio" class="m-tool-btn">🎤 Mic</button>
-        <button id="mBtnMuteVideo" class="m-tool-btn">📷 Cam</button>
-        <button id="mBtnToggleScreenShare" class="m-tool-btn">🖥 Share</button>
-        <button id="mBtnTriggerPopoutPiP" class="m-tool-btn">🪟 Pop</button>
-        <button id="mBtnToggleFullscreen" class="m-tool-btn">⛶ Full</button>
+      <!-- Local PiP -->
+      <div style="position:absolute; bottom:14px; right:14px; width:180px; height:130px; background:#0f172a; border:2px solid #3b82f6; border-radius:10px; overflow:hidden; z-index:20;">
+        <span style="position:absolute; top:4px; left:6px; font-size:0.68rem; font-weight:700; background:rgba(0,0,0,0.7); padding:2px 6px; border-radius:4px; z-index:2;">You</span>
+        <video id="localVideo" autoplay playsinline muted style="width:100%; height:100%; object-fit:cover; display:none; transform:scaleX(-1);"></video>
+        <canvas id="localCanvas" style="width:100%; height:100%; display:block;"></canvas>
       </div>
     </div>
 
     <!-- Chat Column -->
-    <aside class="chat-section">
-      <div class="chat-header-compact">
-        <div class="chat-header-left">
-          <span class="chat-title">💬 Chat</span>
-          <span class="typing-label" id="typingIndicator">typing...</span>
-        </div>
-
-        <div class="chat-header-menus">
-          <!-- Games Dropdown -->
-          <div class="relative-dropdown">
-            <button class="chat-menu-btn emerald-btn" id="btnOpenGamesDropdown">
-              <span>🎮 Games ▾</span>
-            </button>
-            <div class="dropdown-menu-list" id="gamesDropdownList">
-              <button class="dropdown-item" id="btnOpenTOD">🎡 Truth or Dare</button>
-              <button class="dropdown-item" id="btnOpenWYR">🤔 Would You Rather</button>
-              <button class="dropdown-item" id="btnOpenGame">❌ Tic-Tac-Toe</button>
-              <button class="dropdown-item" id="btnOpenWhiteboard">🎨 Doodle Pad</button>
-            </div>
-          </div>
-
-          <!-- Tools Dropdown -->
-          <div class="relative-dropdown">
-            <button class="chat-menu-btn gray-btn" id="btnOpenToolsDropdown">
-              <span>🛠 Tools ▾</span>
-            </button>
-            <div class="dropdown-menu-list" id="toolsDropdownList">
-              <button class="dropdown-item" id="btnSnapshot">📸 Snap Photo</button>
-              <button class="dropdown-item" id="btnShareRoom">🔗 Room Link</button>
-              <button class="dropdown-item" id="btnExportChat">📋 Export Log</button>
-            </div>
-          </div>
-        </div>
+    <aside style="flex:3; min-width:300px; max-width:380px; background:#0f172a; border-radius:12px; border:1px solid #1e293b; display:flex; flex-direction:column; overflow:hidden;">
+      <div style="padding:10px 14px; border-bottom:1px solid #1e293b; display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-weight:800; font-size:0.9rem;">💬 Live Chat</span>
+        <button id="btnOpenGames" style="background:#1e293b; border:1px solid #334155; color:#34d399; font-weight:700; font-size:0.75rem; padding:4px 8px; border-radius:6px; cursor:pointer;">🎮 Games ▾</button>
       </div>
 
-      <div class="messages-container" id="chatContainer">
-        <div class="message system">Welcome to Web TV 555! Click Start Chat to connect with a stranger.</div>
+      <!-- Quick Games Tray -->
+      <div id="gamesTray" style="display:none; padding:8px 12px; background:#0b1120; border-bottom:1px solid #1e293b; gap:6px;">
+        <button id="btnTod" style="background:#1e293b; color:#fbbf24; border:1px solid #334155; padding:4px 8px; border-radius:4px; font-size:0.72rem; cursor:pointer;">🎡 T or D</button>
+        <button id="btnWyr" style="background:#1e293b; color:#f472b6; border:1px solid #334155; padding:4px 8px; border-radius:4px; font-size:0.72rem; cursor:pointer;">🤔 WYR</button>
       </div>
 
-      <div class="quick-replies-deck">
-        <button class="quick-chip highlight" id="btnRandomIcebreaker">🎲 Icebreaker</button>
-        <button class="quick-chip" id="btnCoinFlip">🪙 Flip Coin</button>
-        <button class="quick-chip" id="btnDiceRoll">🎲 Roll D6</button>
-        <button class="quick-chip" data-msg="Hey!">👋 Hey</button>
-        <button class="quick-chip" data-msg="Where are you from?">📍 Location?</button>
-        <button class="quick-chip" data-msg="What are your hobbies?">🎮 Hobbies</button>
+      <div id="chatContainer" style="flex:1; padding:12px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;">
+        <div style="font-size:0.8rem; color:#64748b; font-style:italic; text-align:center;">Click Start Chat to connect with someone.</div>
       </div>
 
-      <div class="chat-input-deck">
-        <input type="text" id="chatInput" placeholder="Type a message..." disabled autocomplete="off" />
-        <button id="btnSendMessage" class="send-btn" disabled>Send</button>
+      <div style="padding:10px; border-top:1px solid #1e293b; display:flex; gap:6px; background:#0b1120;">
+        <input type="text" id="chatInput" placeholder="Type message..." disabled style="flex:1; background:#07090e; border:1px solid #1e293b; padding:8px 10px; color:#fff; border-radius:6px; outline:none; font-size:0.85rem;" />
+        <button id="btnSendMessage" disabled style="background:#3b82f6; color:#fff; border:none; padding:8px 14px; border-radius:6px; font-weight:700; cursor:pointer;">Send</button>
       </div>
     </aside>
   </main>
 
-  <!-- Controls Deck (Footer) -->
-  <footer class="app-deck">
-    <div class="deck-main-actions">
-      <button class="btn-primary-action start" id="btnMainAction">
-        <span class="icon">▶</span>
-        <span>Start Chat</span>
-      </button>
-      
-      <button class="btn-secondary-action next" id="btnNextStranger">
-        <span>Next</span>
-        <span class="kbd-hint">Esc</span>
-      </button>
-      
-      <button class="btn-danger-action report" id="btnReportUser" title="Report &amp; Block this user">
-        <span>🚩 Block</span>
-      </button>
+  <!-- Controls Deck Footer -->
+  <footer style="height:60px; background:#0f172a; border-top:1px solid #1e293b; display:flex; align-items:center; padding:0 16px; gap:10px; flex-shrink:0;">
+    <button id="btnMainAction" style="background:#3b82f6; color:#fff; border:none; padding:10px 22px; border-radius:7px; font-weight:800; font-size:0.95rem; cursor:pointer;">▶ Start Chat</button>
+    <button id="btnNextStranger" style="display:none; background:#e11d48; color:#fff; border:none; padding:10px 16px; border-radius:7px; font-weight:800; font-size:0.9rem; cursor:pointer;">⏭ Next (Esc)</button>
+    
+    <div style="display:flex; align-items:center; gap:6px; background:#07090e; border:1px solid #1e293b; padding:5px 10px; border-radius:7px;">
+      <span style="font-size:0.76rem; color:#64748b; font-weight:700;">I am:</span>
+      <select id="myGenderSelect" style="background:transparent; border:none; color:#fff; font-size:0.8rem; outline:none;">
+        <option value="male" style="background:#0f172a;">👨 Male</option>
+        <option value="female" style="background:#0f172a;">👩 Female</option>
+      </select>
     </div>
 
-    <div class="deck-filters">
-      <div class="filter-pod">
-        <span class="pod-label">I am</span>
-        <select id="myGenderSelect" class="pod-select">
-          <option value="male">👨 Male</option>
-          <option value="female">👩 Female</option>
-        </select>
-      </div>
-
-      <div class="filter-pod">
-        <span class="pod-label">Match</span>
-        <select id="genderSelect" class="pod-select">
-          <option value="both">👥 Both / Random</option>
-          <option value="female">👩 Female</option>
-          <option value="male">👨 Male</option>
-        </select>
-      </div>
-
-      <div class="interests-pod" id="interestsContainer" title="Scroll or drag tags">
-        <div class="tags-list" id="tagsList"></div>
-        <div class="tag-input-wrap">
-          <input type="text" id="tagInput" class="tag-input" placeholder="+ Add topic..." autocomplete="off" />
-          <button class="btn-add-tag" id="btnAddTag">+</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="deck-trailing-hint">
-      Press <kbd>Esc</kbd> to skip
+    <div style="display:flex; align-items:center; gap:6px; background:#07090e; border:1px solid #1e293b; padding:5px 10px; border-radius:7px;">
+      <span style="font-size:0.76rem; color:#64748b; font-weight:700;">Match:</span>
+      <select id="genderSelect" style="background:transparent; border:none; color:#fff; font-size:0.8rem; outline:none;">
+        <option value="both" style="background:#0f172a;">👥 Anyone</option>
+        <option value="female" style="background:#0f172a;">👩 Female</option>
+        <option value="male" style="background:#0f172a;">👨 Male</option>
+      </select>
     </div>
   </footer>
 
-  <script src="script.js"></script>
+  <script>
+    // Embedded minimal verified script
+    const socket = io("https://my-web-chat-production.up.railway.app", { transports: ["websocket", "polling"] });
+    let peer = new Peer({ config: { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] } });
+    let myPeerId = null, localStream = null, activeCall = null, activeDataConnection = null, isConnected = false;
+
+    // Settings Toggle
+    const settingsModal = document.getElementById("settingsModal");
+    document.getElementById("btnOpenSettings").onclick = () => settingsModal.style.display = "flex";
+    document.getElementById("btnCloseSettings").onclick = () => settingsModal.style.display = "none";
+    settingsModal.onclick = (e) => { if (e.target === settingsModal) settingsModal.style.display = "none"; };
+
+    // Games Tray Toggle
+    const gamesTray = document.getElementById("gamesTray");
+    document.getElementById("btnOpenGames").onclick = () => {
+      gamesTray.style.display = gamesTray.style.display === "flex" ? "none" : "flex";
+    };
+
+    // Filter Change
+    document.getElementById("filterSelect").onchange = (e) => {
+      document.getElementById("localVideo").style.filter = e.target.value;
+    };
+
+    // Server Status
+    socket.on("connect", () => {
+      document.getElementById("p2pStatus").textContent = "🟢 Server Ready";
+      document.getElementById("p2pStatus").style.color = "#10b981";
+    });
+    socket.on("presence_count", (cnt) => {
+      document.getElementById("userCount").textContent = cnt;
+    });
+
+    peer.on("open", (id) => { myPeerId = id; });
+
+    // Enable Hardware
+    document.getElementById("btnToggleHardware").onclick = async () => {
+      try {
+        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        const v = document.getElementById("localVideo");
+        v.srcObject = localStream;
+        v.style.display = "block";
+        document.getElementById("localCanvas").style.display = "none";
+        document.getElementById("btnToggleHardware").textContent = "✔ Cam Active";
+      } catch (err) {
+        alert("Camera permission denied or camera not found.");
+      }
+    };
+
+    // Matchmaking
+    const btnMain = document.getElementById("btnMainAction");
+    btnMain.onclick = () => {
+      if (isConnected) {
+        if (activeCall) activeCall.close();
+        socket.emit("leave_queue");
+        isConnected = false;
+        btnMain.textContent = "▶ Start Chat";
+        document.getElementById("strangerLabel").textContent = "🔴 Disconnected";
+      } else {
+        btnMain.textContent = "⏹ Cancel";
+        document.getElementById("strangerLabel").textContent = "🟡 Searching...";
+        socket.emit("join_queue", {
+          peerId: myPeerId,
+          gender: document.getElementById("myGenderSelect").value,
+          matchPref: document.getElementById("genderSelect").value,
+          tags: ["chatting"]
+        });
+      }
+    };
+
+    socket.on("matched", (data) => {
+      isConnected = true;
+      btnMain.textContent = "⏹ Stop";
+      document.getElementById("btnNextStranger").style.display = "inline-block";
+      document.getElementById("strangerLabel").textContent = "🟢 Connected";
+      document.getElementById("chatInput").disabled = false;
+      document.getElementById("btnSendMessage").disabled = false;
+
+      if (data.isInitiator && localStream) {
+        const call = peer.call(data.partnerPeerId, localStream);
+        call.on("stream", (s) => {
+          const rv = document.getElementById("remoteVideo");
+          rv.srcObject = s;
+          rv.style.display = "block";
+          document.getElementById("remoteCanvas").style.display = "none";
+        });
+      }
+    });
+
+    peer.on("call", (call) => {
+      if (localStream) {
+        call.answer(localStream);
+        call.on("stream", (s) => {
+          const rv = document.getElementById("remoteVideo");
+          rv.srcObject = s;
+          rv.style.display = "block";
+          document.getElementById("remoteCanvas").style.display = "none";
+        });
+      }
+    });
+
+    // Chat
+    document.getElementById("btnSendMessage").onclick = () => {
+      const inp = document.getElementById("chatInput");
+      if (!inp.value.trim()) return;
+      const d = document.createElement("div");
+      d.style.cssText = "font-size:0.85rem; color:#38bdf8; font-weight:700;";
+      d.textContent = "You: " + inp.value;
+      document.getElementById("chatContainer").appendChild(d);
+      inp.value = "";
+    };
+  </script>
 </body>
 </html>
