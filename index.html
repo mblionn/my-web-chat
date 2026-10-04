@@ -114,16 +114,16 @@
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 7px;
+      gap: 6px;
     }
 
     .header-select {
       background: #1e293b;
       color: #f8fafc;
       border: 1px solid #334155;
-      padding: 6px 10px;
+      padding: 6px 9px;
       border-radius: 7px;
-      font-size: 0.82rem;
+      font-size: 0.8rem;
       outline: none;
       cursor: pointer;
       font-weight: 600;
@@ -160,7 +160,7 @@
       border: 1px solid #475569;
       padding: 6px 10px;
       border-radius: 7px;
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       font-weight: 700;
       cursor: pointer;
       display: flex;
@@ -173,6 +173,18 @@
       background: #2563eb;
       color: #ffffff;
       border-color: #60a5fa;
+    }
+
+    .record-btn-indicator {
+      background: #991b1b;
+      color: #fecaca;
+      border: 1px solid #ef4444;
+      animation: pulseRecord 1s infinite alternate;
+    }
+
+    @keyframes pulseRecord {
+      0% { opacity: 0.8; }
+      100% { opacity: 1; filter: brightness(1.2); }
     }
 
     /* Main Split Layout */
@@ -498,7 +510,7 @@
     }
 
     /* "Would You Rather" Dilemma Card Overlay */
-    .wyr-modal-overlay {
+    .wyr-modal-overlay, .tod-modal-overlay {
       position: absolute;
       inset: 0;
       background: rgba(7, 9, 14, 0.88);
@@ -512,7 +524,7 @@
       padding: 16px;
     }
 
-    .wyr-box {
+    .wyr-box, .tod-box {
       background: #0f172a;
       border: 1px solid rgba(236, 72, 153, 0.4);
       padding: 18px;
@@ -525,7 +537,11 @@
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
     }
 
-    .wyr-header {
+    .tod-box {
+      border-color: rgba(245, 158, 11, 0.4);
+    }
+
+    .modal-card-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -557,14 +573,41 @@
       border-color: #9333ea;
     }
 
-    .wyr-btn:active {
-      transform: scale(0.98);
+    .tod-action-row {
+      display: flex;
+      gap: 10px;
     }
 
-    .wyr-status-label {
-      font-size: 0.74rem;
+    .tod-btn {
+      flex: 1;
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: 800;
+      font-size: 0.88rem;
+      cursor: pointer;
+      border: none;
+      transition: transform 0.15s;
+    }
+
+    .tod-btn.truth-btn {
+      background: #0284c7;
+      color: #ffffff;
+    }
+
+    .tod-btn.dare-btn {
+      background: #ea580c;
+      color: #ffffff;
+    }
+
+    .tod-btn:active {
+      transform: scale(0.96);
+    }
+
+    .card-status-label {
+      font-size: 0.76rem;
       color: var(--text-muted);
       text-align: center;
+      line-height: 1.4;
     }
 
     /* Tic-Tac-Toe Modal */
@@ -708,6 +751,15 @@
       gap: 4px;
     }
 
+    .vibe-tag {
+      font-size: 0.68rem;
+      background: rgba(59, 130, 246, 0.25);
+      color: #93c5fd;
+      padding: 1px 5px;
+      border-radius: 4px;
+      border: 1px solid rgba(59, 130, 246, 0.4);
+    }
+
     /* AR Prop Sticker */
     .ar-prop-overlay {
       position: absolute;
@@ -804,21 +856,21 @@
     .header-chat-actions {
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 4px;
     }
 
     .chat-tool-btn {
       background: #1e293b;
       border: 1px solid #334155;
       color: #f8fafc;
-      padding: 4px 7px;
+      padding: 4px 6px;
       border-radius: 6px;
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       font-weight: 700;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 3px;
+      gap: 2px;
     }
 
     .chat-tool-btn:hover {
@@ -1230,14 +1282,21 @@
     </div>
     
     <div class="header-actions">
-      <!-- Camera Filter -->
-      <select id="filterSelect" class="header-select" title="Camera Filter">
-        <option value="none">✨ Normal</option>
-        <option value="grayscale(100%)">Noir (B&W)</option>
-        <option value="sepia(60%) contrast(110%)">Warm Vintage</option>
-        <option value="hue-rotate(180deg) saturate(180%)">Cyberpunk</option>
-        <option value="brightness(110%) contrast(120%)">Soft Glow</option>
-        <option value="invert(100%)">Invert</option>
+      <!-- Vibe Selector -->
+      <select id="vibeSelect" class="header-select" title="Current Vibe">
+        <option value="☕ Chill">☕ Chill</option>
+        <option value="🎧 Jamming">🎧 Jamming</option>
+        <option value="🎮 Gaming">🎮 Gaming</option>
+        <option value="💻 Coding">💻 Coding</option>
+        <option value="✨ Hyped">✨ Hyped</option>
+      </select>
+
+      <!-- Voice Filter FX -->
+      <select id="voiceFxSelect" class="header-select" title="Microphone Voice Modulation">
+        <option value="normal">🎙 Normal Voice</option>
+        <option value="deep">👹 Deep Demon</option>
+        <option value="telephone">📻 Radio Walkie</option>
+        <option value="cave">🏔 Cave Reverb</option>
       </select>
 
       <!-- AR Props Selector -->
@@ -1250,6 +1309,7 @@
         <option value="💫">💫 Halo Glow</option>
       </select>
 
+      <button class="tool-header-btn" id="btnRecordClip" title="Record 15s Highlight Video">📹 Record Clip</button>
       <button class="tool-header-btn" id="btnToggleCaptions" title="Live Closed Captions">💬 CC: Off</button>
       <button class="tool-header-btn" id="btnToggleTTS" title="Read incoming messages aloud">🗣 TTS: Off</button>
       <button class="audio-mode-btn" id="btnToggleAudioOnly" title="Toggle Audio-Only Mode">🎧 Video ON</button>
@@ -1266,6 +1326,7 @@
           <div class="video-badge">
             <span class="badge-dot" id="strangerDot"></span>
             <span id="strangerLabel">Disconnected</span>
+            <span class="vibe-tag" id="strangerVibeTag" style="display:none;">☕ Chill</span>
             <span class="call-timer" id="callTimer">00:00</span>
             <span class="ping-indicator" id="pingIndicator">📶 --ms</span>
           </div>
@@ -1281,7 +1342,7 @@
 
           <!-- Quick Reaction Buttons -->
           <div class="reactions-bar" id="reactionsBar">
-            <button class="reaction-trigger-btn" data-emoji="❤️">❤️</button>
+            <button class="reaction-trigger-btn" data-emoji="❤️">❤️️</button>
             <button class="reaction-trigger-btn" data-emoji="😂">😂</button>
             <button class="reaction-trigger-btn" data-emoji="🔥">🔥</button>
             <button class="reaction-trigger-btn" data-emoji="👏">👏</button>
@@ -1303,16 +1364,31 @@
             <span class="blur-tip">Auto-reveals in 5s</span>
           </div>
 
+          <!-- "Truth or Dare" Card Overlay -->
+          <div class="tod-modal-overlay" id="todModal">
+            <div class="tod-box">
+              <div class="modal-card-header" style="color:#f59e0b;">
+                <span>🎡 Truth or Dare</span>
+                <button class="game-close-btn" id="btnTodClose">&times;</button>
+              </div>
+              <div class="tod-action-row">
+                <button class="tod-btn truth-btn" id="btnPickTruth">📖 Truth</button>
+                <button class="tod-btn dare-btn" id="btnPickDare">⚡ Dare</button>
+              </div>
+              <div class="card-status-label" id="todPromptText">Choose Truth or Dare to pick a live challenge!</div>
+            </div>
+          </div>
+
           <!-- "Would You Rather" Dilemma Card Overlay -->
           <div class="wyr-modal-overlay" id="wyrModal">
             <div class="wyr-box">
-              <div class="wyr-header">
+              <div class="modal-card-header">
                 <span>🤔 Would You Rather?</span>
                 <button class="game-close-btn" id="btnWyrClose">&times;</button>
               </div>
               <button class="wyr-btn opt-a" id="btnWyrOptA">Option A</button>
               <button class="wyr-btn opt-b" id="btnWyrOptB">Option B</button>
-              <div class="wyr-status-label" id="wyrStatusLabel">Pick an answer to see what the stranger picked!</div>
+              <div class="card-status-label" id="wyrStatusLabel">Pick an answer to see what the stranger picked!</div>
             </div>
           </div>
 
@@ -1356,6 +1432,7 @@
         <div class="local-pip-card" id="localPipCard">
           <div class="local-pip-badge" id="localLabel">
             <span>You</span>
+            <span class="vibe-tag" id="myVibeTag">☕ Chill</span>
             <span id="micSpeakingBadge" style="font-size:0.6rem; display:none; color:#10b981;">● Talking</span>
           </div>
           <div class="ar-prop-overlay" id="arPropOverlay">👑</div>
@@ -1395,7 +1472,8 @@
           <span class="typing-label" id="typingIndicator">Stranger is typing...</span>
         </div>
         <div class="header-chat-actions">
-          <button id="btnOpenWYR" class="chat-tool-btn" style="color:#f472b6; border-color:#db2777;" title="Would You Rather Game">🤔 WYR</button>
+          <button id="btnOpenTOD" class="chat-tool-btn" style="color:#fbbf24; border-color:#d97706;" title="Truth or Dare">🎡 T or D</button>
+          <button id="btnOpenWYR" class="chat-tool-btn" style="color:#f472b6; border-color:#db2777;" title="Would You Rather">🤔 WYR</button>
           <button id="btnOpenWhiteboard" class="chat-tool-btn" title="Open Doodle Pad">🎨 Doodle</button>
           <button id="btnOpenGame" class="chat-tool-btn game-btn" title="Play Tic-Tac-Toe">🎮 Play</button>
           <button id="btnExportChat" class="chat-tool-btn" title="Save chat transcript">📋 Log</button>
@@ -1492,6 +1570,12 @@
     let captionsEnabled = false;
     let currentFacingMode = "user";
 
+    // Video Recording
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let isRecordingClip = false;
+    let recordTimeout = null;
+
     let strangersMet = 0;
     let chatHistoryLog = [];
 
@@ -1505,10 +1589,12 @@
     let callSecondsElapsed = 0;
     let statsPollInterval = null;
 
-    // Web Audio Mic Visualizer
+    // Web Audio Mic DSP Filters
     let micAnalyser = null;
     let micDataArray = null;
     let micAnimFrame = null;
+    let micSourceNode = null;
+    let micFilterNode = null;
 
     // Speech Recognition
     let speechRecognizer = null;
@@ -1533,6 +1619,22 @@
       { a: "Teleport anywhere instantly", b: "Pause time for 10 minutes every day" }
     ];
 
+    const TRUTH_PROMPTS = [
+      "What is the biggest lie you ever told without getting caught?",
+      "Have you ever stalked an ex or crush on social media for hours?",
+      "What is the most embarrassing song you secretly love?",
+      "If you had to delete every app on your phone except three, which stay?",
+      "What is a silly fear that you still have today?"
+    ];
+
+    const DARE_PROMPTS = [
+      "Show the 5th photo currently in your phone's camera roll.",
+      "Sing the chorus of your favorite song right now.",
+      "Do your best impression of a famous celebrity or movie character.",
+      "Speak in a dramatic British accent for the next 2 minutes.",
+      "Do 10 rapid push-ups or jumping jacks on camera."
+    ];
+
     let currentWyr = null;
     let myWyrVote = null;
 
@@ -1548,9 +1650,13 @@
     let lastY = 0;
 
     // UI Cache
-    const filterSelect = document.getElementById("filterSelect");
+    const vibeSelect = document.getElementById("vibeSelect");
+    const myVibeTag = document.getElementById("myVibeTag");
+    const strangerVibeTag = document.getElementById("strangerVibeTag");
+    const voiceFxSelect = document.getElementById("voiceFxSelect");
     const arPropSelect = document.getElementById("arPropSelect");
     const arPropOverlay = document.getElementById("arPropOverlay");
+    const btnRecordClip = document.getElementById("btnRecordClip");
     const btnToggleSound = document.getElementById("btnToggleSound");
     const btnToggleAudioOnly = document.getElementById("btnToggleAudioOnly");
     const btnToggleCaptions = document.getElementById("btnToggleCaptions");
@@ -1578,6 +1684,12 @@
     const btnRandomIcebreaker = document.getElementById("btnRandomIcebreaker");
     const btnCoinFlip = document.getElementById("btnCoinFlip");
     const btnDiceRoll = document.getElementById("btnDiceRoll");
+    const btnOpenTOD = document.getElementById("btnOpenTOD");
+    const todModal = document.getElementById("todModal");
+    const btnTodClose = document.getElementById("btnTodClose");
+    const btnPickTruth = document.getElementById("btnPickTruth");
+    const btnPickDare = document.getElementById("btnPickDare");
+    const todPromptText = document.getElementById("todPromptText");
     const btnOpenWYR = document.getElementById("btnOpenWYR");
     const wyrModal = document.getElementById("wyrModal");
     const btnWyrClose = document.getElementById("btnWyrClose");
@@ -1634,7 +1746,7 @@
     const mBtnToggleFullscreen = document.getElementById("mBtnToggleFullscreen");
 
     // =========================================================================
-    // 2. SYNTHESIZED WEB AUDIO ENGINE & MIC LEVEL DETECTOR
+    // 2. SYNTHESIZED WEB AUDIO & DSP VOICE FILTER ENGINE
     // =========================================================================
     let audioCtx = null;
     function getAudioContext() {
@@ -1654,10 +1766,15 @@
         const audioTracks = stream.getAudioTracks();
         if (audioTracks.length === 0) return;
 
-        const source = ctx.createMediaStreamSource(stream);
+        micSourceNode = ctx.createMediaStreamSource(stream);
         micAnalyser = ctx.createAnalyser();
         micAnalyser.fftSize = 64;
-        source.connect(micAnalyser);
+
+        micFilterNode = ctx.createBiquadFilter();
+        applyVoiceFilter(voiceFxSelect.value);
+
+        micSourceNode.connect(micFilterNode);
+        micFilterNode.connect(micAnalyser);
 
         micDataArray = new Uint8Array(micAnalyser.frequencyBinCount);
 
@@ -1693,6 +1810,37 @@
         console.warn("Could not bind mic analyzer:", e);
       }
     }
+
+    function applyVoiceFilter(mode) {
+      if (!micFilterNode) return;
+      if (mode === "deep") {
+        micFilterNode.type = "lowpass";
+        micFilterNode.frequency.setValueAtTime(380, getAudioContext().currentTime);
+      } else if (mode === "telephone") {
+        micFilterNode.type = "bandpass";
+        micFilterNode.frequency.setValueAtTime(1400, getAudioContext().currentTime);
+        micFilterNode.Q.setValueAtTime(3.0, getAudioContext().currentTime);
+      } else if (mode === "cave") {
+        micFilterNode.type = "peaking";
+        micFilterNode.frequency.setValueAtTime(800, getAudioContext().currentTime);
+        micFilterNode.gain.setValueAtTime(15, getAudioContext().currentTime);
+      } else {
+        micFilterNode.type = "allpass";
+      }
+    }
+
+    voiceFxSelect.addEventListener("change", (e) => {
+      applyVoiceFilter(e.target.value);
+    });
+
+    // Vibe Tag Sync
+    vibeSelect.addEventListener("change", (e) => {
+      const vibe = e.target.value;
+      myVibeTag.textContent = vibe;
+      if (activeDataConnection && activeDataConnection.open) {
+        activeDataConnection.send({ type: "vibe_sync", vibe: vibe });
+      }
+    });
 
     function playSound(type) {
       if (!soundEnabled) return;
@@ -1813,7 +1961,67 @@
     });
 
     // =========================================================================
-    // 3. LIVE CLOSED CAPTIONS & TEXT-TO-SPEECH (TTS)
+    // 3. 15-SECOND VIDEO CLIP RECORDER (MEDIARECORDER)
+    // =========================================================================
+    btnRecordClip.addEventListener("click", () => {
+      if (isRecordingClip) {
+        stopClipRecording();
+        return;
+      }
+
+      const streamToRecord = (remoteVideo.srcObject && isConnected) ? remoteVideo.srcObject : localStream;
+      if (!streamToRecord) {
+        alert("Enable camera or connect with someone first to record a clip!");
+        return;
+      }
+
+      try {
+        recordedChunks = [];
+        mediaRecorder = new MediaRecorder(streamToRecord, { mimeType: "video/webm" });
+
+        mediaRecorder.ondataavailable = (e) => {
+          if (e.data.size > 0) recordedChunks.push(e.data);
+        };
+
+        mediaRecorder.onstop = () => {
+          const blob = new Blob(recordedChunks, { type: "video/webm" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `webtv555-highlight-${Date.now()}.webm`;
+          a.click();
+          appendMessage("", "Highlight video clip downloaded successfully!", "system");
+        };
+
+        mediaRecorder.start();
+        isRecordingClip = true;
+        btnRecordClip.textContent = "🔴 Recording... (15s)";
+        btnRecordClip.classList.add("record-btn-indicator");
+
+        // Automatically stop after 15 seconds
+        clearTimeout(recordTimeout);
+        recordTimeout = setTimeout(() => {
+          if (isRecordingClip) stopClipRecording();
+        }, 15000);
+      } catch (err) {
+        console.warn("MediaRecorder error:", err);
+        alert("Video recording is not supported on this browser/stream.");
+      }
+    });
+
+    function stopClipRecording() {
+      if (!isRecordingClip) return;
+      isRecordingClip = false;
+      clearTimeout(recordTimeout);
+      if (mediaRecorder && mediaRecorder.state !== "inactive") {
+        mediaRecorder.stop();
+      }
+      btnRecordClip.textContent = "📹 Record Clip";
+      btnRecordClip.classList.remove("record-btn-indicator");
+    }
+
+    // =========================================================================
+    // 4. LIVE CLOSED CAPTIONS & TEXT-TO-SPEECH (TTS)
     // =========================================================================
     function setupLiveCaptions() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -1880,14 +2088,14 @@
 
     function speakText(text) {
       if (!ttsEnabled || !window.speechSynthesis) return;
-      const clean = text.replace(/🎲|🪙|🎨|💬/g, "");
+      const clean = text.replace(/🎲|🪙|🎨|💬|🎡/g, "");
       const utterance = new SpeechSynthesisUtterance(clean);
       utterance.rate = 1.05;
       window.speechSynthesis.speak(utterance);
     }
 
     // =========================================================================
-    // 4. PICTURE-IN-PICTURE (POPOUT) & SCREEN SHARING
+    // 5. PICTURE-IN-PICTURE (POPOUT) & SCREEN SHARING
     // =========================================================================
     async function togglePopoutPiP() {
       if (document.pictureInPictureElement) {
@@ -1954,7 +2162,6 @@
     btnToggleScreenShare.addEventListener("click", toggleScreenShare);
     if (mBtnToggleScreenShare) mBtnToggleScreenShare.addEventListener("click", toggleScreenShare);
 
-    // Fullscreen
     function toggleFullscreen() {
       if (!document.fullscreenElement) {
         videoStageContainer.requestFullscreen().catch(err => {
@@ -1978,8 +2185,38 @@
     });
 
     // =========================================================================
-    // 5. "WOULD YOU RATHER?" GAME
+    // 6. "TRUTH OR DARE" & "WOULD YOU RATHER?"
     // =========================================================================
+    btnOpenTOD.addEventListener("click", () => {
+      if (!isConnected) {
+        appendMessage("", "Connect with someone before starting Truth or Dare!", "system");
+        return;
+      }
+      todModal.style.display = "flex";
+    });
+
+    btnTodClose.addEventListener("click", () => {
+      todModal.style.display = "none";
+    });
+
+    btnPickTruth.addEventListener("click", () => {
+      const p = TRUTH_PROMPTS[Math.floor(Math.random() * TRUTH_PROMPTS.length)];
+      todPromptText.textContent = "📖 [Truth]: " + p;
+      sendChatMessage(`📖 [Truth Challenge]: ${p}`);
+      if (activeDataConnection && activeDataConnection.open) {
+        activeDataConnection.send({ type: "tod_card", text: "📖 [Truth]: " + p });
+      }
+    });
+
+    btnPickDare.addEventListener("click", () => {
+      const p = DARE_PROMPTS[Math.floor(Math.random() * DARE_PROMPTS.length)];
+      todPromptText.textContent = "⚡ [Dare]: " + p;
+      sendChatMessage(`⚡ [Dare Challenge]: ${p}`);
+      if (activeDataConnection && activeDataConnection.open) {
+        activeDataConnection.send({ type: "tod_card", text: "⚡ [Dare]: " + p });
+      }
+    });
+
     function startWyrGame(promptObj = null) {
       if (!isConnected) {
         appendMessage("", "Connect with someone before starting Would You Rather!", "system");
@@ -2020,7 +2257,7 @@
     }
 
     // =========================================================================
-    // 6. REACTIONS, SOUNDBOARD & TIMERS
+    // 7. REACTIONS & SOUNDBOARD
     // =========================================================================
     function spawnFloatingEmoji(emoji) {
       const el = document.createElement("div");
@@ -2117,7 +2354,7 @@
     }
 
     // =========================================================================
-    // 7. SYNCHRONIZED LIVE WHITEBOARD (DOODLE PAD)
+    // 8. SYNCHRONIZED LIVE WHITEBOARD (DOODLE PAD)
     // =========================================================================
     function resizeWhiteboard() {
       const rect = whiteboardCanvas.getBoundingClientRect();
@@ -2216,7 +2453,7 @@
     whiteboardCanvas.addEventListener("touchend", () => { isDrawing = false; });
 
     // =========================================================================
-    // 8. TIC-TAC-TOE MINI-GAME
+    // 9. TIC-TAC-TOE MINI-GAME
     // =========================================================================
     function openGameModal(isStarter = true) {
       if (!isConnected) {
@@ -2310,7 +2547,7 @@
     }
 
     // =========================================================================
-    // 9. COIN FLIP, DICE, ICEBREAKERS & DIRECT ROOM
+    // 10. COIN FLIP, DICE, ICEBREAKERS & DIRECT ROOM
     // =========================================================================
     btnCoinFlip.addEventListener("click", () => {
       if (!isConnected) return;
@@ -2370,7 +2607,7 @@
         if (targetPeerId && targetPeerId !== myPeerId) {
           appendMessage("", `Direct room link detected! Dialing peer: ${targetPeerId}`, "system");
           setTimeout(() => {
-            const streamToSend = (localStream && !camDisabled) ? localStream : createFallbackStream();
+            const streamToSend = (localStream && !camDisabled) ? (isScreenSharing && screenStream ? screenStream : localStream) : createFallbackStream();
             const call = peer.call(targetPeerId, streamToSend);
             bindCallEvents(call);
             const conn = peer.connect(targetPeerId);
@@ -2381,7 +2618,7 @@
     }
 
     // =========================================================================
-    // 10. PRIVACY BLUR SHIELD & SNAPSHOT
+    // 11. PRIVACY BLUR SHIELD & SNAPSHOT
     // =========================================================================
     function triggerPrivacyShield() {
       blurOverlay.style.display = "flex";
@@ -2452,7 +2689,7 @@
     });
 
     // =========================================================================
-    // 11. SOCKET.IO PRESENCE & MATCHMAKING
+    // 12. SOCKET.IO PRESENCE & MATCHMAKING
     // =========================================================================
     socket.on("connect", () => {
       p2pStatus.textContent = "Server: Connected";
@@ -2512,7 +2749,7 @@
     });
 
     // =========================================================================
-    // 12. WEBRTC ENGINE (PEERJS)
+    // 13. WEBRTC ENGINE (PEERJS)
     // =========================================================================
     function initializePeer() {
       peer = new Peer({
@@ -2569,6 +2806,11 @@
 
     function bindDataEvents(conn) {
       activeDataConnection = conn;
+      conn.on("open", () => {
+        // Send our current vibe tag immediately upon connection
+        conn.send({ type: "vibe_sync", vibe: vibeSelect.value });
+      });
+
       conn.on("data", (data) => {
         if (data.type === "chat") {
           appendMessage("Stranger", data.text, "stranger");
@@ -2577,12 +2819,18 @@
           typingIndicator.style.display = "none";
         } else if (data.type === "typing") {
           typingIndicator.style.display = data.status ? "inline" : "none";
+        } else if (data.type === "vibe_sync") {
+          strangerVibeTag.textContent = data.vibe;
+          strangerVibeTag.style.display = "inline-block";
         } else if (data.type === "caption") {
           showFloatingSubtitle("Stranger: " + data.text);
         } else if (data.type === "reaction") {
           spawnFloatingEmoji(data.emoji);
         } else if (data.type === "sfx") {
           playSound(data.sfx);
+        } else if (data.type === "tod_card") {
+          todPromptText.textContent = data.text;
+          todModal.style.display = "flex";
         } else if (data.type === "wyr_prompt") {
           startWyrGame(data.data);
         } else if (data.type === "wyr_vote") {
@@ -2629,10 +2877,13 @@
       stopCallTimer();
       stopStatsPolling();
       stopScreenSharing();
+      stopClipRecording();
+      strangerVibeTag.style.display = "none";
       gameModal.style.display = "none";
       gameActive = false;
       whiteboardModal.style.display = "none";
       wyrModal.style.display = "none";
+      todModal.style.display = "none";
       subtitleOverlay.style.display = "none";
       typingIndicator.style.display = "none";
       appendMessage("", "Stranger has disconnected.", "system");
@@ -2640,7 +2891,7 @@
     }
 
     // =========================================================================
-    // 13. MATCHMAKING ACTIONS (WITH FAST SKIP & REPORT)
+    // 14. MATCHMAKING ACTIONS (WITH FAST SKIP & REPORT)
     // =========================================================================
     function startMatchmaking() {
       if (!myPeerId) {
@@ -2652,10 +2903,13 @@
       stopCallTimer();
       stopStatsPolling();
       stopScreenSharing();
+      stopClipRecording();
+      strangerVibeTag.style.display = "none";
       gameModal.style.display = "none";
       gameActive = false;
       whiteboardModal.style.display = "none";
       wyrModal.style.display = "none";
+      todModal.style.display = "none";
 
       strangerDot.className = "badge-dot waiting";
       strangerLabel.textContent = "Looking for someone...";
@@ -2697,10 +2951,13 @@
       stopCallTimer();
       stopStatsPolling();
       stopScreenSharing();
+      stopClipRecording();
+      strangerVibeTag.style.display = "none";
       gameModal.style.display = "none";
       gameActive = false;
       whiteboardModal.style.display = "none";
       wyrModal.style.display = "none";
+      todModal.style.display = "none";
 
       strangerDot.className = "badge-dot";
       strangerLabel.textContent = "Disconnected";
@@ -2760,7 +3017,7 @@
     });
 
     // =========================================================================
-    // 14. CAMERA & HARDWARE ACCESS
+    // 15. CAMERA & HARDWARE ACCESS
     // =========================================================================
     async function activateCamera() {
       const constraints = {
@@ -2827,13 +3084,13 @@
       });
     }
 
-    // 1. Switch Camera (Front / Rear)
+    // Switch Camera
     bindMediaAction(btnSwitchCamera, mBtnSwitchCamera, () => {
       currentFacingMode = currentFacingMode === "user" ? "environment" : "user";
       activateCamera();
     });
 
-    // 2. Mirror Flip
+    // Mirror Flip
     bindMediaAction(btnToggleMirror, mBtnToggleMirror, () => {
       isMirrored = !isMirrored;
       if (!isScreenSharing) {
@@ -2841,7 +3098,7 @@
       }
     });
 
-    // 3. Mute / Unmute Microphone
+    // Mute / Unmute Mic
     bindMediaAction(btnMuteAudio, mBtnMuteAudio, () => {
       if (!localStream) return;
       micMuted = !micMuted;
@@ -2850,7 +3107,7 @@
       if (mBtnMuteAudio) mBtnMuteAudio.textContent = micMuted ? "🔇 Unmute" : "🎤 Mic";
     });
 
-    // 4. Video Pause / Resume
+    // Video Pause / Resume
     bindMediaAction(btnMuteVideo, mBtnMuteVideo, () => {
       if (!localStream) return;
       camDisabled = !camDisabled;
@@ -2877,7 +3134,7 @@
     }
 
     // =========================================================================
-    // 15. PROCEDURAL AVATAR RENDERER
+    // 16. PROCEDURAL AVATAR RENDERER
     // =========================================================================
     let animStep = 0;
     function renderAvatarsLoop() {
@@ -3048,7 +3305,7 @@
     window.addEventListener("resize", syncCanvasDimensions);
 
     // =========================================================================
-    // 16. TAGS SYSTEM
+    // 17. TAGS SYSTEM
     // =========================================================================
     function renderTags() {
       tagsList.innerHTML = "";
@@ -3103,7 +3360,7 @@
     });
 
     // =========================================================================
-    // 17. CHAT ENGINE & TYPING DETECTION
+    // 18. CHAT ENGINE & TYPING DETECTION
     // =========================================================================
     function appendMessage(sender, text, type = "stranger") {
       const now = new Date();
@@ -3162,7 +3419,7 @@
     });
 
     // =========================================================================
-    // 18. INSTANT DOM BOOTSTRAP
+    // 19. INSTANT DOM BOOTSTRAP
     // =========================================================================
     syncCanvasDimensions();
     renderAvatarsLoop();
