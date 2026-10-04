@@ -4,135 +4,379 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>Web TV 555 - Live Random Video Chat</title>
-  <link rel="stylesheet" href="style.css" />
+  
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
+
+  <style>
+    :root {
+      --bg-dark: #07090e;
+      --card-bg: #0f172a;
+      --card-inner: #111827;
+      --border-color: #1e293b;
+      --primary: #3b82f6;
+      --danger: #ef4444;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    html, body { width: 100%; height: 100%; height: 100dvh; background: var(--bg-dark); color: var(--text-main); display: flex; flex-direction: column; overflow: hidden; }
+
+    header {
+      height: 54px; background: var(--card-bg); border-bottom: 1px solid var(--border-color);
+      display: flex; align-items: center; justify-content: space-between; padding: 0 16px; flex-shrink: 0;
+    }
+    .brand-group { display: flex; align-items: center; gap: 10px; }
+    .logo { font-size: 1.25rem; font-weight: 900; color: #fff; display: flex; align-items: center; gap: 8px; }
+    .logo-badge { background: linear-gradient(135deg, #2563eb, #7c3aed); font-size: 0.72rem; padding: 2px 7px; border-radius: 5px; font-weight: 800; }
+    
+    .badge-pill {
+      display: flex; align-items: center; gap: 7px; font-size: 0.78rem; color: var(--text-muted);
+      background: rgba(15, 23, 42, 0.8); padding: 4px 10px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .dot { width: 7px; height: 7px; border-radius: 50%; }
+    .dot.green { background: var(--success); box-shadow: 0 0 6px var(--success); }
+    .dot.amber { background: var(--warning); box-shadow: 0 0 6px var(--warning); }
+
+    .header-actions { display: flex; align-items: center; gap: 8px; }
+    .header-btn, .header-select {
+      background: #1e293b; color: #cbd5e1; border: 1px solid #334155; padding: 6px 10px;
+      border-radius: 7px; font-size: 0.8rem; font-weight: 700; cursor: pointer; outline: none;
+    }
+    .cam-btn { background: var(--success); color: #fff; border: none; padding: 6px 14px; border-radius: 7px; font-weight: 700; cursor: pointer; }
+    .cam-btn.active { background: #2563eb; }
+
+    main { flex: 1; display: flex; padding: 10px; gap: 10px; overflow: hidden; }
+    .stage-column { flex: 7; display: flex; flex-direction: column; gap: 8px; position: relative; }
+    .video-stage-container {
+      flex: 1; position: relative; background: #000; border-radius: 12px; border: 1px solid var(--border-color);
+      overflow: hidden; display: flex; align-items: center; justify-content: center;
+    }
+    .remote-video-wrap { width: 100%; height: 100%; position: relative; display: flex; align-items: center; justify-content: center; }
+    video#remoteVideo, video#localVideo { width: 100%; height: 100%; object-fit: cover; display: none; }
+    canvas#remoteCanvas, canvas#localCanvas { width: 100%; height: 100%; display: block; }
+    .mirrored { transform: scaleX(-1); }
+
+    .local-pip-card {
+      position: absolute; bottom: 12px; right: 12px; width: 180px; height: 135px; background: #111827;
+      border-radius: 10px; border: 2px solid rgba(59, 130, 246, 0.45); overflow: hidden; z-index: 20;
+    }
+    .status-overlay {
+      position: absolute; top: 12px; left: 12px; background: rgba(0, 0, 0, 0.75); padding: 5px 12px;
+      border-radius: 7px; font-size: 0.78rem; font-weight: 700; display: flex; align-items: center; gap: 8px;
+    }
+
+    .chat-section {
+      flex: 3; min-width: 300px; max-width: 380px; background: var(--card-bg); border-radius: 12px;
+      border: 1px solid var(--border-color); display: flex; flex-direction: column; overflow: hidden;
+    }
+    .chat-header {
+      padding: 10px 14px; border-bottom: 1px solid var(--border-color); display: flex;
+      align-items: center; justify-content: space-between; font-size: 0.88rem; font-weight: 800;
+    }
+    .messages-container { flex: 1; padding: 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+    .message { font-size: 0.86rem; line-height: 1.4; word-break: break-word; }
+    .message .time { font-size: 0.72rem; color: var(--text-muted); margin-right: 6px; }
+    .message.stranger .sender { color: var(--danger); font-weight: 800; }
+    .message.you .sender { color: var(--primary); font-weight: 800; }
+    .message.system { color: var(--text-muted); font-style: italic; font-size: 0.8rem; text-align: center; }
+
+    .quick-replies { padding: 6px 12px; border-top: 1px solid var(--border-color); display: flex; gap: 6px; overflow-x: auto; }
+    .chip { background: #1e293b; color: #cbd5e1; border: 1px solid #334155; padding: 4px 9px; border-radius: 12px; font-size: 0.74rem; cursor: pointer; white-space: nowrap; }
+
+    .chat-input-area { padding: 10px 14px; border-top: 1px solid var(--border-color); display: flex; gap: 8px; }
+    .chat-input-area input { flex: 1; background: #07090e; border: 1px solid var(--border-color); border-radius: 7px; padding: 8px 12px; color: #fff; outline: none; }
+    .send-btn { background: var(--primary); color: #fff; border: none; padding: 8px 14px; border-radius: 7px; font-weight: 700; cursor: pointer; }
+
+    footer {
+      height: 60px; background: var(--card-bg); border-top: 1px solid var(--border-color);
+      display: flex; align-items: center; padding: 0 16px; gap: 10px; flex-shrink: 0;
+    }
+    .btn-main { background: var(--primary); color: #fff; border: none; padding: 10px 20px; border-radius: 7px; font-weight: 800; cursor: pointer; }
+    .btn-main.stop { background: var(--danger); }
+  </style>
 </head>
 <body>
-  <!-- Header -->
   <header>
     <div class="brand-group">
       <div class="logo">Web TV <span class="logo-badge">555</span></div>
-      <div class="online-counter-badge"><span class="online-dot"></span><span id="userCount">1</span> online</div>
-      <div class="streak-badge" id="streakBadge">⚡ <span id="strangersMetCount">0</span> Met</div>
-      <div class="server-status-badge">
-        <span class="online-dot" id="serverDot" style="background:#f59e0b; box-shadow:0 0 6px #f59e0b;"></span>
-        <span id="p2pStatus" style="font-weight:700; color:#f59e0b;">Server: Connecting...</span>
-      </div>
+      <div class="badge-pill"><span class="dot green"></span><span id="userCount">1</span> online</div>
+      <div class="badge-pill"><span class="dot amber" id="serverDot"></span><span id="p2pStatus">Server: Connecting...</span></div>
     </div>
-    
     <div class="header-actions">
-      <select id="vibeSelect" class="header-select">
-        <option value="☕ Chill">☕ Chill</option>
-        <option value="🎧 Jamming">🎧 Jamming</option>
-        <option value="🎮 Gaming">🎮 Gaming</option>
-      </select>
-      <select id="voiceFxSelect" class="header-select">
-        <option value="normal">🎙 Normal Voice</option>
-        <option value="deep">👹 Deep Demon</option>
-        <option value="telephone">📻 Radio Walkie</option>
-      </select>
-      <select id="filterSelect" class="header-select">
-        <option value="none">✨ Normal</option>
-        <option value="grayscale(100%)">Noir (B&W)</option>
-        <option value="sepia(60%) contrast(110%)">Warm Vintage</option>
-      </select>
-      <button class="tool-header-btn" id="btnToggleStudioGlow">💡 Glow</button>
-      <button class="tool-header-btn" id="btnToggleSound">🔊 Sound ON</button>
+      <button class="header-btn" id="btnToggleSound">🔊 Sound ON</button>
       <button class="cam-btn" id="btnToggleHardware">📹 Enable Camera & Mic</button>
     </div>
   </header>
 
-  <!-- Viewports -->
   <main>
-    <div class="stage-column" id="stageColumn">
-      <div class="video-stage-container" id="videoStageContainer">
+    <div class="stage-column">
+      <div class="video-stage-container">
         <div class="remote-video-wrap">
-          <div class="video-badge">
-            <span class="badge-dot" id="strangerDot"></span>
+          <div class="status-overlay">
+            <span class="dot" id="strangerDot" style="background:#ef4444;"></span>
             <span id="strangerLabel">Disconnected</span>
           </div>
           <video id="remoteVideo" autoplay playsinline></video>
           <canvas id="remoteCanvas"></canvas>
         </div>
-
-        <div class="local-pip-card" id="localPipCard">
-          <div class="local-pip-badge" id="localLabel"><span>You</span></div>
+        <div class="local-pip-card">
           <video id="localVideo" class="mirrored" autoplay playsinline muted></video>
           <canvas id="localCanvas"></canvas>
         </div>
       </div>
     </div>
 
-    <!-- Chat Drawer -->
     <div class="chat-section">
-      <div class="chat-header">
-        <div class="chat-header-title">
-          <span>💬 Text Conversation</span>
-          <span class="typing-label" id="typingIndicator">Stranger is typing...</span>
-        </div>
-        <div class="header-chat-actions">
-          <div class="games-dropdown-wrap">
-            <button id="btnGamesMenu" class="chat-tool-btn game-btn">🎮 Games ▾</button>
-            <div class="games-menu" id="gamesMenu">
-              <button class="game-item-btn" id="mGameTTT">🎮 Tic-Tac-Toe</button>
-              <button class="game-item-btn" id="mGameWYR">🤔 Would You Rather</button>
-              <button class="game-item-btn" id="mGameTOD">🎡 Truth or Dare</button>
-              <button class="game-item-btn" id="mGameTrivia">🧠 Trivia Duel</button>
-            </div>
-          </div>
-          <button id="btnSnapshot" class="chat-tool-btn">📸 Snap</button>
-        </div>
-      </div>
-
+      <div class="chat-header">Text Conversation</div>
       <div class="messages-container" id="chatContainer">
         <div class="message system">Welcome to Web TV 555! Click Start Chat to connect.</div>
       </div>
-
       <div class="quick-replies">
-        <button class="quick-chip" id="btnCoinFlip">🪙 Flip Coin</button>
-        <button class="quick-chip" id="btnDiceRoll">🎲 Roll D6</button>
+        <button class="chip" id="btnCoin">🪙 Flip Coin</button>
+        <button class="chip" id="btnDice">🎲 Roll Dice</button>
       </div>
-
       <div class="chat-input-area">
-        <input type="file" id="chatImageInput" accept="image/*" style="display:none;" />
-        <button class="btn-icon-file" id="btnAttachImage" disabled>📷</button>
         <input type="text" id="chatInput" placeholder="Type a message..." disabled autocomplete="off" />
-        <button class="send-btn" id="btnSendMessage" disabled>Send</button>
+        <button class="send-btn" id="btnSend" disabled>Send</button>
       </div>
     </div>
   </main>
 
-  <!-- Footer -->
   <footer>
-    <button class="btn-main-action" id="btnMainAction">▶ Start Chat</button>
-    <button class="btn-main-action" id="btnNextStranger" style="background:#e11d48; display:none;">⏭ Next</button>
-
-    <div class="gender-picker-wrap">
-      <label for="myGenderSelect">I am:</label>
-      <select id="myGenderSelect" class="gender-select">
-        <option value="male">👨 Male</option>
-        <option value="female">👩 Female</option>
-      </select>
-    </div>
-
-    <div class="gender-picker-wrap">
-      <label for="genderSelect">Match With:</label>
-      <select id="genderSelect" class="gender-select">
-        <option value="both">👥 Both / Random</option>
-        <option value="female">👩 Female Only</option>
-        <option value="male">👨 Male Only</option>
-      </select>
-    </div>
-
-    <div class="interests-container">
-      <div id="tagsList"></div>
-      <input type="text" id="tagInput" class="tag-input" placeholder="+ Add topic..." />
-      <button class="btn-add-tag" id="btnAddTag">+ Add</button>
-    </div>
+    <button class="btn-main" id="btnMainAction">▶ Start Chat</button>
+    <button class="btn-main" id="btnNext" style="background:#e11d48; display:none;">⏭ Next</button>
   </footer>
 
-  <!-- Scripts -->
-  <script type="module" src="main.js"></script>
+  <script>
+    const BACKEND_URL = "https://my-web-chat-production.up.railway.app";
+    const socket = io(BACKEND_URL, { transports: ["websocket", "polling"], reconnection: true });
+
+    let peer = null, myPeerId = null, activeCall = null, activeDataConn = null;
+    let localStream = null, isSearching = false, isConnected = false, soundEnabled = true;
+
+    const DOM = {
+      userCount: document.getElementById("userCount"),
+      p2pStatus: document.getElementById("p2pStatus"),
+      serverDot: document.getElementById("serverDot"),
+      localVideo: document.getElementById("localVideo"),
+      remoteVideo: document.getElementById("remoteVideo"),
+      localCanvas: document.getElementById("localCanvas"),
+      remoteCanvas: document.getElementById("remoteCanvas"),
+      strangerDot: document.getElementById("strangerDot"),
+      strangerLabel: document.getElementById("strangerLabel"),
+      btnMainAction: document.getElementById("btnMainAction"),
+      btnNext: document.getElementById("btnNext"),
+      chatContainer: document.getElementById("chatContainer"),
+      chatInput: document.getElementById("chatInput"),
+      btnSend: document.getElementById("btnSend"),
+      btnToggleHardware: document.getElementById("btnToggleHardware"),
+      btnToggleSound: document.getElementById("btnToggleSound"),
+      btnCoin: document.getElementById("btnCoin"),
+      btnDice: document.getElementById("btnDice")
+    };
+
+    // Socket Connection Handling
+    socket.on("connect", () => {
+      DOM.p2pStatus.textContent = "Server: Connected";
+      DOM.p2pStatus.style.color = "#10b981";
+      DOM.serverDot.className = "dot green";
+    });
+    socket.on("connect_error", () => {
+      DOM.p2pStatus.textContent = "Server: Reconnecting...";
+      DOM.p2pStatus.style.color = "#f59e0b";
+      DOM.serverDot.className = "dot amber";
+    });
+    socket.on("presence_count", count => { DOM.userCount.textContent = count; });
+
+    // PeerJS Setup
+    function initPeer() {
+      peer = new Peer({ config: { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] } });
+      peer.on("open", id => { myPeerId = id; });
+      peer.on("call", call => {
+        call.answer(localStream || createFallbackStream());
+        bindCallEvents(call);
+      });
+      peer.on("connection", conn => { bindDataEvents(conn); });
+    }
+    initPeer();
+
+    function bindCallEvents(call) {
+      activeCall = call;
+      call.on("stream", remStream => {
+        DOM.remoteVideo.srcObject = remStream;
+        DOM.remoteVideo.style.display = "block";
+        DOM.remoteCanvas.style.display = "none";
+      });
+      call.on("close", handleLeave);
+      call.on("error", handleLeave);
+    }
+
+    function bindDataEvents(conn) {
+      activeDataConn = conn;
+      conn.on("data", data => {
+        if (data.type === "chat") appendMessage("Stranger", data.text, "stranger");
+      });
+      conn.on("close", handleLeave);
+    }
+
+    function handleLeave() {
+      if (!isConnected) return;
+      isConnected = false;
+      appendMessage("", "Stranger disconnected.", "system");
+      disconnect();
+    }
+
+    // Matchmaking Logic
+    socket.on("matched", payload => {
+      isSearching = false;
+      isConnected = true;
+      DOM.strangerDot.style.background = "#10b981";
+      DOM.strangerLabel.textContent = "Connected";
+      DOM.btnMainAction.textContent = "⏹ Stop";
+      DOM.btnMainAction.classList.add("stop");
+      DOM.btnNext.style.display = "inline-flex";
+      DOM.chatInput.disabled = false;
+      DOM.btnSend.disabled = false;
+
+      appendMessage("", "Connected with a stranger!", "system");
+
+      if (payload.isInitiator && myPeerId && payload.partnerPeerId) {
+        const call = peer.call(payload.partnerPeerId, localStream || createFallbackStream());
+        bindCallEvents(call);
+        const conn = peer.connect(payload.partnerPeerId);
+        bindDataEvents(conn);
+      }
+    });
+
+    function startMatch() {
+      if (!myPeerId) return;
+      isSearching = true;
+      isConnected = false;
+      DOM.strangerDot.style.background = "#f59e0b";
+      DOM.strangerLabel.textContent = "Looking...";
+      DOM.btnMainAction.textContent = "⏹ Cancel";
+      DOM.btnMainAction.classList.add("stop");
+      DOM.remoteVideo.style.display = "none";
+      DOM.remoteCanvas.style.display = "block";
+      socket.emit("join_queue", { peerId: myPeerId, gender: "male", matchPref: "both", tags: ["chat"] });
+    }
+
+    function disconnect() {
+      if (activeCall) { activeCall.close(); activeCall = null; }
+      if (activeDataConn) { activeDataConn.close(); activeDataConn = null; }
+      socket.emit("leave_queue");
+      isConnected = false;
+      isSearching = false;
+      DOM.strangerDot.style.background = "#ef4444";
+      DOM.strangerLabel.textContent = "Disconnected";
+      DOM.btnMainAction.textContent = "▶ Start Chat";
+      DOM.btnMainAction.classList.remove("stop");
+      DOM.btnNext.style.display = "none";
+      DOM.chatInput.disabled = true;
+      DOM.btnSend.disabled = true;
+      DOM.remoteVideo.style.display = "none";
+      DOM.remoteCanvas.style.display = "block";
+    }
+
+    DOM.btnMainAction.addEventListener("click", () => {
+      if (!localStream) startCamera();
+      if (isConnected || isSearching) disconnect();
+      else startMatch();
+    });
+
+    DOM.btnNext.addEventListener("click", () => {
+      disconnect();
+      setTimeout(startMatch, 200);
+    });
+
+    // Hardware
+    async function startCamera() {
+      try {
+        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        DOM.localVideo.srcObject = localStream;
+        DOM.localVideo.style.display = "block";
+        DOM.localCanvas.style.display = "none";
+        DOM.btnToggleHardware.classList.add("active");
+        DOM.btnToggleHardware.textContent = "✔ Camera Active";
+      } catch (err) {
+        console.warn("Camera permission denied:", err);
+      }
+    }
+    DOM.btnToggleHardware.addEventListener("click", startCamera);
+
+    function createFallbackStream() {
+      const c = document.createElement("canvas");
+      c.width = 320; c.height = 240;
+      c.getContext("2d").fillRect(0, 0, 320, 240);
+      return c.captureStream(10);
+    }
+
+    // Chat
+    function appendMessage(sender, text, type) {
+      const d = document.createElement("div");
+      d.className = `message ${type}`;
+      d.innerHTML = type === "system" ? text : `<span class="sender">${sender}:</span> ${text}`;
+      DOM.chatContainer.appendChild(d);
+      DOM.chatContainer.scrollTop = DOM.chatContainer.scrollHeight;
+    }
+
+    function sendMsg() {
+      const txt = DOM.chatInput.value.trim();
+      if (!txt || !isConnected) return;
+      appendMessage("You", txt, "you");
+      DOM.chatInput.value = "";
+      if (activeDataConn && activeDataConn.open) activeDataConn.send({ type: "chat", text: txt });
+    }
+
+    DOM.btnSend.addEventListener("click", sendMsg);
+    DOM.chatInput.addEventListener("keydown", e => { if (e.key === "Enter") sendMsg(); });
+    DOM.btnCoin.addEventListener("click", () => {
+      if (isConnected) {
+        const res = Math.random() > 0.5 ? "🪙 Heads!" : "🪙 Tails!";
+        DOM.chatInput.value = res; sendMsg();
+      }
+    });
+    DOM.btnDice.addEventListener("click", () => {
+      if (isConnected) {
+        const res = `🎲 Rolled a ${Math.floor(Math.random() * 6) + 1}!`;
+        DOM.chatInput.value = res; sendMsg();
+      }
+    });
+
+    // Avatars Loop
+    let anim = 0;
+    function renderAvatars() {
+      anim += 0.04;
+      const breath = Math.sin(anim) * 2;
+      [DOM.localCanvas, DOM.remoteCanvas].forEach((canvas, idx) => {
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d"), w = canvas.width, h = canvas.height;
+        if (!w || !h) return;
+        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = "#0c1322"; ctx.fillRect(0, 0, w, h);
+        const cx = w / 2, cy = h * 0.45 + breath, r = Math.min(w, h) * 0.16;
+        ctx.beginPath(); ctx.fillStyle = idx === 0 ? "#2563eb" : "#f59e0b";
+        ctx.arc(cx, cy + r * 2.2, r * 1.8, Math.PI, 0, false); ctx.fill();
+        ctx.beginPath(); ctx.fillStyle = "#f1c27d";
+        ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
+      });
+      requestAnimationFrame(renderAvatars);
+    }
+
+    function resize() {
+      [DOM.localCanvas, DOM.remoteCanvas].forEach(c => {
+        if (!c) return;
+        const rect = c.getBoundingClientRect();
+        c.width = rect.width; c.height = rect.height;
+      });
+    }
+    window.addEventListener("resize", resize);
+    resize();
+    renderAvatars();
+  </script>
 </body>
 </html>
