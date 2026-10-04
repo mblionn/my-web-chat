@@ -1,6 +1,6 @@
 // =========================================================================
 // 0. COMPATIBILITY & CANVAS POLYFILLS
-// =========================================================
+// =========================================================================
 if (!CanvasRenderingContext2D.prototype.roundRect) {
   CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, radii) {
     if (!radii) {
@@ -19,7 +19,7 @@ if (!CanvasRenderingContext2D.prototype.roundRect) {
 }
 
 // =========================================================================
-// 1. BACKEND & SOCKET INITIALIZATION
+// 1. BACKEND & WEBRTC INITIALIZATION
 // =========================================================================
 const BACKEND_URL = "https://my-web-chat-production.up.railway.app";
 
@@ -49,14 +49,14 @@ let ttsEnabled = false;
 let captionsEnabled = false;
 let currentFacingMode = "user";
 
-// Speed Chat Mode State
+// Speed Chat
 let isSpeedMode = false;
 let speedSecondsRemaining = 60;
 let speedTimerInterval = null;
 let hasVotedExtend = false;
 let partnerVotedExtend = false;
 
-// Video Recording
+// Media Recording
 let mediaRecorder = null;
 let recordedChunks = [];
 let isRecordingClip = false;
@@ -64,7 +64,6 @@ let recordTimeout = null;
 
 let strangersMet = 0;
 let chatHistoryLog = [];
-
 let userTags = ["chatting", "music"];
 const blockedPeers = new Set();
 let blurTimeout = null;
@@ -75,15 +74,23 @@ let callTimerInterval = null;
 let callSecondsElapsed = 0;
 let statsPollInterval = null;
 
-// Web Audio Mic DSP Filters
+let audioCtx = null;
 let micAnalyser = null;
 let micDataArray = null;
 let micAnimFrame = null;
 let micSourceNode = null;
 let micFilterNode = null;
-
-// Speech Recognition
 let speechRecognizer = null;
+
+let currentWyr = null;
+let myWyrVote = null;
+let tttBoard = Array(9).fill(null);
+let mySymbol = "X";
+let isMyTurn = false;
+let gameActive = false;
+let isDrawing = false;
+let lastX = 0;
+let lastY = 0;
 
 const ICEBREAKER_PROMPTS = [
   "If you could have dinner with any historical person, who would it be?",
@@ -121,22 +128,8 @@ const DARE_PROMPTS = [
   "Do 10 rapid push-ups or jumping jacks on camera."
 ];
 
-let currentWyr = null;
-let myWyrVote = null;
-
-// Tic-Tac-Toe State
-let tttBoard = Array(9).fill(null);
-let mySymbol = "X";
-let isMyTurn = false;
-let gameActive = false;
-
-// Whiteboard Drawing State
-let isDrawing = false;
-let lastX = 0;
-let lastY = 0;
-
 // =========================================================================
-// 2. DOM ELEMENT REFERENCES
+// 2. DOM REFERENCES
 // =========================================================================
 const vibeSelect = document.getElementById("vibeSelect");
 const filterSelect = document.getElementById("filterSelect");
@@ -146,34 +139,18 @@ const voiceFxSelect = document.getElementById("voiceFxSelect");
 const arPropSelect = document.getElementById("arPropSelect");
 const arPropOverlay = document.getElementById("arPropOverlay");
 
-// Top Nav Controls
 const btnToggleSound = document.getElementById("btnToggleSound");
 const btnToggleAudioOnly = document.getElementById("btnToggleAudioOnly");
 const btnToggleHardware = document.getElementById("btnToggleHardware");
-
-// Settings Modal References
-const btnOpenSettingsMenu = document.getElementById("btnOpenSettingsMenu");
-const settingsMenuModal = document.getElementById("settingsMenuModal");
-const btnCloseSettingsMenu = document.getElementById("btnCloseSettingsMenu");
-
-// Inside Settings Modal Controls
 const btnToggleSpeedMode = document.getElementById("btnToggleSpeedMode");
 const btnRecordClip = document.getElementById("btnRecordClip");
 const btnToggleCaptions = document.getElementById("btnToggleCaptions");
 const btnToggleTTS = document.getElementById("btnToggleTTS");
 
-// Speed Chat HUD
 const speedTimerBadge = document.getElementById("speedTimerBadge");
 const speedTimerValue = document.getElementById("speedTimerValue");
 const btnExtendTime = document.getElementById("btnExtendTime");
 
-// Chat Header Dropdowns
-const btnOpenGamesDropdown = document.getElementById("btnOpenGamesDropdown");
-const gamesDropdownList = document.getElementById("gamesDropdownList");
-const btnOpenToolsDropdown = document.getElementById("btnOpenToolsDropdown");
-const toolsDropdownList = document.getElementById("toolsDropdownList");
-
-// Modals & Games Triggers
 const btnOpenTOD = document.getElementById("btnOpenTOD");
 const todModal = document.getElementById("todModal");
 const btnTodClose = document.getElementById("btnTodClose");
@@ -201,12 +178,10 @@ const wbColorPicker = document.getElementById("wbColorPicker");
 const btnWbClear = document.getElementById("btnWbClear");
 const btnWbClose = document.getElementById("btnWbClose");
 
-// Media Action Elements
 const btnSnapshot = document.getElementById("btnSnapshot");
 const btnShareRoom = document.getElementById("btnShareRoom");
 const btnExportChat = document.getElementById("btnExportChat");
 
-// HUD Readouts & Stage Viewports
 const localVideo = document.getElementById("localVideo");
 const remoteVideo = document.getElementById("remoteVideo");
 const localCanvas = document.getElementById("localCanvas");
@@ -231,7 +206,6 @@ const localLabel = document.getElementById("localLabel");
 const userCount = document.getElementById("userCount");
 const p2pStatus = document.getElementById("p2pStatus");
 
-// Controls Deck (Footer)
 const btnMainAction = document.getElementById("btnMainAction");
 const btnNextStranger = document.getElementById("btnNextStranger");
 const btnReportUser = document.getElementById("btnReportUser");
@@ -242,7 +216,6 @@ const tagsList = document.getElementById("tagsList");
 const tagInput = document.getElementById("tagInput");
 const btnAddTag = document.getElementById("btnAddTag");
 
-// Chat Input Area
 const chatContainer = document.getElementById("chatContainer");
 const chatInput = document.getElementById("chatInput");
 const btnSendMessage = document.getElementById("btnSendMessage");
@@ -250,7 +223,6 @@ const btnRandomIcebreaker = document.getElementById("btnRandomIcebreaker");
 const btnCoinFlip = document.getElementById("btnCoinFlip");
 const btnDiceRoll = document.getElementById("btnDiceRoll");
 
-// Stage Overlay Toolbars
 const btnSwitchCamera = document.getElementById("btnSwitchCamera");
 const btnToggleMirror = document.getElementById("btnToggleMirror");
 const btnMuteAudio = document.getElementById("btnMuteAudio");
@@ -267,70 +239,7 @@ const mBtnToggleScreenShare = document.getElementById("mBtnToggleScreenShare");
 const mBtnTriggerPopoutPiP = document.getElementById("mBtnTriggerPopoutPiP");
 const mBtnToggleFullscreen = document.getElementById("mBtnToggleFullscreen");
 
-// =========================================================================
-// 3. SETTINGS MODAL & CHAT DROPDOWNS ENGINE
-// =========================================================================
-if (btnOpenSettingsMenu && settingsMenuModal) {
-  btnOpenSettingsMenu.addEventListener("click", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    settingsMenuModal.classList.add("show");
-  });
-}
-
-if (btnCloseSettingsMenu && settingsMenuModal) {
-  btnCloseSettingsMenu.addEventListener("click", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    settingsMenuModal.classList.remove("show");
-  });
-}
-
-if (settingsMenuModal) {
-  settingsMenuModal.addEventListener("click", (e) => {
-    if (e.target === settingsMenuModal) {
-      settingsMenuModal.classList.remove("show");
-    }
-  });
-}
-
-// Games Dropdown Toggle
-if (btnOpenGamesDropdown && gamesDropdownList) {
-  btnOpenGamesDropdown.addEventListener("click", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (toolsDropdownList) toolsDropdownList.classList.remove("show");
-    gamesDropdownList.classList.toggle("show");
-  });
-}
-
-// Tools Dropdown Toggle
-if (btnOpenToolsDropdown && toolsDropdownList) {
-  btnOpenToolsDropdown.addEventListener("click", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (gamesDropdownList) gamesDropdownList.classList.remove("show");
-    toolsDropdownList.classList.toggle("show");
-  });
-}
-
-// Global outside click closer
-document.addEventListener("click", (e) => {
-  if (gamesDropdownList && !gamesDropdownList.contains(e.target) && e.target !== btnOpenGamesDropdown) {
-    gamesDropdownList.classList.remove("show");
-  }
-  if (toolsDropdownList && !toolsDropdownList.contains(e.target) && e.target !== btnOpenToolsDropdown) {
-    toolsDropdownList.classList.remove("show");
-  }
-});
-
-document.querySelectorAll(".dropdown-item").forEach((btn) => {
-  btn.addEventListener("click", () => {
-    if (gamesDropdownList) gamesDropdownList.classList.remove("show");
-    if (toolsDropdownList) toolsDropdownList.classList.remove("show");
-  });
-});
-
+// Visual Filter Effect Listener
 if (filterSelect) {
   filterSelect.addEventListener("change", (e) => {
     localVideo.style.filter = e.target.value;
@@ -338,9 +247,290 @@ if (filterSelect) {
 }
 
 // =========================================================================
-// 4. SYNTHESIZED WEB AUDIO & DSP VOICE FILTERS
+// 3. UNBLOCKED GAME LAUNCHERS
 // =========================================================================
-let audioCtx = null;
+if (btnOpenTOD) {
+  btnOpenTOD.addEventListener("click", () => {
+    if (todModal) todModal.style.display = "flex";
+  });
+}
+
+if (btnTodClose) {
+  btnTodClose.addEventListener("click", () => {
+    if (todModal) todModal.style.display = "none";
+  });
+}
+
+if (btnPickTruth) {
+  btnPickTruth.addEventListener("click", () => {
+    const p = TRUTH_PROMPTS[Math.floor(Math.random() * TRUTH_PROMPTS.length)];
+    todPromptText.textContent = "📖 [Truth]: " + p;
+    sendChatMessage(`📖 [Truth Challenge]: ${p}`);
+    if (activeDataConnection && activeDataConnection.open) {
+      activeDataConnection.send({ type: "tod_card", text: "📖 [Truth]: " + p });
+    }
+  });
+}
+
+if (btnPickDare) {
+  btnPickDare.addEventListener("click", () => {
+    const p = DARE_PROMPTS[Math.floor(Math.random() * DARE_PROMPTS.length)];
+    todPromptText.textContent = "⚡ [Dare]: " + p;
+    sendChatMessage(`⚡ [Dare Challenge]: ${p}`);
+    if (activeDataConnection && activeDataConnection.open) {
+      activeDataConnection.send({ type: "tod_card", text: "⚡ [Dare]: " + p });
+    }
+  });
+}
+
+if (btnOpenWYR) {
+  btnOpenWYR.addEventListener("click", () => startWyrGame());
+}
+
+if (btnWyrClose) {
+  btnWyrClose.addEventListener("click", () => {
+    if (wyrModal) wyrModal.style.display = "none";
+  });
+}
+
+function startWyrGame(promptObj = null) {
+  currentWyr = promptObj || WYR_DILEMMAS[Math.floor(Math.random() * WYR_DILEMMAS.length)];
+  myWyrVote = null;
+  if (btnWyrOptA) {
+    btnWyrOptA.textContent = "A: " + currentWyr.a;
+    btnWyrOptA.style.opacity = "1";
+  }
+  if (btnWyrOptB) {
+    btnWyrOptB.textContent = "B: " + currentWyr.b;
+    btnWyrOptB.style.opacity = "1";
+  }
+  if (wyrStatusLabel) wyrStatusLabel.textContent = "Cast your vote to see what the stranger picked!";
+  if (wyrModal) wyrModal.style.display = "flex";
+
+  if (!promptObj && activeDataConnection && activeDataConnection.open) {
+    activeDataConnection.send({ type: "wyr_prompt", data: currentWyr });
+  }
+}
+
+if (btnWyrOptA) btnWyrOptA.addEventListener("click", () => handleWyrVote("A"));
+if (btnWyrOptB) btnWyrOptB.addEventListener("click", () => handleWyrVote("B"));
+
+function handleWyrVote(choice) {
+  if (myWyrVote) return;
+  myWyrVote = choice;
+  wyrStatusLabel.textContent = `You picked: [${choice}]. Waiting for stranger's vote...`;
+  if (choice === "A") btnWyrOptB.style.opacity = "0.5";
+  if (choice === "B") btnWyrOptA.style.opacity = "0.5";
+
+  if (activeDataConnection && activeDataConnection.open) {
+    activeDataConnection.send({ type: "wyr_vote", choice: choice });
+  }
+}
+
+if (btnOpenGame) {
+  btnOpenGame.addEventListener("click", () => {
+    openGameModal(true);
+    if (activeDataConnection && activeDataConnection.open) {
+      activeDataConnection.send({ type: "game_invite" });
+    }
+  });
+}
+
+if (btnGameClose) {
+  btnGameClose.addEventListener("click", () => {
+    if (gameModal) gameModal.style.display = "none";
+    gameActive = false;
+    if (activeDataConnection && activeDataConnection.open) {
+      activeDataConnection.send({ type: "game_close" });
+    }
+  });
+}
+
+function openGameModal(isStarter = true) {
+  resetTTTBoard();
+  mySymbol = isStarter ? "X" : "O";
+  isMyTurn = isStarter;
+  gameActive = true;
+  if (gameModal) gameModal.style.display = "flex";
+  updateGameStatus();
+}
+
+function resetTTTBoard() {
+  tttBoard = Array(9).fill(null);
+  document.querySelectorAll(".ttt-cell").forEach((cell) => {
+    cell.textContent = "";
+    cell.className = "ttt-cell";
+  });
+}
+
+function updateGameStatus() {
+  if (!gameActive || !gameStatusLabel) return;
+  gameStatusLabel.textContent = isMyTurn ? `Your turn (${mySymbol})` : `Stranger's turn (${mySymbol === "X" ? "O" : "X"})`;
+}
+
+if (tttGrid) {
+  tttGrid.addEventListener("click", (e) => {
+    if (!gameActive || !isMyTurn) return;
+    const cell = e.target.closest(".ttt-cell");
+    if (!cell) return;
+    const idx = parseInt(cell.getAttribute("data-idx"));
+    if (tttBoard[idx] !== null) return;
+
+    applyMove(idx, mySymbol);
+    if (activeDataConnection && activeDataConnection.open) {
+      activeDataConnection.send({ type: "game_move", index: idx, symbol: mySymbol });
+    }
+
+    if (checkTTTWinner()) return;
+    isMyTurn = false;
+    updateGameStatus();
+  });
+}
+
+function applyMove(index, symbol) {
+  tttBoard[index] = symbol;
+  const cell = document.querySelector(`.ttt-cell[data-idx="${index}"]`);
+  if (cell) {
+    cell.textContent = symbol;
+    cell.classList.add(symbol === "X" ? "x-cell" : "o-cell");
+  }
+}
+
+function checkTTTWinner() {
+  const wins = [
+    [0, 1, 2], [3, 4, 5], [6, 7, 8],
+    [0, 3, 6], [1, 4, 7], [2, 5, 8],
+    [0, 4, 8], [2, 4, 6]
+  ];
+
+  for (let [a, b, c] of wins) {
+    if (tttBoard[a] && tttBoard[a] === tttBoard[b] && tttBoard[a] === tttBoard[c]) {
+      const winner = tttBoard[a];
+      gameStatusLabel.textContent = winner === mySymbol ? "🎉 You Won!" : "Stranger Won!";
+      gameActive = false;
+      return true;
+    }
+  }
+
+  if (tttBoard.every((c) => c !== null)) {
+    gameStatusLabel.textContent = "🤝 It's a Draw!";
+    gameActive = false;
+    return true;
+  }
+  return false;
+}
+
+if (btnOpenWhiteboard) {
+  btnOpenWhiteboard.addEventListener("click", () => {
+    if (whiteboardModal) {
+      whiteboardModal.style.display = "flex";
+      resizeWhiteboard();
+    }
+    if (activeDataConnection && activeDataConnection.open) {
+      activeDataConnection.send({ type: "whiteboard_open" });
+    }
+  });
+}
+
+if (btnWbClose) {
+  btnWbClose.addEventListener("click", () => {
+    if (whiteboardModal) whiteboardModal.style.display = "none";
+    if (activeDataConnection && activeDataConnection.open) {
+      activeDataConnection.send({ type: "whiteboard_close" });
+    }
+  });
+}
+
+function resizeWhiteboard() {
+  if (!whiteboardCanvas) return;
+  const rect = whiteboardCanvas.getBoundingClientRect();
+  whiteboardCanvas.width = rect.width;
+  whiteboardCanvas.height = rect.height;
+}
+
+if (btnWbClear) {
+  btnWbClear.addEventListener("click", () => {
+    const ctx = whiteboardCanvas.getContext("2d");
+    ctx.clearRect(0, 0, whiteboardCanvas.width, whiteboardCanvas.height);
+    if (activeDataConnection && activeDataConnection.open) {
+      activeDataConnection.send({ type: "whiteboard_clear" });
+    }
+  });
+}
+
+function drawSegment(x0, y0, x1, y1, color, emit = false) {
+  if (!whiteboardCanvas) return;
+  const ctx = whiteboardCanvas.getContext("2d");
+  ctx.beginPath();
+  ctx.moveTo(x0, y0);
+  ctx.lineTo(x1, y1);
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 3;
+  ctx.lineCap = "round";
+  ctx.stroke();
+  ctx.closePath();
+
+  if (emit && activeDataConnection && activeDataConnection.open) {
+    activeDataConnection.send({
+      type: "whiteboard_draw",
+      x0: x0 / whiteboardCanvas.width,
+      y0: y0 / whiteboardCanvas.height,
+      x1: x1 / whiteboardCanvas.width,
+      y1: y1 / whiteboardCanvas.height,
+      color: color
+    });
+  }
+}
+
+function getWbPointerPos(e) {
+  const rect = whiteboardCanvas.getBoundingClientRect();
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  return {
+    x: clientX - rect.left,
+    y: clientY - rect.top
+  };
+}
+
+if (whiteboardCanvas) {
+  whiteboardCanvas.addEventListener("mousedown", (e) => {
+    isDrawing = true;
+    const pos = getWbPointerPos(e);
+    lastX = pos.x;
+    lastY = pos.y;
+  });
+
+  whiteboardCanvas.addEventListener("mousemove", (e) => {
+    if (!isDrawing) return;
+    const pos = getWbPointerPos(e);
+    drawSegment(lastX, lastY, pos.x, pos.y, wbColorPicker.value, true);
+    lastX = pos.x;
+    lastY = pos.y;
+  });
+
+  window.addEventListener("mouseup", () => { isDrawing = false; });
+
+  whiteboardCanvas.addEventListener("touchstart", (e) => {
+    isDrawing = true;
+    const pos = getWbPointerPos(e);
+    lastX = pos.x;
+    lastY = pos.y;
+  }, { passive: true });
+
+  whiteboardCanvas.addEventListener("touchmove", (e) => {
+    if (!isDrawing) return;
+    const pos = getWbPointerPos(e);
+    drawSegment(lastX, lastY, pos.x, pos.y, wbColorPicker.value, true);
+    lastX = pos.x;
+    lastY = pos.y;
+  }, { passive: true });
+
+  whiteboardCanvas.addEventListener("touchend", () => { isDrawing = false; });
+}
+
+// =========================================================================
+// 4. AUDIO DSP, SOUNDS & MIC VISUALIZER
+// =========================================================================
 function getAudioContext() {
   if (!audioCtx) {
     const AudioClass = window.AudioContext || window.webkitAudioContext;
@@ -399,7 +589,7 @@ function setupMicVisualizer(stream) {
     if (micAnimFrame) cancelAnimationFrame(micAnimFrame);
     checkMicLevel();
   } catch (e) {
-    console.warn("Could not bind mic analyzer:", e);
+    console.warn("Mic analyzer note:", e);
   }
 }
 
@@ -423,9 +613,7 @@ function applyVoiceFilter(mode) {
 }
 
 if (voiceFxSelect) {
-  voiceFxSelect.addEventListener("change", (e) => {
-    applyVoiceFilter(e.target.value);
-  });
+  voiceFxSelect.addEventListener("change", (e) => applyVoiceFilter(e.target.value));
 }
 
 if (vibeSelect) {
@@ -447,113 +635,97 @@ function playSound(type) {
     if (type === "match") {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
+      osc.connect(gain); gain.connect(ctx.destination);
       osc.type = "sine";
       osc.frequency.setValueAtTime(523.25, now);
       osc.frequency.exponentialRampToValueAtTime(783.99, now + 0.12);
       gain.gain.setValueAtTime(0.25, now);
       gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
-      osc.start(now);
-      osc.stop(now + 0.35);
+      osc.start(now); osc.stop(now + 0.35);
     } else if (type === "message") {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
+      osc.connect(gain); gain.connect(ctx.destination);
       osc.type = "triangle";
       osc.frequency.setValueAtTime(400, now);
       osc.frequency.exponentialRampToValueAtTime(800, now + 0.08);
       gain.gain.setValueAtTime(0.2, now);
       gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
-      osc.start(now);
-      osc.stop(now + 0.15);
+      osc.start(now); osc.stop(now + 0.15);
     } else if (type === "leave") {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
+      osc.connect(gain); gain.connect(ctx.destination);
       osc.type = "sine";
       osc.frequency.setValueAtTime(320, now);
       osc.frequency.exponentialRampToValueAtTime(140, now + 0.2);
       gain.gain.setValueAtTime(0.2, now);
       gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
-      osc.start(now);
-      osc.stop(now + 0.25);
+      osc.start(now); osc.stop(now + 0.25);
     } else if (type === "reaction") {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
+      osc.connect(gain); gain.connect(ctx.destination);
       osc.type = "sine";
       osc.frequency.setValueAtTime(600, now);
       osc.frequency.exponentialRampToValueAtTime(950, now + 0.1);
       gain.gain.setValueAtTime(0.12, now);
       gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
-      osc.start(now);
-      osc.stop(now + 0.2);
+      osc.start(now); osc.stop(now + 0.2);
     } else if (type === "airhorn") {
       [466.16, 470].forEach((freq) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
+        osc.connect(gain); gain.connect(ctx.destination);
         osc.type = "sawtooth";
         osc.frequency.setValueAtTime(freq, now);
         gain.gain.setValueAtTime(0.25, now);
         gain.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
-        osc.start(now);
-        osc.stop(now + 0.45);
+        osc.start(now); osc.stop(now + 0.45);
       });
     } else if (type === "laser") {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
+      osc.connect(gain); gain.connect(ctx.destination);
       osc.type = "sawtooth";
       osc.frequency.setValueAtTime(1600, now);
       osc.frequency.exponentialRampToValueAtTime(120, now + 0.25);
       gain.gain.setValueAtTime(0.22, now);
       gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
-      osc.start(now);
-      osc.stop(now + 0.25);
+      osc.start(now); osc.stop(now + 0.25);
     } else if (type === "applause") {
       for (let i = 0; i < 6; i++) {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
+        osc.connect(gain); gain.connect(ctx.destination);
         osc.type = "triangle";
         osc.frequency.setValueAtTime(150 + Math.random() * 200, now + i * 0.05);
         gain.gain.setValueAtTime(0.15, now + i * 0.05);
         gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.05 + 0.08);
-        osc.start(now + i * 0.05);
-        osc.stop(now + i * 0.05 + 0.08);
+        osc.start(now + i * 0.05); osc.stop(now + i * 0.05 + 0.08);
       }
     } else if (type === "victory") {
       [523.25, 659.25, 783.99, 1046.5].forEach((note, idx) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
+        osc.connect(gain); gain.connect(ctx.destination);
         osc.type = "sine";
         osc.frequency.setValueAtTime(note, now + idx * 0.1);
         gain.gain.setValueAtTime(0.2, now + idx * 0.1);
         gain.gain.exponentialRampToValueAtTime(0.01, now + idx * 0.1 + 0.3);
-        osc.start(now + idx * 0.1);
-        osc.stop(now + idx * 0.1 + 0.3);
+        osc.start(now + idx * 0.1); osc.stop(now + idx * 0.1 + 0.3);
       });
     }
   } catch (err) {
-    console.warn("Audio FX error:", err);
+    console.warn("Audio FX note:", err);
   }
 }
 
 if (btnToggleSound) {
   btnToggleSound.addEventListener("click", () => {
     soundEnabled = !soundEnabled;
-    btnToggleSound.textContent = soundEnabled ? "🔊" : "🔇";
-    btnToggleSound.classList.toggle("active", soundEnabled);
+    btnToggleSound.textContent = soundEnabled ? "🔊 Sound ON" : "🔇 Sound OFF";
+    btnToggleSound.style.color = soundEnabled ? "#cbd5e1" : "#ef4444";
   });
 }
 
@@ -561,7 +733,6 @@ if (btnToggleAudioOnly) {
   btnToggleAudioOnly.addEventListener("click", () => {
     isAudioOnlyMode = !isAudioOnlyMode;
     btnToggleAudioOnly.textContent = isAudioOnlyMode ? "📻 Audio Mode" : "🎧 Video ON";
-    btnToggleAudioOnly.classList.toggle("active", isAudioOnlyMode);
 
     if (localStream) {
       localStream.getVideoTracks().forEach((t) => (t.enabled = !isAudioOnlyMode));
@@ -586,7 +757,7 @@ if (btnRecordClip) {
       return;
     }
 
-    const streamToRecord = remoteVideo && remoteVideo.srcObject && isConnected ? remoteVideo.srcObject : localStream;
+    const streamToRecord = (remoteVideo && remoteVideo.srcObject && isConnected) ? remoteVideo.srcObject : localStream;
     if (!streamToRecord) {
       alert("Enable camera or connect with someone first to record a clip!");
       return;
@@ -613,7 +784,7 @@ if (btnRecordClip) {
       mediaRecorder.start();
       isRecordingClip = true;
       btnRecordClip.textContent = "🔴 Recording (15s)";
-      btnRecordClip.classList.add("active");
+      btnRecordClip.classList.add("record-btn-indicator");
 
       clearTimeout(recordTimeout);
       recordTimeout = setTimeout(() => {
@@ -634,8 +805,8 @@ function stopClipRecording() {
     mediaRecorder.stop();
   }
   if (btnRecordClip) {
-    btnRecordClip.textContent = "📹 Record Clip (15s)";
-    btnRecordClip.classList.remove("active");
+    btnRecordClip.textContent = "📹 Clip";
+    btnRecordClip.classList.remove("record-btn-indicator");
   }
 }
 
@@ -690,17 +861,13 @@ if (btnToggleCaptions) {
       return;
     }
     captionsEnabled = !captionsEnabled;
-    btnToggleCaptions.textContent = captionsEnabled ? "💬 Live CC: On" : "💬 Live CC: Off";
+    btnToggleCaptions.textContent = captionsEnabled ? "💬 CC: Live" : "💬 CC: Off";
     btnToggleCaptions.classList.toggle("active", captionsEnabled);
 
     if (captionsEnabled) {
-      try {
-        speechRecognizer.start();
-      } catch (e) {}
+      try { speechRecognizer.start(); } catch (e) {}
     } else {
-      try {
-        speechRecognizer.stop();
-      } catch (e) {}
+      try { speechRecognizer.stop(); } catch (e) {}
       if (subtitleOverlay) subtitleOverlay.style.display = "none";
     }
   });
@@ -709,7 +876,7 @@ if (btnToggleCaptions) {
 if (btnToggleTTS) {
   btnToggleTTS.addEventListener("click", () => {
     ttsEnabled = !ttsEnabled;
-    btnToggleTTS.textContent = ttsEnabled ? "🗣 Audio TTS: On" : "🗣 Audio TTS: Off";
+    btnToggleTTS.textContent = ttsEnabled ? "🗣 TTS: On" : "🗣 TTS: Off";
     btnToggleTTS.classList.toggle("active", ttsEnabled);
   });
 }
@@ -723,7 +890,7 @@ function speakText(text) {
 }
 
 // =========================================================================
-// 7. PIP POP-OUT & SCREEN SHARING
+// 7. PIP POPOUT & SCREEN SHARING
 // =========================================================================
 async function togglePopoutPiP() {
   if (document.pictureInPictureElement) {
@@ -816,309 +983,7 @@ if (arPropSelect) {
 }
 
 // =========================================================================
-// 8. UNBLOCKED GAME LAUNCHERS (TRUTH OR DARE, WYR, TIC-TAC-TOE, WHITEBOARD)
-// =========================================================================
-if (btnOpenTOD) {
-  btnOpenTOD.addEventListener("click", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (todModal) todModal.style.display = "flex";
-  });
-}
-
-if (btnTodClose) {
-  btnTodClose.addEventListener("click", (e) => {
-    e.preventDefault();
-    if (todModal) todModal.style.display = "none";
-  });
-}
-
-if (btnPickTruth) {
-  btnPickTruth.addEventListener("click", () => {
-    const p = TRUTH_PROMPTS[Math.floor(Math.random() * TRUTH_PROMPTS.length)];
-    todPromptText.textContent = "📖 [Truth]: " + p;
-    sendChatMessage(`📖 [Truth Challenge]: ${p}`);
-    if (activeDataConnection && activeDataConnection.open) {
-      activeDataConnection.send({ type: "tod_card", text: "📖 [Truth]: " + p });
-    }
-  });
-}
-
-if (btnPickDare) {
-  btnPickDare.addEventListener("click", () => {
-    const p = DARE_PROMPTS[Math.floor(Math.random() * DARE_PROMPTS.length)];
-    todPromptText.textContent = "⚡ [Dare]: " + p;
-    sendChatMessage(`⚡ [Dare Challenge]: ${p}`);
-    if (activeDataConnection && activeDataConnection.open) {
-      activeDataConnection.send({ type: "tod_card", text: "⚡ [Dare]: " + p });
-    }
-  });
-}
-
-if (btnOpenWYR) {
-  btnOpenWYR.addEventListener("click", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    startWyrGame();
-  });
-}
-
-if (btnWyrClose) {
-  btnWyrClose.addEventListener("click", (e) => {
-    e.preventDefault();
-    if (wyrModal) wyrModal.style.display = "none";
-  });
-}
-
-function startWyrGame(promptObj = null) {
-  currentWyr = promptObj || WYR_DILEMMAS[Math.floor(Math.random() * WYR_DILEMMAS.length)];
-  myWyrVote = null;
-  if (btnWyrOptA) {
-    btnWyrOptA.textContent = "A: " + currentWyr.a;
-    btnWyrOptA.style.opacity = "1";
-  }
-  if (btnWyrOptB) {
-    btnWyrOptB.textContent = "B: " + currentWyr.b;
-    btnWyrOptB.style.opacity = "1";
-  }
-  if (wyrStatusLabel) wyrStatusLabel.textContent = "Cast your vote to see what the stranger picked!";
-  if (wyrModal) wyrModal.style.display = "flex";
-
-  if (!promptObj && activeDataConnection && activeDataConnection.open) {
-    activeDataConnection.send({ type: "wyr_prompt", data: currentWyr });
-  }
-}
-
-if (btnWyrOptA) btnWyrOptA.addEventListener("click", () => handleWyrVote("A"));
-if (btnWyrOptB) btnWyrOptB.addEventListener("click", () => handleWyrVote("B"));
-
-function handleWyrVote(choice) {
-  if (myWyrVote) return;
-  myWyrVote = choice;
-  wyrStatusLabel.textContent = `You picked: [${choice}]. Waiting for stranger's vote...`;
-  if (choice === "A") btnWyrOptB.style.opacity = "0.5";
-  if (choice === "B") btnWyrOptA.style.opacity = "0.5";
-
-  if (activeDataConnection && activeDataConnection.open) {
-    activeDataConnection.send({ type: "wyr_vote", choice: choice });
-  }
-}
-
-// Tic-Tac-Toe Game
-if (btnOpenGame) {
-  btnOpenGame.addEventListener("click", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    openGameModal(true);
-    if (activeDataConnection && activeDataConnection.open) {
-      activeDataConnection.send({ type: "game_invite" });
-    }
-  });
-}
-
-if (btnGameClose) {
-  btnGameClose.addEventListener("click", (e) => {
-    e.preventDefault();
-    if (gameModal) gameModal.style.display = "none";
-    gameActive = false;
-    if (activeDataConnection && activeDataConnection.open) {
-      activeDataConnection.send({ type: "game_close" });
-    }
-  });
-}
-
-function openGameModal(isStarter = true) {
-  resetTTTBoard();
-  mySymbol = isStarter ? "X" : "O";
-  isMyTurn = isStarter;
-  gameActive = true;
-  if (gameModal) gameModal.style.display = "flex";
-  updateGameStatus();
-}
-
-function resetTTTBoard() {
-  tttBoard = Array(9).fill(null);
-  document.querySelectorAll(".ttt-cell").forEach((cell) => {
-    cell.textContent = "";
-    cell.className = "ttt-cell";
-  });
-}
-
-function updateGameStatus() {
-  if (!gameActive || !gameStatusLabel) return;
-  gameStatusLabel.textContent = isMyTurn ? `Your turn (${mySymbol})` : `Stranger's turn (${mySymbol === "X" ? "O" : "X"})`;
-}
-
-if (tttGrid) {
-  tttGrid.addEventListener("click", (e) => {
-    if (!gameActive || !isMyTurn) return;
-    const cell = e.target.closest(".ttt-cell");
-    if (!cell) return;
-    const idx = parseInt(cell.getAttribute("data-idx"));
-    if (tttBoard[idx] !== null) return;
-
-    applyMove(idx, mySymbol);
-    if (activeDataConnection && activeDataConnection.open) {
-      activeDataConnection.send({ type: "game_move", index: idx, symbol: mySymbol });
-    }
-
-    if (checkTTTWinner()) return;
-    isMyTurn = false;
-    updateGameStatus();
-  });
-}
-
-function applyMove(index, symbol) {
-  tttBoard[index] = symbol;
-  const cell = document.querySelector(`.ttt-cell[data-idx="${index}"]`);
-  if (cell) {
-    cell.textContent = symbol;
-    cell.classList.add(symbol === "X" ? "x-cell" : "o-cell");
-  }
-}
-
-function checkTTTWinner() {
-  const wins = [
-    [0, 1, 2], [3, 4, 5], [6, 7, 8],
-    [0, 3, 6], [1, 4, 7], [2, 5, 8],
-    [0, 4, 8], [2, 4, 6]
-  ];
-
-  for (let [a, b, c] of wins) {
-    if (tttBoard[a] && tttBoard[a] === tttBoard[b] && tttBoard[a] === tttBoard[c]) {
-      const winner = tttBoard[a];
-      gameStatusLabel.textContent = winner === mySymbol ? "🎉 You Won!" : "Stranger Won!";
-      gameActive = false;
-      return true;
-    }
-  }
-
-  if (tttBoard.every((c) => c !== null)) {
-    gameStatusLabel.textContent = "🤝 It's a Draw!";
-    gameActive = false;
-    return true;
-  }
-  return false;
-}
-
-// Shared Whiteboard
-if (btnOpenWhiteboard) {
-  btnOpenWhiteboard.addEventListener("click", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (whiteboardModal) {
-      whiteboardModal.style.display = "flex";
-      resizeWhiteboard();
-    }
-    if (activeDataConnection && activeDataConnection.open) {
-      activeDataConnection.send({ type: "whiteboard_open" });
-    }
-  });
-}
-
-if (btnWbClose) {
-  btnWbClose.addEventListener("click", (e) => {
-    e.preventDefault();
-    if (whiteboardModal) whiteboardModal.style.display = "none";
-    if (activeDataConnection && activeDataConnection.open) {
-      activeDataConnection.send({ type: "whiteboard_close" });
-    }
-  });
-}
-
-function resizeWhiteboard() {
-  if (!whiteboardCanvas) return;
-  const rect = whiteboardCanvas.getBoundingClientRect();
-  whiteboardCanvas.width = rect.width;
-  whiteboardCanvas.height = rect.height;
-}
-
-if (btnWbClear) {
-  btnWbClear.addEventListener("click", () => {
-    const ctx = whiteboardCanvas.getContext("2d");
-    ctx.clearRect(0, 0, whiteboardCanvas.width, whiteboardCanvas.height);
-    if (activeDataConnection && activeDataConnection.open) {
-      activeDataConnection.send({ type: "whiteboard_clear" });
-    }
-  });
-}
-
-function drawSegment(x0, y0, x1, y1, color, emit = false) {
-  if (!whiteboardCanvas) return;
-  const ctx = whiteboardCanvas.getContext("2d");
-  ctx.beginPath();
-  ctx.moveTo(x0, y0);
-  ctx.lineTo(x1, y1);
-  ctx.strokeStyle = color;
-  ctx.lineWidth = 3;
-  ctx.lineCap = "round";
-  ctx.stroke();
-  ctx.closePath();
-
-  if (emit && activeDataConnection && activeDataConnection.open) {
-    activeDataConnection.send({
-      type: "whiteboard_draw",
-      x0: x0 / whiteboardCanvas.width,
-      y0: y0 / whiteboardCanvas.height,
-      x1: x1 / whiteboardCanvas.width,
-      y1: y1 / whiteboardCanvas.height,
-      color: color
-    });
-  }
-}
-
-function getWbPointerPos(e) {
-  const rect = whiteboardCanvas.getBoundingClientRect();
-  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-  return {
-    x: clientX - rect.left,
-    y: clientY - rect.top
-  };
-}
-
-if (whiteboardCanvas) {
-  whiteboardCanvas.addEventListener("mousedown", (e) => {
-    isDrawing = true;
-    const pos = getWbPointerPos(e);
-    lastX = pos.x;
-    lastY = pos.y;
-  });
-
-  whiteboardCanvas.addEventListener("mousemove", (e) => {
-    if (!isDrawing) return;
-    const pos = getWbPointerPos(e);
-    drawSegment(lastX, lastY, pos.x, pos.y, wbColorPicker.value, true);
-    lastX = pos.x;
-    lastY = pos.y;
-  });
-
-  window.addEventListener("mouseup", () => {
-    isDrawing = false;
-  });
-
-  whiteboardCanvas.addEventListener("touchstart", (e) => {
-    isDrawing = true;
-    const pos = getWbPointerPos(e);
-    lastX = pos.x;
-    lastY = pos.y;
-  }, { passive: true });
-
-  whiteboardCanvas.addEventListener("touchmove", (e) => {
-    if (!isDrawing) return;
-    const pos = getWbPointerPos(e);
-    drawSegment(lastX, lastY, pos.x, pos.y, wbColorPicker.value, true);
-    lastX = pos.x;
-    lastY = pos.y;
-  }, { passive: true });
-
-  whiteboardCanvas.addEventListener("touchend", () => {
-    isDrawing = false;
-  });
-}
-
-// =========================================================================
-// 9. REACTIONS & SOUNDBOARD
+// 8. REACTIONS & SOUNDBOARD
 // =========================================================================
 function spawnFloatingEmoji(emoji) {
   if (!reactionFlyContainer) return;
@@ -1164,233 +1029,18 @@ window.addEventListener("click", () => {
   if (soundboardDrawer) soundboardDrawer.style.display = "none";
 });
 
-function startCallTimer() {
-  stopCallTimer();
-  callSecondsElapsed = 0;
-  if (!callTimer) return;
-  callTimer.textContent = "00:00";
-  callTimer.style.display = "inline-block";
-
-  callTimerInterval = setInterval(() => {
-    callSecondsElapsed++;
-    const mins = Math.floor(callSecondsElapsed / 60).toString().padStart(2, "0");
-    const secs = (callSecondsElapsed % 60).toString().padStart(2, "0");
-    callTimer.textContent = `${mins}:${secs}`;
-  }, 1000);
-}
-
-function stopCallTimer() {
-  if (callTimerInterval) {
-    clearInterval(callTimerInterval);
-    callTimerInterval = null;
-  }
-  if (callTimer) callTimer.style.display = "none";
-  callSecondsElapsed = 0;
-}
-
-function startStatsPolling(peerConnection) {
-  stopStatsPolling();
-  if (!pingIndicator) return;
-  pingIndicator.style.display = "inline-block";
-  pingIndicator.textContent = "📶 ...";
-
-  statsPollInterval = setInterval(async () => {
-    if (!peerConnection || peerConnection.connectionState !== "connected") return;
-    try {
-      const stats = await peerConnection.getStats();
-      stats.forEach((report) => {
-        if (report.type === "candidate-pair" && report.state === "succeeded") {
-          if (report.currentRoundTripTime !== undefined) {
-            const ms = Math.round(report.currentRoundTripTime * 1000);
-            pingIndicator.textContent = `📶 ${ms}ms`;
-            pingIndicator.style.color = ms < 80 ? "#10b981" : ms < 180 ? "#f59e0b" : "#ef4444";
-          }
-        }
-      });
-    } catch (e) {}
-  }, 2000);
-}
-
-function stopStatsPolling() {
-  if (statsPollInterval) {
-    clearInterval(statsPollInterval);
-    statsPollInterval = null;
-  }
-  if (pingIndicator) pingIndicator.style.display = "none";
-}
-
 // =========================================================================
-// 10. QUICK TOOLS (SNAPSHOT, SHARE ROOM, EXPORT LOG)
-// =========================================================================
-if (btnCoinFlip) {
-  btnCoinFlip.addEventListener("click", () => {
-    if (!isConnected) return;
-    const result = Math.random() > 0.5 ? "🪙 Heads!" : "🪙 Tails!";
-    sendChatMessage(`[Coin Flip]: ${result}`);
-  });
-}
-
-if (btnDiceRoll) {
-  btnDiceRoll.addEventListener("click", () => {
-    if (!isConnected) return;
-    const dice = Math.floor(Math.random() * 6) + 1;
-    sendChatMessage(`[Dice Roll]: Rolled a 🎲 ${dice}!`);
-  });
-}
-
-if (btnRandomIcebreaker) {
-  btnRandomIcebreaker.addEventListener("click", () => {
-    if (!isConnected) {
-      appendMessage("", "Start a chat first before sending an icebreaker question!", "system");
-      return;
-    }
-    const randomQ = ICEBREAKER_PROMPTS[Math.floor(Math.random() * ICEBREAKER_PROMPTS.length)];
-    sendChatMessage(`🎲 [Icebreaker]: ${randomQ}`);
-  });
-}
-
-if (btnExportChat) {
-  btnExportChat.addEventListener("click", () => {
-    if (chatHistoryLog.length === 0) {
-      appendMessage("", "No chat messages to export yet.", "system");
-      return;
-    }
-    const logText = chatHistoryLog.join("\n");
-    navigator.clipboard.writeText(logText).then(() => {
-      appendMessage("", "Chat transcript copied to clipboard!", "system");
-    }).catch(() => {
-      const blob = new Blob([logText], { type: "text/plain" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = `webtv555-chat-${Date.now()}.txt`;
-      a.click();
-    });
-  });
-}
-
-if (btnShareRoom) {
-  btnShareRoom.addEventListener("click", () => {
-    if (!myPeerId) {
-      alert("Peer ID not initialized yet. Wait a moment.");
-      return;
-    }
-    const inviteUrl = `${window.location.origin}${window.location.pathname}#room=${myPeerId}`;
-    navigator.clipboard.writeText(inviteUrl).then(() => {
-      appendMessage("", `Room link copied! Share to reconnect directly: ${inviteUrl}`, "system");
-    }).catch(() => {
-      prompt("Copy this link to invite a friend directly:", inviteUrl);
-    });
-  });
-}
-
-function checkDirectInviteRoom() {
-  const hash = window.location.hash;
-  if (hash.startsWith("#room=")) {
-    const targetPeerId = hash.replace("#room=", "").trim();
-    if (targetPeerId && targetPeerId !== myPeerId) {
-      appendMessage("", `Direct room link detected! Dialing peer: ${targetPeerId}`, "system");
-      setTimeout(() => {
-        const streamToSend = localStream && !camDisabled ? (isScreenSharing && screenStream ? screenStream : localStream) : createFallbackStream();
-        const call = peer.call(targetPeerId, streamToSend);
-        bindCallEvents(call);
-        const conn = peer.connect(targetPeerId);
-        bindDataEvents(conn);
-      }, 1500);
-    }
-  }
-}
-
-// =========================================================================
-// 11. PRIVACY BLUR SHIELD & SNAPSHOT
-// =========================================================================
-function triggerPrivacyShield() {
-  if (!blurOverlay) return;
-  blurOverlay.style.display = "flex";
-  clearTimeout(blurTimeout);
-  blurTimeout = setTimeout(() => {
-    blurOverlay.style.display = "none";
-  }, 5000);
-}
-
-if (btnUnblurVideo) {
-  btnUnblurVideo.addEventListener("click", () => {
-    blurOverlay.style.display = "none";
-    clearTimeout(blurTimeout);
-  });
-}
-
-if (btnSnapshot) {
-  btnSnapshot.addEventListener("click", () => {
-    if (!isConnected) {
-      appendMessage("", "Connect with someone first before snapping a memory!", "system");
-      return;
-    }
-
-    const snapCanvas = document.createElement("canvas");
-    snapCanvas.width = 1280;
-    snapCanvas.height = 720;
-    const sCtx = snapCanvas.getContext("2d");
-
-    sCtx.fillStyle = "#000";
-    sCtx.fillRect(0, 0, 1280, 720);
-
-    if (remoteVideo.style.display === "block" && remoteVideo.videoWidth) {
-      sCtx.drawImage(remoteVideo, 0, 0, 1280, 720);
-    } else {
-      sCtx.drawImage(remoteCanvas, 0, 0, 1280, 720);
-    }
-
-    const pipW = 260;
-    const pipH = 195;
-    const pipX = 1280 - pipW - 24;
-    const pipY = 24;
-
-    sCtx.fillStyle = "#1e293b";
-    sCtx.lineWidth = 4;
-    sCtx.strokeStyle = "#3b82f6";
-    sCtx.strokeRect(pipX, pipY, pipW, pipH);
-
-    if (localVideo.style.display === "block" && localVideo.videoWidth) {
-      sCtx.save();
-      if (isMirrored && !isScreenSharing) {
-        sCtx.translate(pipX + pipW, pipY);
-        sCtx.scale(-1, 1);
-        sCtx.drawImage(localVideo, 0, 0, pipW, pipH);
-      } else {
-        sCtx.drawImage(localVideo, pipX, pipY, pipW, pipH);
-      }
-      sCtx.restore();
-    }
-
-    sCtx.fillStyle = "rgba(15, 23, 42, 0.85)";
-    sCtx.roundRect(24, 650, 210, 44, 8);
-    sCtx.fill();
-    sCtx.fillStyle = "#38bdf8";
-    sCtx.font = "bold 20px sans-serif";
-    sCtx.fillText("Web TV 555", 42, 679);
-
-    const link = document.createElement("a");
-    link.download = `webtv555-memory-${Date.now()}.png`;
-    link.href = snapCanvas.toDataURL("image/png");
-    link.click();
-  });
-}
-
-// =========================================================================
-// 12. SPEED CHAT (60-SECOND ENCOUNTER ENGINE)
+// 9. SPEED CHAT MODE (60-SECOND ENCOUNTERS)
 // =========================================================================
 if (btnToggleSpeedMode) {
   btnToggleSpeedMode.addEventListener("click", () => {
     isSpeedMode = !isSpeedMode;
-    btnToggleSpeedMode.textContent = isSpeedMode ? "⏱ Speed Chat (60s): On" : "⏱ Speed Chat (60s): Off";
+    btnToggleSpeedMode.textContent = isSpeedMode ? "⏱ Speed: 60s" : "⏱ Speed: Off";
     btnToggleSpeedMode.classList.toggle("active", isSpeedMode);
 
     if (isConnected) {
-      if (isSpeedMode) {
-        startSpeedCountdown();
-      } else {
-        stopSpeedCountdown();
-      }
+      if (isSpeedMode) startSpeedCountdown();
+      else stopSpeedCountdown();
     }
   });
 }
@@ -1452,7 +1102,6 @@ if (btnExtendTime) {
     if (activeDataConnection && activeDataConnection.open) {
       activeDataConnection.send({ type: "speed_extend_vote" });
     }
-
     checkMutualExtend();
   });
 }
@@ -1474,23 +1123,25 @@ function checkMutualExtend() {
 }
 
 // =========================================================================
-// 13. SOCKET.IO PRESENCE & MATCHMAKING
+// 10. SOCKET.IO PRESENCE & MATCHMAKING
 // =========================================================================
 socket.on("connect", () => {
-  p2pStatus.textContent = "Connected";
+  p2pStatus.textContent = "Server: Connected";
   p2pStatus.style.color = "#10b981";
   const serverDot = document.getElementById("serverDot");
   if (serverDot) {
-    serverDot.className = "status-dot online";
+    serverDot.style.background = "#10b981";
+    serverDot.style.boxShadow = "0 0 6px #10b981";
   }
 });
 
 socket.on("connect_error", () => {
-  p2pStatus.textContent = "Reconnecting...";
+  p2pStatus.textContent = "Server: Reconnecting...";
   p2pStatus.style.color = "#f59e0b";
   const serverDot = document.getElementById("serverDot");
   if (serverDot) {
-    serverDot.className = "status-dot warning";
+    serverDot.style.background = "#f59e0b";
+    serverDot.style.boxShadow = "0 0 6px #f59e0b";
   }
 });
 
@@ -1519,7 +1170,7 @@ socket.on("matched", (payload) => {
 
   strangerDot.className = "badge-dot connected";
   strangerLabel.textContent = `Stranger (${payload.partnerGender === "female" ? "Female" : "Male"})`;
-  btnMainAction.innerHTML = '<span class="icon">⏹</span><span>Stop</span>';
+  btnMainAction.textContent = "⏹ Stop";
   btnMainAction.classList.add("stop");
   btnNextStranger.style.display = "inline-flex";
   btnReportUser.style.display = "inline-flex";
@@ -1530,13 +1181,13 @@ socket.on("matched", (payload) => {
 
   if (payload.partnerTags && payload.partnerTags.length > 0) {
     strangerTag.textContent = `Matched on: #${payload.partnerTags[0]}`;
-    strangerTag.style.display = "flex";
+    strangerTag.style.display = "block";
   }
 
   appendMessage("", "Connected with a live stranger. Say hi!", "system");
 
   if (payload.isInitiator && myPeerId && payload.partnerPeerId) {
-    const streamToSend = localStream && !camDisabled ? (isScreenSharing && screenStream ? screenStream : localStream) : createFallbackStream();
+    const streamToSend = (localStream && !camDisabled) ? (isScreenSharing && screenStream ? screenStream : localStream) : createFallbackStream();
     const call = peer.call(payload.partnerPeerId, streamToSend);
     bindCallEvents(call);
 
@@ -1546,7 +1197,7 @@ socket.on("matched", (payload) => {
 });
 
 // =========================================================================
-// 14. WEBRTC ENGINE (PEERJS)
+// 11. WEBRTC (PEERJS) ENGINE
 // =========================================================================
 function initializePeer() {
   peer = new Peer({
@@ -1570,7 +1221,7 @@ function initializePeer() {
       skipToNextStranger();
       return;
     }
-    const streamToSend = localStream && !camDisabled ? (isScreenSharing && screenStream ? screenStream : localStream) : createFallbackStream();
+    const streamToSend = (localStream && !camDisabled) ? (isScreenSharing && screenStream ? screenStream : localStream) : createFallbackStream();
     call.answer(streamToSend);
     bindCallEvents(call);
   });
@@ -1694,7 +1345,7 @@ function handleStrangerLeft() {
 }
 
 // =========================================================================
-// 15. MATCHMAKING ACTIONS
+// 12. MATCHMAKING ACTIONS
 // =========================================================================
 function startMatchmaking() {
   if (!myPeerId) {
@@ -1718,7 +1369,7 @@ function startMatchmaking() {
   strangerDot.className = "badge-dot waiting";
   strangerLabel.textContent = "Looking for someone...";
   strangerTag.style.display = "none";
-  btnMainAction.innerHTML = '<span class="icon">⏹</span><span>Cancel</span>';
+  btnMainAction.textContent = "⏹ Cancel";
   btnMainAction.classList.add("stop");
   btnNextStranger.style.display = "none";
   btnReportUser.style.display = "none";
@@ -1768,7 +1419,7 @@ function disconnectStranger() {
   strangerLabel.textContent = "Disconnected";
   strangerTag.style.display = "none";
 
-  btnMainAction.innerHTML = '<span class="icon">▶</span><span>Start Chat</span>';
+  btnMainAction.textContent = "▶ Start Chat";
   btnMainAction.classList.remove("stop");
   btnNextStranger.style.display = "none";
   btnReportUser.style.display = "none";
@@ -1826,7 +1477,7 @@ window.addEventListener("keydown", (e) => {
 });
 
 // =========================================================================
-// 16. CAMERA & HARDWARE ACCESS
+// 13. CAMERA & HARDWARE ACCESS
 // =========================================================================
 async function activateCamera() {
   const constraints = {
@@ -1868,7 +1519,7 @@ function handleStreamSuccess(stream) {
   localCanvas.style.display = isAudioOnlyMode ? "block" : "none";
 
   btnToggleHardware.classList.add("active");
-  btnToggleHardware.innerHTML = '<span>✔ Camera Active</span>';
+  btnToggleHardware.textContent = "✔ Camera Active";
   localLabel.querySelector("span").textContent = "You (Live)";
 
   setupMicVisualizer(stream);
@@ -1938,7 +1589,7 @@ function createFallbackStream() {
 }
 
 // =========================================================================
-// 17. PROCEDURAL AVATAR RENDERER
+// 14. PROCEDURAL AVATAR RENDERER
 // =========================================================================
 let animStep = 0;
 function renderAvatarsLoop() {
@@ -2113,7 +1764,7 @@ window.addEventListener("resize", syncCanvasDimensions);
 window.addEventListener("load", syncCanvasDimensions);
 
 // =========================================================================
-// 18. TAGS SYSTEM
+// 15. TAGS SYSTEM
 // =========================================================================
 function renderTags() {
   if (!tagsList) return;
@@ -2168,10 +1819,7 @@ if (interestsContainer) {
     initialScrollLeft = interestsContainer.scrollLeft;
   });
 
-  window.addEventListener("mouseup", () => {
-    isMouseDown = false;
-  });
-
+  window.addEventListener("mouseup", () => { isMouseDown = false; });
   interestsContainer.addEventListener("mousemove", (e) => {
     if (!isMouseDown) return;
     e.preventDefault();
@@ -2180,7 +1828,7 @@ if (interestsContainer) {
 }
 
 // =========================================================================
-// 19. CHAT ENGINE & TYPING DETECTION
+// 16. CHAT ENGINE & TOOLS
 // =========================================================================
 function appendMessage(sender, text, type = "stranger") {
   const now = new Date();
@@ -2243,8 +1891,214 @@ document.querySelectorAll(".quick-chip").forEach((chip) => {
   });
 });
 
+if (btnCoinFlip) {
+  btnCoinFlip.addEventListener("click", () => {
+    if (!isConnected) return;
+    const result = Math.random() > 0.5 ? "🪙 Heads!" : "🪙 Tails!";
+    sendChatMessage(`[Coin Flip]: ${result}`);
+  });
+}
+
+if (btnDiceRoll) {
+  btnDiceRoll.addEventListener("click", () => {
+    if (!isConnected) return;
+    const dice = Math.floor(Math.random() * 6) + 1;
+    sendChatMessage(`[Dice Roll]: Rolled a 🎲 ${dice}!`);
+  });
+}
+
+if (btnRandomIcebreaker) {
+  btnRandomIcebreaker.addEventListener("click", () => {
+    if (!isConnected) {
+      appendMessage("", "Start a chat first before sending an icebreaker question!", "system");
+      return;
+    }
+    const randomQ = ICEBREAKER_PROMPTS[Math.floor(Math.random() * ICEBREAKER_PROMPTS.length)];
+    sendChatMessage(`🎲 [Icebreaker]: ${randomQ}`);
+  });
+}
+
+if (btnExportChat) {
+  btnExportChat.addEventListener("click", () => {
+    if (chatHistoryLog.length === 0) {
+      appendMessage("", "No chat messages to export yet.", "system");
+      return;
+    }
+    const logText = chatHistoryLog.join("\n");
+    navigator.clipboard.writeText(logText).then(() => {
+      appendMessage("", "Chat transcript copied to clipboard!", "system");
+    }).catch(() => {
+      const blob = new Blob([logText], { type: "text/plain" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `webtv555-chat-${Date.now()}.txt`;
+      a.click();
+    });
+  });
+}
+
+if (btnShareRoom) {
+  btnShareRoom.addEventListener("click", () => {
+    if (!myPeerId) {
+      alert("Peer ID not initialized yet. Wait a moment.");
+      return;
+    }
+    const inviteUrl = `${window.location.origin}${window.location.pathname}#room=${myPeerId}`;
+    navigator.clipboard.writeText(inviteUrl).then(() => {
+      appendMessage("", `Room link copied! Share to reconnect directly: ${inviteUrl}`, "system");
+    }).catch(() => {
+      prompt("Copy this link to invite a friend directly:", inviteUrl);
+    });
+  });
+}
+
+function checkDirectInviteRoom() {
+  const hash = window.location.hash;
+  if (hash.startsWith("#room=")) {
+    const targetPeerId = hash.replace("#room=", "").trim();
+    if (targetPeerId && targetPeerId !== myPeerId) {
+      appendMessage("", `Direct room link detected! Dialing peer: ${targetPeerId}`, "system");
+      setTimeout(() => {
+        const streamToSend = (localStream && !camDisabled) ? (isScreenSharing && screenStream ? screenStream : localStream) : createFallbackStream();
+        const call = peer.call(targetPeerId, streamToSend);
+        bindCallEvents(call);
+        const conn = peer.connect(targetPeerId);
+        bindDataEvents(conn);
+      }, 1500);
+    }
+  }
+}
+
+function triggerPrivacyShield() {
+  if (!blurOverlay) return;
+  blurOverlay.style.display = "flex";
+  clearTimeout(blurTimeout);
+  blurTimeout = setTimeout(() => {
+    blurOverlay.style.display = "none";
+  }, 5000);
+}
+
+if (btnUnblurVideo) {
+  btnUnblurVideo.addEventListener("click", () => {
+    blurOverlay.style.display = "none";
+    clearTimeout(blurTimeout);
+  });
+}
+
+if (btnSnapshot) {
+  btnSnapshot.addEventListener("click", () => {
+    if (!isConnected) {
+      appendMessage("", "Connect with someone first before snapping a memory!", "system");
+      return;
+    }
+
+    const snapCanvas = document.createElement("canvas");
+    snapCanvas.width = 1280;
+    snapCanvas.height = 720;
+    const sCtx = snapCanvas.getContext("2d");
+
+    sCtx.fillStyle = "#000";
+    sCtx.fillRect(0, 0, 1280, 720);
+
+    if (remoteVideo.style.display === "block" && remoteVideo.videoWidth) {
+      sCtx.drawImage(remoteVideo, 0, 0, 1280, 720);
+    } else {
+      sCtx.drawImage(remoteCanvas, 0, 0, 1280, 720);
+    }
+
+    const pipW = 260;
+    const pipH = 195;
+    const pipX = 1280 - pipW - 24;
+    const pipY = 24;
+
+    sCtx.fillStyle = "#1e293b";
+    sCtx.lineWidth = 4;
+    sCtx.strokeStyle = "#3b82f6";
+    sCtx.strokeRect(pipX, pipY, pipW, pipH);
+
+    if (localVideo.style.display === "block" && localVideo.videoWidth) {
+      sCtx.save();
+      if (isMirrored && !isScreenSharing) {
+        sCtx.translate(pipX + pipW, pipY);
+        sCtx.scale(-1, 1);
+        sCtx.drawImage(localVideo, 0, 0, pipW, pipH);
+      } else {
+        sCtx.drawImage(localVideo, pipX, pipY, pipW, pipH);
+      }
+      sCtx.restore();
+    }
+
+    sCtx.fillStyle = "rgba(15, 23, 42, 0.85)";
+    sCtx.roundRect(24, 650, 210, 44, 8);
+    sCtx.fill();
+    sCtx.fillStyle = "#38bdf8";
+    sCtx.font = "bold 20px sans-serif";
+    sCtx.fillText("Web TV 555", 42, 679);
+
+    const link = document.createElement("a");
+    link.download = `webtv555-memory-${Date.now()}.png`;
+    link.href = snapCanvas.toDataURL("image/png");
+    link.click();
+  });
+}
+
+function startCallTimer() {
+  stopCallTimer();
+  callSecondsElapsed = 0;
+  if (!callTimer) return;
+  callTimer.textContent = "00:00";
+  callTimer.style.display = "inline-block";
+
+  callTimerInterval = setInterval(() => {
+    callSecondsElapsed++;
+    const mins = Math.floor(callSecondsElapsed / 60).toString().padStart(2, "0");
+    const secs = (callSecondsElapsed % 60).toString().padStart(2, "0");
+    callTimer.textContent = `${mins}:${secs}`;
+  }, 1000);
+}
+
+function stopCallTimer() {
+  if (callTimerInterval) {
+    clearInterval(callTimerInterval);
+    callTimerInterval = null;
+  }
+  if (callTimer) callTimer.style.display = "none";
+  callSecondsElapsed = 0;
+}
+
+function startStatsPolling(peerConnection) {
+  stopStatsPolling();
+  if (!pingIndicator) return;
+  pingIndicator.style.display = "inline-block";
+  pingIndicator.textContent = "📶 ...";
+
+  statsPollInterval = setInterval(async () => {
+    if (!peerConnection || peerConnection.connectionState !== "connected") return;
+    try {
+      const stats = await peerConnection.getStats();
+      stats.forEach((report) => {
+        if (report.type === "candidate-pair" && report.state === "succeeded") {
+          if (report.currentRoundTripTime !== undefined) {
+            const ms = Math.round(report.currentRoundTripTime * 1000);
+            pingIndicator.textContent = `📶 ${ms}ms`;
+            pingIndicator.style.color = ms < 80 ? "#10b981" : (ms < 180 ? "#f59e0b" : "#ef4444");
+          }
+        }
+      });
+    } catch (e) {}
+  }, 2000);
+}
+
+function stopStatsPolling() {
+  if (statsPollInterval) {
+    clearInterval(statsPollInterval);
+    statsPollInterval = null;
+  }
+  if (pingIndicator) pingIndicator.style.display = "none";
+}
+
 // =========================================================================
-// 20. BOOTSTRAP
+// 17. INSTANT INITIALIZATION
 // =========================================================================
 syncCanvasDimensions();
 renderAvatarsLoop();
