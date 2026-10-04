@@ -291,6 +291,16 @@
       box-shadow: 0 0 8px var(--warning);
     }
 
+    .call-timer {
+      font-family: monospace;
+      font-size: 0.76rem;
+      color: #38bdf8;
+      display: none;
+      margin-left: 4px;
+      padding-left: 6px;
+      border-left: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
     .video-match-tag {
       position: absolute;
       top: 12px;
@@ -436,16 +446,16 @@
     .header-chat-actions {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
 
-    .snapshot-btn {
+    .chat-tool-btn {
       background: #1e293b;
       border: 1px solid #334155;
       color: #f8fafc;
-      padding: 4px 9px;
+      padding: 4px 8px;
       border-radius: 6px;
-      font-size: 0.74rem;
+      font-size: 0.72rem;
       font-weight: 700;
       cursor: pointer;
       display: flex;
@@ -453,7 +463,7 @@
       gap: 4px;
     }
 
-    .snapshot-btn:hover {
+    .chat-tool-btn:hover {
       background: #334155;
     }
 
@@ -529,6 +539,17 @@
 
     .quick-chip:hover {
       background: #334155;
+      color: #ffffff;
+    }
+
+    .quick-chip.chip-highlight {
+      background: rgba(37, 99, 235, 0.25);
+      border-color: rgba(59, 130, 246, 0.5);
+      color: #60a5fa;
+    }
+
+    .quick-chip.chip-highlight:hover {
+      background: #2563eb;
       color: #ffffff;
     }
 
@@ -863,6 +884,7 @@
           <div class="video-badge">
             <span class="badge-dot" id="strangerDot"></span>
             <span id="strangerLabel">Disconnected</span>
+            <span class="call-timer" id="callTimer">00:00</span>
           </div>
           <div class="video-match-tag" id="strangerTag">Matched on: #music</div>
           <video id="remoteVideo" autoplay playsinline></video>
@@ -908,7 +930,8 @@
           <span class="typing-label" id="typingIndicator">Stranger is typing...</span>
         </div>
         <div class="header-chat-actions">
-          <button id="btnSnapshot" class="snapshot-btn" title="Capture call memory">📸 Snap</button>
+          <button id="btnShareRoom" class="chat-tool-btn" title="Create invite link to reconnect">🔗 Room</button>
+          <button id="btnSnapshot" class="chat-tool-btn" title="Capture call memory">📸 Snap</button>
           <span id="p2pStatus" style="font-size: 0.74rem; color: #10b981;">Railway: Connecting...</span>
         </div>
       </div>
@@ -918,9 +941,10 @@
       </div>
 
       <div class="quick-replies">
+        <button class="quick-chip chip-highlight" id="btnRandomIcebreaker">🎲 Icebreaker</button>
         <button class="quick-chip" data-msg="Hey!">👋 Hey</button>
-        <button class="quick-chip" data-msg="ASL?">📍 ASL?</button>
-        <button class="quick-chip" data-msg="What are your hobbies?">🎮 Hobbies</button>
+        <button class="quick-chip" data-msg="Where are you from?">📍 Location?</button>
+        <button class="quick-chip" data-msg="What are your favorite hobbies?">🎮 Hobbies</button>
         <button class="quick-chip" data-msg="Nice meeting you!">😄 Nice</button>
       </div>
 
@@ -997,6 +1021,22 @@
     let blurTimeout = null;
     let typingTimer = null;
 
+    // Call duration timer variables
+    let callTimerInterval = null;
+    let callSecondsElapsed = 0;
+
+    // Curated Icebreaker Prompts
+    const ICEBREAKER_PROMPTS = [
+      "If you could have dinner with any historical person, who would it be?",
+      "What is the single best movie or series you watched recently?",
+      "Would you rather travel 100 years into the past or 100 years into the future?",
+      "What is the weirdest or coolest talent you possess?",
+      "If you won 10 million dollars right now, what is the first thing you'd buy?",
+      "What is your ultimate comfort food?",
+      "Are you more of an early morning person or a late night owl?",
+      "What is one place on Earth you dream of traveling to?"
+    ];
+
     // UI Cache
     const filterSelect = document.getElementById("filterSelect");
     const btnToggleSound = document.getElementById("btnToggleSound");
@@ -1011,6 +1051,9 @@
     const btnUnblurVideo = document.getElementById("btnUnblurVideo");
     const typingIndicator = document.getElementById("typingIndicator");
     const btnSnapshot = document.getElementById("btnSnapshot");
+    const btnShareRoom = document.getElementById("btnShareRoom");
+    const btnRandomIcebreaker = document.getElementById("btnRandomIcebreaker");
+    const callTimer = document.getElementById("callTimer");
     const strangerDot = document.getElementById("strangerDot");
     const strangerLabel = document.getElementById("strangerLabel");
     const strangerTag = document.getElementById("strangerTag");
@@ -1102,7 +1145,80 @@
     });
 
     // =========================================================================
-    // 3. PRIVACY BLUR SHIELD
+    // 3. CALL DURATION TIMER
+    // =========================================================================
+    function startCallTimer() {
+      stopCallTimer();
+      callSecondsElapsed = 0;
+      callTimer.textContent = "00:00";
+      callTimer.style.display = "inline-block";
+
+      callTimerInterval = setInterval(() => {
+        callSecondsElapsed++;
+        const mins = Math.floor(callSecondsElapsed / 60).toString().padStart(2, "0");
+        const secs = (callSecondsElapsed % 60).toString().padStart(2, "0");
+        callTimer.textContent = `${mins}:${secs}`;
+      }, 1000);
+    }
+
+    function stopCallTimer() {
+      if (callTimerInterval) {
+        clearInterval(callTimerInterval);
+        callTimerInterval = null;
+      }
+      callTimer.style.display = "none";
+      callSecondsElapsed = 0;
+    }
+
+    // =========================================================================
+    // 4. ICEBREAKERS & DIRECT FRIEND ROOM GENERATOR
+    // =========================================================================
+    btnRandomIcebreaker.addEventListener("click", () => {
+      if (!isConnected) {
+        appendMessage("", "Start a chat first before sending an icebreaker question!", "system");
+        return;
+      }
+      const randomQ = ICEBREAKERS_PROMPTS_PICK();
+      sendChatMessage(`🎲 [Icebreaker]: ${randomQ}`);
+    });
+
+    function ICEBREAKERS_PROMPTS_PICK() {
+      return ICEBREAKER_PROMPTS[Math.floor(Math.random() * ICEBREAKER_PROMPTS.length)];
+    }
+
+    btnShareRoom.addEventListener("click", () => {
+      if (!myPeerId) {
+        alert("Peer ID not initialized yet. Wait a moment.");
+        return;
+      }
+      const inviteUrl = `${window.location.origin}${window.location.pathname}#room=${myPeerId}`;
+      navigator.clipboard.writeText(inviteUrl).then(() => {
+        appendMessage("", `Room link copied to clipboard! Share it with a friend: ${inviteUrl}`, "system");
+      }).catch(() => {
+        prompt("Copy this link to invite a friend directly:", inviteUrl);
+      });
+    });
+
+    // Handle Direct Room Hash in URL (e.g. #room=xxxx)
+    function checkDirectInviteRoom() {
+      const hash = window.location.hash;
+      if (hash.startsWith("#room=")) {
+        const targetPeerId = hash.replace("#room=", "").trim();
+        if (targetPeerId && targetPeerId !== myPeerId) {
+          appendMessage("", `Direct room detected! Connecting to peer: ${targetPeerId}`, "system");
+          setTimeout(() => {
+            const streamToSend = (localStream && !camDisabled) ? localStream : createFallbackStream();
+            const call = peer.call(targetPeerId, streamToSend);
+            bindCallEvents(call);
+            const conn = peer.connect(targetPeerId);
+            bindDataEvents(conn);
+          }, 1500);
+        }
+      }
+    }
+
+    // =========================================================================
+    // 5. PRIVACY BLUR SHIELD
     // =========================================================================
     function triggerPrivacyShield() {
       blurOverlay.style.display = "flex";
@@ -1118,7 +1234,7 @@
     });
 
     // =========================================================================
-    // 4. INSTANT PHOTO SNAPSHOT
+    // 6. INSTANT PHOTO SNAPSHOT
     // =========================================================================
     btnSnapshot.addEventListener("click", () => {
       if (!isConnected) {
@@ -1131,18 +1247,15 @@
       snapCanvas.height = 720;
       const sCtx = snapCanvas.getContext("2d");
 
-      // Background fill
       sCtx.fillStyle = "#000";
       sCtx.fillRect(0, 0, 1280, 720);
 
-      // Draw Remote Video
       if (remoteVideo.style.display === "block" && remoteVideo.videoWidth) {
         sCtx.drawImage(remoteVideo, 0, 0, 1280, 720);
       } else {
         sCtx.drawImage(remoteCanvas, 0, 0, 1280, 720);
       }
 
-      // Draw Local PiP on top right corner
       const pipW = 260;
       const pipH = 195;
       const pipX = 1280 - pipW - 24;
@@ -1165,7 +1278,6 @@
         sCtx.restore();
       }
 
-      // Watermark Pill
       sCtx.fillStyle = "rgba(15, 23, 42, 0.85)";
       sCtx.roundRect(24, 650, 210, 44, 8);
       sCtx.fill();
@@ -1173,7 +1285,6 @@
       sCtx.font = "bold 20px sans-serif";
       sCtx.fillText("Web TV 555", 42, 679);
 
-      // Download
       const link = document.createElement("a");
       link.download = `webtv555-memory-${Date.now()}.png`;
       link.href = snapCanvas.toDataURL("image/png");
@@ -1181,7 +1292,7 @@
     });
 
     // =========================================================================
-    // 5. SOCKET.IO PRESENCE & MATCHMAKING
+    // 7. SOCKET.IO PRESENCE & MATCHMAKING
     // =========================================================================
     socket.on("connect", () => {
       p2pStatus.textContent = "Railway: Connected";
@@ -1207,6 +1318,7 @@
       isConnected = true;
 
       playSound("match");
+      startCallTimer();
 
       strangerDot.className = "badge-dot connected";
       strangerLabel.textContent = `Stranger (${payload.partnerGender === "female" ? "Female" : "Male"})`;
@@ -1237,7 +1349,7 @@
     });
 
     // =========================================================================
-    // 6. WEBRTC ENGINE (PEERJS)
+    // 8. WEBRTC ENGINE (PEERJS)
     // =========================================================================
     function initializePeer() {
       peer = new Peer({
@@ -1252,6 +1364,7 @@
 
       peer.on("open", (id) => {
         myPeerId = id;
+        checkDirectInviteRoom();
       });
 
       peer.on("call", (call) => {
@@ -1305,13 +1418,14 @@
       if (!isConnected) return;
       isConnected = false;
       playSound("leave");
+      stopCallTimer();
       typingIndicator.style.display = "none";
       appendMessage("", "Stranger has disconnected.", "system");
       disconnectStranger();
     }
 
     // =========================================================================
-    // 7. MATCHMAKING ACTIONS (WITH FAST SKIP & REPORT)
+    // 9. MATCHMAKING ACTIONS (WITH FAST SKIP & REPORT)
     // =========================================================================
     function startMatchmaking() {
       if (!myPeerId) {
@@ -1320,6 +1434,7 @@
       }
       isSearching = true;
       isConnected = false;
+      stopCallTimer();
 
       strangerDot.className = "badge-dot waiting";
       strangerLabel.textContent = "Looking for someone...";
@@ -1358,6 +1473,7 @@
 
       isConnected = false;
       isSearching = false;
+      stopCallTimer();
 
       strangerDot.className = "badge-dot";
       strangerLabel.textContent = "Disconnected";
@@ -1417,7 +1533,7 @@
     });
 
     // =========================================================================
-    // 8. CAMERA & HARDWARE ACCESS
+    // 10. CAMERA & HARDWARE ACCESS
     // =========================================================================
     async function activateCamera() {
       const constraints = {
@@ -1531,7 +1647,7 @@
     }
 
     // =========================================================================
-    // 9. PROCEDURAL AVATAR RENDERER WITH RADAR WAVES
+    // 11. PROCEDURAL AVATAR RENDERER WITH RADAR WAVES
     // =========================================================================
     let animStep = 0;
     function renderAvatarsLoop() {
@@ -1712,7 +1828,7 @@
     window.addEventListener("resize", syncCanvasDimensions);
 
     // =========================================================================
-    // 10. TAGS SYSTEM
+    // 12. TAGS SYSTEM
     // =========================================================================
     function renderTags() {
       tagsList.innerHTML = "";
@@ -1767,7 +1883,7 @@
     });
 
     // =========================================================================
-    // 11. CHAT ENGINE & TYPING DETECTION
+    // 13. CHAT ENGINE & TYPING DETECTION
     // =========================================================================
     function appendMessage(sender, text, type = "stranger") {
       const now = new Date();
@@ -1817,13 +1933,14 @@
     });
 
     document.querySelectorAll(".quick-chip").forEach(chip => {
+      if (chip.id === "btnRandomIcebreaker") return;
       chip.addEventListener("click", () => {
         sendChatMessage(chip.getAttribute("data-msg"));
       });
     });
 
     // =========================================================================
-    // 12. INSTANT DOM BOOTSTRAP
+    // 14. INSTANT DOM BOOTSTRAP
     // =========================================================================
     syncCanvasDimensions();
     renderAvatarsLoop();
