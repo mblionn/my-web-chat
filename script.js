@@ -2,7 +2,7 @@
 // 0. COMPATIBILITY & CANVAS POLYFILLS
 // =========================================================================
 if (!CanvasRenderingContext2D.prototype.roundRect) {
-  CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, radii) {
+  CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, radii) {
     if (!radii) {
       this.rect(x, y, w, h);
       return;
@@ -48,6 +48,13 @@ let soundEnabled = true;
 let ttsEnabled = false;
 let captionsEnabled = false;
 let currentFacingMode = "user";
+
+// Speed Chat Mode State
+let isSpeedMode = false;
+let speedSecondsRemaining = 60;
+let speedTimerInterval = null;
+let hasVotedExtend = false;
+let partnerVotedExtend = false;
 
 // Video Recording
 let mediaRecorder = null;
@@ -136,6 +143,10 @@ const strangerVibeTag = document.getElementById("strangerVibeTag");
 const voiceFxSelect = document.getElementById("voiceFxSelect");
 const arPropSelect = document.getElementById("arPropSelect");
 const arPropOverlay = document.getElementById("arPropOverlay");
+const btnToggleSpeedMode = document.getElementById("btnToggleSpeedMode");
+const speedTimerBadge = document.getElementById("speedTimerBadge");
+const speedTimerValue = document.getElementById("speedTimerValue");
+const btnExtendTime = document.getElementById("btnExtendTime");
 const btnRecordClip = document.getElementById("btnRecordClip");
 const btnToggleSound = document.getElementById("btnToggleSound");
 const btnToggleAudioOnly = document.getElementById("btnToggleAudioOnly");
@@ -559,9 +570,9 @@ btnToggleCaptions.addEventListener("click", () => {
   btnToggleCaptions.classList.toggle("active", captionsEnabled);
 
   if (captionsEnabled) {
-    try { speechRecognizer.start(); } catch(e){}
+    try { speechRecognizer.start(); } catch (e) { }
   } else {
-    try { speechRecognizer.stop(); } catch(e){}
+    try { speechRecognizer.stop(); } catch (e) { }
     subtitleOverlay.style.display = "none";
   }
 });
@@ -827,7 +838,7 @@ function startStatsPolling(peerConnection) {
           }
         }
       });
-    } catch (e) {}
+    } catch (e) { }
   }, 2000);
 }
 
@@ -1010,9 +1021,9 @@ function applyMove(index, symbol) {
 
 function checkTTTWinner() {
   const wins = [
-    [0,1,2], [3,4,5], [6,7,8],
-    [0,3,6], [1,4,7], [2,5,8],
-    [0,4,8], [2,4,6]
+    [0, 1, 2], [3, 4, 5], [6, 7, 8],
+    [0, 3, 6], [1, 4, 7], [2, 5, 8],
+    [0, 4, 8], [2, 4, 6]
   ];
 
   for (let [a, b, c] of wins) {
@@ -1175,7 +1186,95 @@ btnSnapshot.addEventListener("click", () => {
 });
 
 // =========================================================================
-// 12. SOCKET.IO PRESENCE & MATCHMAKING
+// 12. SPEED CHAT (60-SECOND ENCOUNTER ENGINE)
+// =========================================================================
+btnToggleSpeedMode.addEventListener("click", () => {
+  isSpeedMode = !isSpeedMode;
+  btnToggleSpeedMode.textContent = isSpeedMode ? "⏱ Speed: 60s" : "⏱ Speed: Off";
+  btnToggleSpeedMode.classList.toggle("active", isSpeedMode);
+
+  if (isConnected) {
+    if (isSpeedMode) {
+      startSpeedCountdown();
+    } else {
+      stopSpeedCountdown();
+    }
+  }
+});
+
+function startSpeedCountdown() {
+  stopSpeedCountdown();
+  if (!isSpeedMode || !isConnected) return;
+
+  speedSecondsRemaining = 60;
+  hasVotedExtend = false;
+  partnerVotedExtend = false;
+  btnExtendTime.textContent = "+60s Extend";
+  btnExtendTime.classList.remove("voted");
+  btnExtendTime.style.display = "none";
+  speedTimerBadge.classList.remove("urgent");
+  speedTimerValue.textContent = `${speedSecondsRemaining}s`;
+  speedTimerBadge.style.display = "flex";
+
+  speedTimerInterval = setInterval(() => {
+    speedSecondsRemaining--;
+    speedTimerValue.textContent = `${speedSecondsRemaining}s`;
+
+    // Final 20 seconds warning and extension vote prompt
+    if (speedSecondsRemaining <= 20) {
+      speedTimerBadge.classList.add("urgent");
+      btnExtendTime.style.display = "inline-block";
+    }
+
+    if (speedSecondsRemaining <= 0) {
+      stopSpeedCountdown();
+      appendMessage("", "⏱ Speed time is up! Auto-skipping to next stranger...", "system");
+      skipToNextStranger();
+    }
+  }, 1000);
+}
+
+function stopSpeedCountdown() {
+  if (speedTimerInterval) {
+    clearInterval(speedTimerInterval);
+    speedTimerInterval = null;
+  }
+  speedTimerBadge.style.display = "none";
+  speedTimerBadge.classList.remove("urgent");
+  btnExtendTime.style.display = "none";
+  hasVotedExtend = false;
+  partnerVotedExtend = false;
+}
+
+btnExtendTime.addEventListener("click", () => {
+  if (hasVotedExtend) return;
+  hasVotedExtend = true;
+  btnExtendTime.textContent = "✔ Voted";
+  btnExtendTime.classList.add("voted");
+
+  if (activeDataConnection && activeDataConnection.open) {
+    activeDataConnection.send({ type: "speed_extend_vote" });
+  }
+
+  checkMutualExtend();
+});
+
+function checkMutualExtend() {
+  if (hasVotedExtend && partnerVotedExtend) {
+    speedSecondsRemaining += 60;
+    hasVotedExtend = false;
+    partnerVotedExtend = false;
+    btnExtendTime.textContent = "+60s Extend";
+    btnExtendTime.classList.remove("voted");
+    btnExtendTime.style.display = "none";
+    speedTimerBadge.classList.remove("urgent");
+    playSound("victory");
+    appendMessage("", "🎉 Both accepted! +60 seconds added to the call.", "system");
+  }
+}
+
+// =========================================================================
+// 13. SOCKET.IO PRESENCE & MATCHMAKING
 // =========================================================================
 socket.on("connect", () => {
   p2pStatus.textContent = "Server: Connected";
@@ -1216,6 +1315,11 @@ socket.on("matched", (payload) => {
   playSound("match");
   startCallTimer();
 
+  // Initiate Speed Countdown if enabled
+  if (isSpeedMode) {
+    startSpeedCountdown();
+  }
+
   strangerDot.className = "badge-dot connected";
   strangerLabel.textContent = `Stranger (${payload.partnerGender === "female" ? "Female" : "Male"})`;
   btnMainAction.textContent = "⏹ Stop";
@@ -1245,7 +1349,7 @@ socket.on("matched", (payload) => {
 });
 
 // =========================================================================
-// 13. WEBRTC ENGINE (PEERJS)
+// 14. WEBRTC ENGINE (PEERJS)
 // =========================================================================
 function initializePeer() {
   peer = new Peer({
@@ -1323,6 +1427,10 @@ function bindDataEvents(conn) {
       spawnFloatingEmoji(data.emoji);
     } else if (data.type === "sfx") {
       playSound(data.sfx);
+    } else if (data.type === "speed_extend_vote") {
+      partnerVotedExtend = true;
+      appendMessage("", "⏳ Stranger wants to extend the call (+60s)!", "system");
+      checkMutualExtend();
     } else if (data.type === "tod_card") {
       todPromptText.textContent = data.text;
       todModal.style.display = "flex";
@@ -1370,6 +1478,7 @@ function handleStrangerLeft() {
   isConnected = false;
   playSound("leave");
   stopCallTimer();
+  stopSpeedCountdown();
   stopStatsPolling();
   stopScreenSharing();
   stopClipRecording();
@@ -1386,7 +1495,7 @@ function handleStrangerLeft() {
 }
 
 // =========================================================================
-// 14. MATCHMAKING ACTIONS
+// 15. MATCHMAKING ACTIONS
 // =========================================================================
 function startMatchmaking() {
   if (!myPeerId) {
@@ -1396,6 +1505,7 @@ function startMatchmaking() {
   isSearching = true;
   isConnected = false;
   stopCallTimer();
+  stopSpeedCountdown();
   stopStatsPolling();
   stopScreenSharing();
   stopClipRecording();
@@ -1444,6 +1554,7 @@ function disconnectStranger() {
   isConnected = false;
   isSearching = false;
   stopCallTimer();
+  stopSpeedCountdown();
   stopStatsPolling();
   stopScreenSharing();
   stopClipRecording();
@@ -1512,7 +1623,7 @@ window.addEventListener("keydown", (e) => {
 });
 
 // =========================================================================
-// 15. CAMERA & HARDWARE ACCESS
+// 16. CAMERA & HARDWARE ACCESS
 // =========================================================================
 async function activateCamera() {
   const constraints = {
@@ -1624,7 +1735,7 @@ function createFallbackStream() {
 }
 
 // =========================================================================
-// 16. PROCEDURAL AVATAR RENDERER
+// 17. PROCEDURAL AVATAR RENDERER
 // =========================================================================
 let animStep = 0;
 function renderAvatarsLoop() {
@@ -1677,7 +1788,7 @@ function drawCharacter(canvas, gender, breath, isBlinking, shirtColor, skinColor
 
   const torsoW = headRadius * 2.6;
   const torsoTop = cy + headRadius * 0.75;
-  
+
   ctx.save();
   ctx.beginPath();
   ctx.moveTo(cx - torsoW, h + 10);
@@ -1798,7 +1909,7 @@ window.addEventListener("resize", syncCanvasDimensions);
 window.addEventListener("load", syncCanvasDimensions);
 
 // =========================================================================
-// 17. TAGS SYSTEM
+// 18. TAGS SYSTEM
 // =========================================================================
 function renderTags() {
   tagsList.innerHTML = "";
@@ -1853,7 +1964,7 @@ interestsContainer.addEventListener("mousemove", (e) => {
 });
 
 // =========================================================================
-// 18. CHAT ENGINE & TYPING DETECTION
+// 19. CHAT ENGINE & TYPING DETECTION
 // =========================================================================
 function appendMessage(sender, text, type = "stranger") {
   const now = new Date();
@@ -1912,7 +2023,7 @@ document.querySelectorAll(".quick-chip").forEach(chip => {
 });
 
 // =========================================================================
-// 19. INSTANT DOM BOOTSTRAP
+// 20. INSTANT DOM BOOTSTRAP
 // =========================================================================
 syncCanvasDimensions();
 renderAvatarsLoop();
