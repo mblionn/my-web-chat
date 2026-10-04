@@ -2469,8 +2469,10 @@
       <!-- Dedicated Mobile Toolbar -->
      <!-- Mobile Quick Tools Trigger & Pop-up Action Menu -->
 <div class="mobile-media-toolbar">
- 
-  
+  <button id="btnToggleMobileMenu" class="mobile-menu-trigger-btn" type="button">
+    <span>🎛️ Media Controls</span>
+    <span id="mobileMenuArrow" style="font-size: 0.75rem; transition: transform 0.2s;">▲</span>
+  </button>
 </div>
 
 <!-- Floating Action Sheet for Mobile -->
@@ -5070,33 +5072,6 @@ window.addEventListener("click", (e) => {
     syncCanvasDimensions();
     renderAvatarsLoop();
     updateFakeOnlineDisplay();
-    // ==========================================
-// MOBILE ACTION SHEET TOGGLE
-// ==========================================
-const btnToggleMobileMenu = document.getElementById("btnToggleMobileMenu");
-const mobileActionSheet = document.getElementById("mobileActionSheet");
-const btnCloseMobileSheet = document.getElementById("btnCloseMobileSheet");
-
-if (btnToggleMobileMenu && mobileActionSheet) {
-  btnToggleMobileMenu.onclick = (e) => {
-    e.stopPropagation();
-    mobileActionSheet.classList.add("show");
-  };
-}
-
-if (btnCloseMobileSheet && mobileActionSheet) {
-  btnCloseMobileSheet.onclick = () => {
-    mobileActionSheet.classList.remove("show");
-  };
-}
-
-if (mobileActionSheet) {
-  mobileActionSheet.onclick = (e) => {
-    if (e.target === mobileActionSheet || e.target.closest(".sheet-action-item")) {
-      mobileActionSheet.classList.remove("show");
-    }
-  };
-}
   </script>
 </body>
 </html>
