@@ -1,6 +1,6 @@
 // =========================================================================
 // 0. COMPATIBILITY & CANVAS POLYFILLS
-// =========================================================================
+// =========================================================
 if (!CanvasRenderingContext2D.prototype.roundRect) {
   CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, radii) {
     if (!radii) {
@@ -146,48 +146,34 @@ const voiceFxSelect = document.getElementById("voiceFxSelect");
 const arPropSelect = document.getElementById("arPropSelect");
 const arPropOverlay = document.getElementById("arPropOverlay");
 
-// Studio FX Drawer Controls
-const btnToggleFxPanel = document.getElementById("btnToggleFxPanel");
-const fxPanelDrawer = document.getElementById("fxPanelDrawer");
-const btnCloseFxPanel = document.getElementById("btnCloseFxPanel");
+// Top Nav Controls
+const btnToggleSound = document.getElementById("btnToggleSound");
+const btnToggleAudioOnly = document.getElementById("btnToggleAudioOnly");
+const btnToggleHardware = document.getElementById("btnToggleHardware");
 
-// Speed Chat Controls
+// Settings Modal References
+const btnOpenSettingsMenu = document.getElementById("btnOpenSettingsMenu");
+const settingsMenuModal = document.getElementById("settingsMenuModal");
+const btnCloseSettingsMenu = document.getElementById("btnCloseSettingsMenu");
+
+// Inside Settings Modal Controls
 const btnToggleSpeedMode = document.getElementById("btnToggleSpeedMode");
+const btnRecordClip = document.getElementById("btnRecordClip");
+const btnToggleCaptions = document.getElementById("btnToggleCaptions");
+const btnToggleTTS = document.getElementById("btnToggleTTS");
+
+// Speed Chat HUD
 const speedTimerBadge = document.getElementById("speedTimerBadge");
 const speedTimerValue = document.getElementById("speedTimerValue");
 const btnExtendTime = document.getElementById("btnExtendTime");
 
-// Toolbar & Controls
-const btnRecordClip = document.getElementById("btnRecordClip");
-const btnToggleSound = document.getElementById("btnToggleSound");
-const btnToggleAudioOnly = document.getElementById("btnToggleAudioOnly");
-const btnToggleCaptions = document.getElementById("btnToggleCaptions");
-const btnToggleTTS = document.getElementById("btnToggleTTS");
-const subtitleOverlay = document.getElementById("subtitleOverlay");
-const strangersMetCount = document.getElementById("strangersMetCount");
-const myGenderSelect = document.getElementById("myGenderSelect");
-const genderSelect = document.getElementById("genderSelect");
-const btnToggleHardware = document.getElementById("btnToggleHardware");
-const localVideo = document.getElementById("localVideo");
-const remoteVideo = document.getElementById("remoteVideo");
-const localCanvas = document.getElementById("localCanvas");
-const remoteCanvas = document.getElementById("remoteCanvas");
-const localPipCard = document.getElementById("localPipCard");
-const micSpeakingBadge = document.getElementById("micSpeakingBadge");
-const blurOverlay = document.getElementById("blurOverlay");
-const btnUnblurVideo = document.getElementById("btnUnblurVideo");
-const reactionFlyContainer = document.getElementById("reactionFlyContainer");
-const btnTriggerSoundboard = document.getElementById("btnTriggerSoundboard");
-const soundboardDrawer = document.getElementById("soundboardDrawer");
-const typingIndicator = document.getElementById("typingIndicator");
-const btnExportChat = document.getElementById("btnExportChat");
-const btnSnapshot = document.getElementById("btnSnapshot");
-const btnShareRoom = document.getElementById("btnShareRoom");
-const btnRandomIcebreaker = document.getElementById("btnRandomIcebreaker");
-const btnCoinFlip = document.getElementById("btnCoinFlip");
-const btnDiceRoll = document.getElementById("btnDiceRoll");
+// Chat Header Dropdowns
+const btnOpenGamesDropdown = document.getElementById("btnOpenGamesDropdown");
+const gamesDropdownList = document.getElementById("gamesDropdownList");
+const btnOpenToolsDropdown = document.getElementById("btnOpenToolsDropdown");
+const toolsDropdownList = document.getElementById("toolsDropdownList");
 
-// Modals
+// Modals & Games Triggers
 const btnOpenTOD = document.getElementById("btnOpenTOD");
 const todModal = document.getElementById("todModal");
 const btnTodClose = document.getElementById("btnTodClose");
@@ -215,7 +201,26 @@ const wbColorPicker = document.getElementById("wbColorPicker");
 const btnWbClear = document.getElementById("btnWbClear");
 const btnWbClose = document.getElementById("btnWbClose");
 
-// HUD Readouts
+// Media Action Elements
+const btnSnapshot = document.getElementById("btnSnapshot");
+const btnShareRoom = document.getElementById("btnShareRoom");
+const btnExportChat = document.getElementById("btnExportChat");
+
+// HUD Readouts & Stage Viewports
+const localVideo = document.getElementById("localVideo");
+const remoteVideo = document.getElementById("remoteVideo");
+const localCanvas = document.getElementById("localCanvas");
+const remoteCanvas = document.getElementById("remoteCanvas");
+const localPipCard = document.getElementById("localPipCard");
+const micSpeakingBadge = document.getElementById("micSpeakingBadge");
+const blurOverlay = document.getElementById("blurOverlay");
+const btnUnblurVideo = document.getElementById("btnUnblurVideo");
+const reactionFlyContainer = document.getElementById("reactionFlyContainer");
+const btnTriggerSoundboard = document.getElementById("btnTriggerSoundboard");
+const soundboardDrawer = document.getElementById("soundboardDrawer");
+const typingIndicator = document.getElementById("typingIndicator");
+const subtitleOverlay = document.getElementById("subtitleOverlay");
+const strangersMetCount = document.getElementById("strangersMetCount");
 const callTimer = document.getElementById("callTimer");
 const pingIndicator = document.getElementById("pingIndicator");
 const videoStageContainer = document.getElementById("videoStageContainer");
@@ -224,19 +229,28 @@ const strangerLabel = document.getElementById("strangerLabel");
 const strangerTag = document.getElementById("strangerTag");
 const localLabel = document.getElementById("localLabel");
 const userCount = document.getElementById("userCount");
+const p2pStatus = document.getElementById("p2pStatus");
+
+// Controls Deck (Footer)
 const btnMainAction = document.getElementById("btnMainAction");
 const btnNextStranger = document.getElementById("btnNextStranger");
 const btnReportUser = document.getElementById("btnReportUser");
-const chatContainer = document.getElementById("chatContainer");
-const chatInput = document.getElementById("chatInput");
-const btnSendMessage = document.getElementById("btnSendMessage");
-const p2pStatus = document.getElementById("p2pStatus");
+const myGenderSelect = document.getElementById("myGenderSelect");
+const genderSelect = document.getElementById("genderSelect");
 const interestsContainer = document.getElementById("interestsContainer");
 const tagsList = document.getElementById("tagsList");
 const tagInput = document.getElementById("tagInput");
 const btnAddTag = document.getElementById("btnAddTag");
 
-// Desktop Stage Action Buttons
+// Chat Input Area
+const chatContainer = document.getElementById("chatContainer");
+const chatInput = document.getElementById("chatInput");
+const btnSendMessage = document.getElementById("btnSendMessage");
+const btnRandomIcebreaker = document.getElementById("btnRandomIcebreaker");
+const btnCoinFlip = document.getElementById("btnCoinFlip");
+const btnDiceRoll = document.getElementById("btnDiceRoll");
+
+// Stage Overlay Toolbars
 const btnSwitchCamera = document.getElementById("btnSwitchCamera");
 const btnToggleMirror = document.getElementById("btnToggleMirror");
 const btnMuteAudio = document.getElementById("btnMuteAudio");
@@ -245,7 +259,6 @@ const btnToggleScreenShare = document.getElementById("btnToggleScreenShare");
 const btnTriggerPopoutPiP = document.getElementById("btnTriggerPopoutPiP");
 const btnToggleFullscreen = document.getElementById("btnToggleFullscreen");
 
-// Mobile Media Toolbar Buttons
 const mBtnSwitchCamera = document.getElementById("mBtnSwitchCamera");
 const mBtnToggleMirror = document.getElementById("mBtnToggleMirror");
 const mBtnMuteAudio = document.getElementById("mBtnMuteAudio");
@@ -254,21 +267,70 @@ const mBtnToggleScreenShare = document.getElementById("mBtnToggleScreenShare");
 const mBtnTriggerPopoutPiP = document.getElementById("mBtnTriggerPopoutPiP");
 const mBtnToggleFullscreen = document.getElementById("mBtnToggleFullscreen");
 
-// Studio FX Drawer Toggles
-if (btnToggleFxPanel && fxPanelDrawer) {
-  btnToggleFxPanel.addEventListener("click", () => {
-    const isShowing = fxPanelDrawer.style.display === "flex";
-    fxPanelDrawer.style.display = isShowing ? "none" : "flex";
+// =========================================================================
+// 3. SETTINGS MODAL & CHAT DROPDOWNS ENGINE
+// =========================================================================
+if (btnOpenSettingsMenu && settingsMenuModal) {
+  btnOpenSettingsMenu.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    settingsMenuModal.classList.add("show");
   });
 }
 
-if (btnCloseFxPanel && fxPanelDrawer) {
-  btnCloseFxPanel.addEventListener("click", () => {
-    fxPanelDrawer.style.display = "none";
+if (btnCloseSettingsMenu && settingsMenuModal) {
+  btnCloseSettingsMenu.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    settingsMenuModal.classList.remove("show");
   });
 }
 
-// Camera Filter Listener
+if (settingsMenuModal) {
+  settingsMenuModal.addEventListener("click", (e) => {
+    if (e.target === settingsMenuModal) {
+      settingsMenuModal.classList.remove("show");
+    }
+  });
+}
+
+// Games Dropdown Toggle
+if (btnOpenGamesDropdown && gamesDropdownList) {
+  btnOpenGamesDropdown.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (toolsDropdownList) toolsDropdownList.classList.remove("show");
+    gamesDropdownList.classList.toggle("show");
+  });
+}
+
+// Tools Dropdown Toggle
+if (btnOpenToolsDropdown && toolsDropdownList) {
+  btnOpenToolsDropdown.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (gamesDropdownList) gamesDropdownList.classList.remove("show");
+    toolsDropdownList.classList.toggle("show");
+  });
+}
+
+// Global outside click closer
+document.addEventListener("click", (e) => {
+  if (gamesDropdownList && !gamesDropdownList.contains(e.target) && e.target !== btnOpenGamesDropdown) {
+    gamesDropdownList.classList.remove("show");
+  }
+  if (toolsDropdownList && !toolsDropdownList.contains(e.target) && e.target !== btnOpenToolsDropdown) {
+    toolsDropdownList.classList.remove("show");
+  }
+});
+
+document.querySelectorAll(".dropdown-item").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    if (gamesDropdownList) gamesDropdownList.classList.remove("show");
+    if (toolsDropdownList) toolsDropdownList.classList.remove("show");
+  });
+});
+
 if (filterSelect) {
   filterSelect.addEventListener("change", (e) => {
     localVideo.style.filter = e.target.value;
@@ -276,7 +338,7 @@ if (filterSelect) {
 }
 
 // =========================================================================
-// 3. SYNTHESIZED WEB AUDIO & DSP VOICE FILTERS
+// 4. SYNTHESIZED WEB AUDIO & DSP VOICE FILTERS
 // =========================================================================
 let audioCtx = null;
 function getAudioContext() {
@@ -490,10 +552,7 @@ function playSound(type) {
 if (btnToggleSound) {
   btnToggleSound.addEventListener("click", () => {
     soundEnabled = !soundEnabled;
-    const iconSpan = btnToggleSound.querySelector(".icon");
-    if (iconSpan) {
-      iconSpan.textContent = soundEnabled ? "🔊" : "🔇";
-    }
+    btnToggleSound.textContent = soundEnabled ? "🔊" : "🔇";
     btnToggleSound.classList.toggle("active", soundEnabled);
   });
 }
@@ -501,10 +560,7 @@ if (btnToggleSound) {
 if (btnToggleAudioOnly) {
   btnToggleAudioOnly.addEventListener("click", () => {
     isAudioOnlyMode = !isAudioOnlyMode;
-    const labelSpan = btnToggleAudioOnly.querySelector(".label");
-    if (labelSpan) {
-      labelSpan.textContent = isAudioOnlyMode ? "Audio Only" : "Video ON";
-    }
+    btnToggleAudioOnly.textContent = isAudioOnlyMode ? "📻 Audio Mode" : "🎧 Video ON";
     btnToggleAudioOnly.classList.toggle("active", isAudioOnlyMode);
 
     if (localStream) {
@@ -521,7 +577,7 @@ if (btnToggleAudioOnly) {
 }
 
 // =========================================================================
-// 4. 15-SECOND VIDEO CLIP RECORDER
+// 5. 15-SECOND VIDEO CLIP RECORDER
 // =========================================================================
 if (btnRecordClip) {
   btnRecordClip.addEventListener("click", () => {
@@ -557,7 +613,7 @@ if (btnRecordClip) {
       mediaRecorder.start();
       isRecordingClip = true;
       btnRecordClip.textContent = "🔴 Recording (15s)";
-      btnRecordClip.classList.add("record-btn-indicator");
+      btnRecordClip.classList.add("active");
 
       clearTimeout(recordTimeout);
       recordTimeout = setTimeout(() => {
@@ -578,13 +634,13 @@ function stopClipRecording() {
     mediaRecorder.stop();
   }
   if (btnRecordClip) {
-    btnRecordClip.textContent = "📹 Clip (15s)";
-    btnRecordClip.classList.remove("record-btn-indicator");
+    btnRecordClip.textContent = "📹 Record Clip (15s)";
+    btnRecordClip.classList.remove("active");
   }
 }
 
 // =========================================================================
-// 5. LIVE CLOSED CAPTIONS & TTS
+// 6. LIVE CLOSED CAPTIONS & TTS
 // =========================================================================
 function setupLiveCaptions() {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -634,7 +690,7 @@ if (btnToggleCaptions) {
       return;
     }
     captionsEnabled = !captionsEnabled;
-    btnToggleCaptions.textContent = captionsEnabled ? "💬 CC: Live" : "💬 Live CC";
+    btnToggleCaptions.textContent = captionsEnabled ? "💬 Live CC: On" : "💬 Live CC: Off";
     btnToggleCaptions.classList.toggle("active", captionsEnabled);
 
     if (captionsEnabled) {
@@ -653,7 +709,7 @@ if (btnToggleCaptions) {
 if (btnToggleTTS) {
   btnToggleTTS.addEventListener("click", () => {
     ttsEnabled = !ttsEnabled;
-    btnToggleTTS.textContent = ttsEnabled ? "🗣 TTS: On" : "🗣 Audio TTS";
+    btnToggleTTS.textContent = ttsEnabled ? "🗣 Audio TTS: On" : "🗣 Audio TTS: Off";
     btnToggleTTS.classList.toggle("active", ttsEnabled);
   });
 }
@@ -667,7 +723,7 @@ function speakText(text) {
 }
 
 // =========================================================================
-// 6. PIP POP-OUT & SCREEN SHARING
+// 7. PIP POP-OUT & SCREEN SHARING
 // =========================================================================
 async function togglePopoutPiP() {
   if (document.pictureInPictureElement) {
@@ -760,21 +816,20 @@ if (arPropSelect) {
 }
 
 // =========================================================================
-// 7. TRUTH OR DARE & WOULD YOU RATHER
+// 8. UNBLOCKED GAME LAUNCHERS (TRUTH OR DARE, WYR, TIC-TAC-TOE, WHITEBOARD)
 // =========================================================================
 if (btnOpenTOD) {
-  btnOpenTOD.addEventListener("click", () => {
-    if (!isConnected) {
-      appendMessage("", "Connect with someone before starting Truth or Dare!", "system");
-      return;
-    }
-    todModal.style.display = "flex";
+  btnOpenTOD.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (todModal) todModal.style.display = "flex";
   });
 }
 
 if (btnTodClose) {
-  btnTodClose.addEventListener("click", () => {
-    todModal.style.display = "none";
+  btnTodClose.addEventListener("click", (e) => {
+    e.preventDefault();
+    if (todModal) todModal.style.display = "none";
   });
 }
 
@@ -800,30 +855,38 @@ if (btnPickDare) {
   });
 }
 
+if (btnOpenWYR) {
+  btnOpenWYR.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    startWyrGame();
+  });
+}
+
+if (btnWyrClose) {
+  btnWyrClose.addEventListener("click", (e) => {
+    e.preventDefault();
+    if (wyrModal) wyrModal.style.display = "none";
+  });
+}
+
 function startWyrGame(promptObj = null) {
-  if (!isConnected) {
-    appendMessage("", "Connect with someone before starting Would You Rather!", "system");
-    return;
-  }
   currentWyr = promptObj || WYR_DILEMMAS[Math.floor(Math.random() * WYR_DILEMMAS.length)];
   myWyrVote = null;
-  btnWyrOptA.textContent = "A: " + currentWyr.a;
-  btnWyrOptB.textContent = "B: " + currentWyr.b;
-  btnWyrOptA.style.opacity = "1";
-  btnWyrOptB.style.opacity = "1";
-  wyrStatusLabel.textContent = "Cast your vote to see what the stranger picked!";
-  wyrModal.style.display = "flex";
+  if (btnWyrOptA) {
+    btnWyrOptA.textContent = "A: " + currentWyr.a;
+    btnWyrOptA.style.opacity = "1";
+  }
+  if (btnWyrOptB) {
+    btnWyrOptB.textContent = "B: " + currentWyr.b;
+    btnWyrOptB.style.opacity = "1";
+  }
+  if (wyrStatusLabel) wyrStatusLabel.textContent = "Cast your vote to see what the stranger picked!";
+  if (wyrModal) wyrModal.style.display = "flex";
 
   if (!promptObj && activeDataConnection && activeDataConnection.open) {
     activeDataConnection.send({ type: "wyr_prompt", data: currentWyr });
   }
-}
-
-if (btnOpenWYR) btnOpenWYR.addEventListener("click", () => startWyrGame());
-if (btnWyrClose) {
-  btnWyrClose.addEventListener("click", () => {
-    wyrModal.style.display = "none";
-  });
 }
 
 if (btnWyrOptA) btnWyrOptA.addEventListener("click", () => handleWyrVote("A"));
@@ -841,8 +904,221 @@ function handleWyrVote(choice) {
   }
 }
 
+// Tic-Tac-Toe Game
+if (btnOpenGame) {
+  btnOpenGame.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    openGameModal(true);
+    if (activeDataConnection && activeDataConnection.open) {
+      activeDataConnection.send({ type: "game_invite" });
+    }
+  });
+}
+
+if (btnGameClose) {
+  btnGameClose.addEventListener("click", (e) => {
+    e.preventDefault();
+    if (gameModal) gameModal.style.display = "none";
+    gameActive = false;
+    if (activeDataConnection && activeDataConnection.open) {
+      activeDataConnection.send({ type: "game_close" });
+    }
+  });
+}
+
+function openGameModal(isStarter = true) {
+  resetTTTBoard();
+  mySymbol = isStarter ? "X" : "O";
+  isMyTurn = isStarter;
+  gameActive = true;
+  if (gameModal) gameModal.style.display = "flex";
+  updateGameStatus();
+}
+
+function resetTTTBoard() {
+  tttBoard = Array(9).fill(null);
+  document.querySelectorAll(".ttt-cell").forEach((cell) => {
+    cell.textContent = "";
+    cell.className = "ttt-cell";
+  });
+}
+
+function updateGameStatus() {
+  if (!gameActive || !gameStatusLabel) return;
+  gameStatusLabel.textContent = isMyTurn ? `Your turn (${mySymbol})` : `Stranger's turn (${mySymbol === "X" ? "O" : "X"})`;
+}
+
+if (tttGrid) {
+  tttGrid.addEventListener("click", (e) => {
+    if (!gameActive || !isMyTurn) return;
+    const cell = e.target.closest(".ttt-cell");
+    if (!cell) return;
+    const idx = parseInt(cell.getAttribute("data-idx"));
+    if (tttBoard[idx] !== null) return;
+
+    applyMove(idx, mySymbol);
+    if (activeDataConnection && activeDataConnection.open) {
+      activeDataConnection.send({ type: "game_move", index: idx, symbol: mySymbol });
+    }
+
+    if (checkTTTWinner()) return;
+    isMyTurn = false;
+    updateGameStatus();
+  });
+}
+
+function applyMove(index, symbol) {
+  tttBoard[index] = symbol;
+  const cell = document.querySelector(`.ttt-cell[data-idx="${index}"]`);
+  if (cell) {
+    cell.textContent = symbol;
+    cell.classList.add(symbol === "X" ? "x-cell" : "o-cell");
+  }
+}
+
+function checkTTTWinner() {
+  const wins = [
+    [0, 1, 2], [3, 4, 5], [6, 7, 8],
+    [0, 3, 6], [1, 4, 7], [2, 5, 8],
+    [0, 4, 8], [2, 4, 6]
+  ];
+
+  for (let [a, b, c] of wins) {
+    if (tttBoard[a] && tttBoard[a] === tttBoard[b] && tttBoard[a] === tttBoard[c]) {
+      const winner = tttBoard[a];
+      gameStatusLabel.textContent = winner === mySymbol ? "🎉 You Won!" : "Stranger Won!";
+      gameActive = false;
+      return true;
+    }
+  }
+
+  if (tttBoard.every((c) => c !== null)) {
+    gameStatusLabel.textContent = "🤝 It's a Draw!";
+    gameActive = false;
+    return true;
+  }
+  return false;
+}
+
+// Shared Whiteboard
+if (btnOpenWhiteboard) {
+  btnOpenWhiteboard.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (whiteboardModal) {
+      whiteboardModal.style.display = "flex";
+      resizeWhiteboard();
+    }
+    if (activeDataConnection && activeDataConnection.open) {
+      activeDataConnection.send({ type: "whiteboard_open" });
+    }
+  });
+}
+
+if (btnWbClose) {
+  btnWbClose.addEventListener("click", (e) => {
+    e.preventDefault();
+    if (whiteboardModal) whiteboardModal.style.display = "none";
+    if (activeDataConnection && activeDataConnection.open) {
+      activeDataConnection.send({ type: "whiteboard_close" });
+    }
+  });
+}
+
+function resizeWhiteboard() {
+  if (!whiteboardCanvas) return;
+  const rect = whiteboardCanvas.getBoundingClientRect();
+  whiteboardCanvas.width = rect.width;
+  whiteboardCanvas.height = rect.height;
+}
+
+if (btnWbClear) {
+  btnWbClear.addEventListener("click", () => {
+    const ctx = whiteboardCanvas.getContext("2d");
+    ctx.clearRect(0, 0, whiteboardCanvas.width, whiteboardCanvas.height);
+    if (activeDataConnection && activeDataConnection.open) {
+      activeDataConnection.send({ type: "whiteboard_clear" });
+    }
+  });
+}
+
+function drawSegment(x0, y0, x1, y1, color, emit = false) {
+  if (!whiteboardCanvas) return;
+  const ctx = whiteboardCanvas.getContext("2d");
+  ctx.beginPath();
+  ctx.moveTo(x0, y0);
+  ctx.lineTo(x1, y1);
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 3;
+  ctx.lineCap = "round";
+  ctx.stroke();
+  ctx.closePath();
+
+  if (emit && activeDataConnection && activeDataConnection.open) {
+    activeDataConnection.send({
+      type: "whiteboard_draw",
+      x0: x0 / whiteboardCanvas.width,
+      y0: y0 / whiteboardCanvas.height,
+      x1: x1 / whiteboardCanvas.width,
+      y1: y1 / whiteboardCanvas.height,
+      color: color
+    });
+  }
+}
+
+function getWbPointerPos(e) {
+  const rect = whiteboardCanvas.getBoundingClientRect();
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  return {
+    x: clientX - rect.left,
+    y: clientY - rect.top
+  };
+}
+
+if (whiteboardCanvas) {
+  whiteboardCanvas.addEventListener("mousedown", (e) => {
+    isDrawing = true;
+    const pos = getWbPointerPos(e);
+    lastX = pos.x;
+    lastY = pos.y;
+  });
+
+  whiteboardCanvas.addEventListener("mousemove", (e) => {
+    if (!isDrawing) return;
+    const pos = getWbPointerPos(e);
+    drawSegment(lastX, lastY, pos.x, pos.y, wbColorPicker.value, true);
+    lastX = pos.x;
+    lastY = pos.y;
+  });
+
+  window.addEventListener("mouseup", () => {
+    isDrawing = false;
+  });
+
+  whiteboardCanvas.addEventListener("touchstart", (e) => {
+    isDrawing = true;
+    const pos = getWbPointerPos(e);
+    lastX = pos.x;
+    lastY = pos.y;
+  }, { passive: true });
+
+  whiteboardCanvas.addEventListener("touchmove", (e) => {
+    if (!isDrawing) return;
+    const pos = getWbPointerPos(e);
+    drawSegment(lastX, lastY, pos.x, pos.y, wbColorPicker.value, true);
+    lastX = pos.x;
+    lastY = pos.y;
+  }, { passive: true });
+
+  whiteboardCanvas.addEventListener("touchend", () => {
+    isDrawing = false;
+  });
+}
+
 // =========================================================================
-// 8. REACTIONS & SOUNDBOARD
+// 9. REACTIONS & SOUNDBOARD
 // =========================================================================
 function spawnFloatingEmoji(emoji) {
   if (!reactionFlyContainer) return;
@@ -944,224 +1220,7 @@ function stopStatsPolling() {
 }
 
 // =========================================================================
-// 9. SYNCHRONIZED LIVE WHITEBOARD
-// =========================================================================
-function resizeWhiteboard() {
-  if (!whiteboardCanvas) return;
-  const rect = whiteboardCanvas.getBoundingClientRect();
-  whiteboardCanvas.width = rect.width;
-  whiteboardCanvas.height = rect.height;
-}
-
-if (btnOpenWhiteboard) {
-  btnOpenWhiteboard.addEventListener("click", () => {
-    if (!isConnected) {
-      appendMessage("", "Connect with someone before doodling together!", "system");
-      return;
-    }
-    whiteboardModal.style.display = "flex";
-    resizeWhiteboard();
-    if (activeDataConnection && activeDataConnection.open) {
-      activeDataConnection.send({ type: "whiteboard_open" });
-    }
-  });
-}
-
-if (btnWbClose) {
-  btnWbClose.addEventListener("click", () => {
-    whiteboardModal.style.display = "none";
-    if (activeDataConnection && activeDataConnection.open) {
-      activeDataConnection.send({ type: "whiteboard_close" });
-    }
-  });
-}
-
-if (btnWbClear) {
-  btnWbClear.addEventListener("click", () => {
-    const ctx = whiteboardCanvas.getContext("2d");
-    ctx.clearRect(0, 0, whiteboardCanvas.width, whiteboardCanvas.height);
-    if (activeDataConnection && activeDataConnection.open) {
-      activeDataConnection.send({ type: "whiteboard_clear" });
-    }
-  });
-}
-
-function drawSegment(x0, y0, x1, y1, color, emit = false) {
-  if (!whiteboardCanvas) return;
-  const ctx = whiteboardCanvas.getContext("2d");
-  ctx.beginPath();
-  ctx.moveTo(x0, y0);
-  ctx.lineTo(x1, y1);
-  ctx.strokeStyle = color;
-  ctx.lineWidth = 3;
-  ctx.lineCap = "round";
-  ctx.stroke();
-  ctx.closePath();
-
-  if (emit && activeDataConnection && activeDataConnection.open) {
-    activeDataConnection.send({
-      type: "whiteboard_draw",
-      x0: x0 / whiteboardCanvas.width,
-      y0: y0 / whiteboardCanvas.height,
-      x1: x1 / whiteboardCanvas.width,
-      y1: y1 / whiteboardCanvas.height,
-      color: color
-    });
-  }
-}
-
-function getWbPointerPos(e) {
-  const rect = whiteboardCanvas.getBoundingClientRect();
-  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-  return {
-    x: clientX - rect.left,
-    y: clientY - rect.top
-  };
-}
-
-if (whiteboardCanvas) {
-  whiteboardCanvas.addEventListener("mousedown", (e) => {
-    isDrawing = true;
-    const pos = getWbPointerPos(e);
-    lastX = pos.x;
-    lastY = pos.y;
-  });
-
-  whiteboardCanvas.addEventListener("mousemove", (e) => {
-    if (!isDrawing) return;
-    const pos = getWbPointerPos(e);
-    drawSegment(lastX, lastY, pos.x, pos.y, wbColorPicker.value, true);
-    lastX = pos.x;
-    lastY = pos.y;
-  });
-
-  window.addEventListener("mouseup", () => {
-    isDrawing = false;
-  });
-
-  whiteboardCanvas.addEventListener("touchstart", (e) => {
-    isDrawing = true;
-    const pos = getWbPointerPos(e);
-    lastX = pos.x;
-    lastY = pos.y;
-  }, { passive: true });
-
-  whiteboardCanvas.addEventListener("touchmove", (e) => {
-    if (!isDrawing) return;
-    const pos = getWbPointerPos(e);
-    drawSegment(lastX, lastY, pos.x, pos.y, wbColorPicker.value, true);
-    lastX = pos.x;
-    lastY = pos.y;
-  }, { passive: true });
-
-  whiteboardCanvas.addEventListener("touchend", () => {
-    isDrawing = false;
-  });
-}
-
-// =========================================================================
-// 10. TIC-TAC-TOE MINI-GAME
-// =========================================================================
-function openGameModal(isStarter = true) {
-  if (!isConnected) {
-    appendMessage("", "Connect with someone before starting a game!", "system");
-    return;
-  }
-  resetTTTBoard();
-  mySymbol = isStarter ? "X" : "O";
-  isMyTurn = isStarter;
-  gameActive = true;
-  gameModal.style.display = "flex";
-  updateGameStatus();
-}
-
-if (btnOpenGame) {
-  btnOpenGame.addEventListener("click", () => {
-    openGameModal(true);
-    if (activeDataConnection && activeDataConnection.open) {
-      activeDataConnection.send({ type: "game_invite" });
-    }
-  });
-}
-
-if (btnGameClose) {
-  btnGameClose.addEventListener("click", () => {
-    gameModal.style.display = "none";
-    gameActive = false;
-    if (activeDataConnection && activeDataConnection.open) {
-      activeDataConnection.send({ type: "game_close" });
-    }
-  });
-}
-
-function resetTTTBoard() {
-  tttBoard = Array(9).fill(null);
-  document.querySelectorAll(".ttt-cell").forEach((cell) => {
-    cell.textContent = "";
-    cell.className = "ttt-cell";
-  });
-}
-
-function updateGameStatus() {
-  if (!gameActive || !gameStatusLabel) return;
-  gameStatusLabel.textContent = isMyTurn ? `Your turn (${mySymbol})` : `Stranger's turn (${mySymbol === "X" ? "O" : "X"})`;
-}
-
-if (tttGrid) {
-  tttGrid.addEventListener("click", (e) => {
-    if (!gameActive || !isMyTurn) return;
-    const cell = e.target.closest(".ttt-cell");
-    if (!cell) return;
-    const idx = parseInt(cell.getAttribute("data-idx"));
-    if (tttBoard[idx] !== null) return;
-
-    applyMove(idx, mySymbol);
-    if (activeDataConnection && activeDataConnection.open) {
-      activeDataConnection.send({ type: "game_move", index: idx, symbol: mySymbol });
-    }
-
-    if (checkTTTWinner()) return;
-    isMyTurn = false;
-    updateGameStatus();
-  });
-}
-
-function applyMove(index, symbol) {
-  tttBoard[index] = symbol;
-  const cell = document.querySelector(`.ttt-cell[data-idx="${index}"]`);
-  if (cell) {
-    cell.textContent = symbol;
-    cell.classList.add(symbol === "X" ? "x-cell" : "o-cell");
-  }
-}
-
-function checkTTTWinner() {
-  const wins = [
-    [0, 1, 2], [3, 4, 5], [6, 7, 8],
-    [0, 3, 6], [1, 4, 7], [2, 5, 8],
-    [0, 4, 8], [2, 4, 6]
-  ];
-
-  for (let [a, b, c] of wins) {
-    if (tttBoard[a] && tttBoard[a] === tttBoard[b] && tttBoard[a] === tttBoard[c]) {
-      const winner = tttBoard[a];
-      gameStatusLabel.textContent = winner === mySymbol ? "🎉 You Won!" : "Stranger Won!";
-      gameActive = false;
-      return true;
-    }
-  }
-
-  if (tttBoard.every((c) => c !== null)) {
-    gameStatusLabel.textContent = "🤝 It's a Draw!";
-    gameActive = false;
-    return true;
-  }
-  return false;
-}
-
-// =========================================================================
-// 11. QUICK TOOLS (COIN FLIP, DICE, ROOM INVITE)
+// 10. QUICK TOOLS (SNAPSHOT, SHARE ROOM, EXPORT LOG)
 // =========================================================================
 if (btnCoinFlip) {
   btnCoinFlip.addEventListener("click", () => {
@@ -1242,7 +1301,7 @@ function checkDirectInviteRoom() {
 }
 
 // =========================================================================
-// 12. PRIVACY BLUR SHIELD & SNAPSHOT
+// 11. PRIVACY BLUR SHIELD & SNAPSHOT
 // =========================================================================
 function triggerPrivacyShield() {
   if (!blurOverlay) return;
@@ -1318,15 +1377,12 @@ if (btnSnapshot) {
 }
 
 // =========================================================================
-// 13. SPEED CHAT (60-SECOND ENCOUNTER ENGINE)
+// 12. SPEED CHAT (60-SECOND ENCOUNTER ENGINE)
 // =========================================================================
 if (btnToggleSpeedMode) {
   btnToggleSpeedMode.addEventListener("click", () => {
     isSpeedMode = !isSpeedMode;
-    const labelSpan = btnToggleSpeedMode.querySelector(".label");
-    if (labelSpan) {
-      labelSpan.textContent = isSpeedMode ? "Speed: 60s" : "Speed: Off";
-    }
+    btnToggleSpeedMode.textContent = isSpeedMode ? "⏱ Speed Chat (60s): On" : "⏱ Speed Chat (60s): Off";
     btnToggleSpeedMode.classList.toggle("active", isSpeedMode);
 
     if (isConnected) {
@@ -1418,7 +1474,7 @@ function checkMutualExtend() {
 }
 
 // =========================================================================
-// 14. SOCKET.IO PRESENCE & MATCHMAKING
+// 13. SOCKET.IO PRESENCE & MATCHMAKING
 // =========================================================================
 socket.on("connect", () => {
   p2pStatus.textContent = "Connected";
@@ -1473,7 +1529,7 @@ socket.on("matched", (payload) => {
   chatInput.focus();
 
   if (payload.partnerTags && payload.partnerTags.length > 0) {
-    strangerTag.textContent = `Matched: #${payload.partnerTags[0]}`;
+    strangerTag.textContent = `Matched on: #${payload.partnerTags[0]}`;
     strangerTag.style.display = "flex";
   }
 
@@ -1490,7 +1546,7 @@ socket.on("matched", (payload) => {
 });
 
 // =========================================================================
-// 15. WEBRTC ENGINE (PEERJS)
+// 14. WEBRTC ENGINE (PEERJS)
 // =========================================================================
 function initializePeer() {
   peer = new Peer({
@@ -1638,7 +1694,7 @@ function handleStrangerLeft() {
 }
 
 // =========================================================================
-// 16. MATCHMAKING ACTIONS
+// 15. MATCHMAKING ACTIONS
 // =========================================================================
 function startMatchmaking() {
   if (!myPeerId) {
@@ -1770,7 +1826,7 @@ window.addEventListener("keydown", (e) => {
 });
 
 // =========================================================================
-// 17. CAMERA & HARDWARE ACCESS
+// 16. CAMERA & HARDWARE ACCESS
 // =========================================================================
 async function activateCamera() {
   const constraints = {
@@ -1812,7 +1868,7 @@ function handleStreamSuccess(stream) {
   localCanvas.style.display = isAudioOnlyMode ? "block" : "none";
 
   btnToggleHardware.classList.add("active");
-  btnToggleHardware.innerHTML = '<span class="icon">✔</span><span>Camera Active</span>';
+  btnToggleHardware.innerHTML = '<span>✔ Camera Active</span>';
   localLabel.querySelector("span").textContent = "You (Live)";
 
   setupMicVisualizer(stream);
@@ -1882,7 +1938,7 @@ function createFallbackStream() {
 }
 
 // =========================================================================
-// 18. PROCEDURAL AVATAR RENDERER
+// 17. PROCEDURAL AVATAR RENDERER
 // =========================================================================
 let animStep = 0;
 function renderAvatarsLoop() {
@@ -2057,7 +2113,7 @@ window.addEventListener("resize", syncCanvasDimensions);
 window.addEventListener("load", syncCanvasDimensions);
 
 // =========================================================================
-// 19. TAGS SYSTEM
+// 18. TAGS SYSTEM
 // =========================================================================
 function renderTags() {
   if (!tagsList) return;
@@ -2124,7 +2180,7 @@ if (interestsContainer) {
 }
 
 // =========================================================================
-// 20. CHAT ENGINE & TYPING DETECTION
+// 19. CHAT ENGINE & TYPING DETECTION
 // =========================================================================
 function appendMessage(sender, text, type = "stranger") {
   const now = new Date();
@@ -2188,7 +2244,7 @@ document.querySelectorAll(".quick-chip").forEach((chip) => {
 });
 
 // =========================================================================
-// 21. INSTANT DOM BOOTSTRAP
+// 20. BOOTSTRAP
 // =========================================================================
 syncCanvasDimensions();
 renderAvatarsLoop();
