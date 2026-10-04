@@ -932,7 +932,7 @@
         <div class="header-chat-actions">
           <button id="btnShareRoom" class="chat-tool-btn" title="Create invite link to reconnect">🔗 Room</button>
           <button id="btnSnapshot" class="chat-tool-btn" title="Capture call memory">📸 Snap</button>
-          <span id="p2pStatus" style="font-size: 0.74rem; color: #10b981;">Railway: Connecting...</span>
+          <span id="p2pStatus" style="font-size: 0.74rem; color: #10b981;">Server: Connecting...</span>
         </div>
       </div>
 
@@ -991,7 +991,7 @@
 
   <script>
     // =========================================================================
-    // 1. RAILWAY BACKEND & SOCKET INITIALIZATION
+    // 1. BACKEND & SOCKET INITIALIZATION
     // =========================================================================
     const BACKEND_URL = "https://my-web-chat-production.up.railway.app";
 
@@ -1295,12 +1295,12 @@
     // 7. SOCKET.IO PRESENCE & MATCHMAKING
     // =========================================================================
     socket.on("connect", () => {
-      p2pStatus.textContent = "Railway: Connected";
+      p2pStatus.textContent = "Server: Connected";
       p2pStatus.style.color = "#10b981";
     });
 
     socket.on("connect_error", () => {
-      p2pStatus.textContent = "Connecting to Railway...";
+      p2pStatus.textContent = "Connecting to Server...";
       p2pStatus.style.color = "#f59e0b";
     });
 
