@@ -117,7 +117,7 @@
       gap: 8px;
     }
 
-    .filter-select {
+    .header-select {
       background: #1e293b;
       color: #f8fafc;
       border: 1px solid #334155;
@@ -129,7 +129,7 @@
       font-weight: 600;
     }
 
-    .filter-select option {
+    .header-select option {
       color: #0f172a !important;
       background-color: #ffffff !important;
       font-weight: 600;
@@ -326,7 +326,7 @@
       position: absolute;
       top: 12px;
       left: 12px;
-      background: rgba(0, 0, 0, 0.7);
+      background: rgba(0, 0, 0, 0.75);
       backdrop-filter: blur(8px);
       padding: 5px 12px;
       border-radius: 7px;
@@ -361,6 +361,16 @@
       font-family: monospace;
       font-size: 0.76rem;
       color: #38bdf8;
+      display: none;
+      margin-left: 4px;
+      padding-left: 6px;
+      border-left: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .ping-indicator {
+      font-family: monospace;
+      font-size: 0.72rem;
+      color: #10b981;
       display: none;
       margin-left: 4px;
       padding-left: 6px;
@@ -482,6 +492,12 @@
       box-shadow: 0 10px 28px rgba(0, 0, 0, 0.7);
       overflow: hidden;
       z-index: 20;
+      transition: box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+
+    .local-pip-card.speaking {
+      border-color: #10b981 !important;
+      box-shadow: 0 0 18px rgba(16, 185, 129, 0.75), 0 10px 28px rgba(0, 0, 0, 0.7) !important;
     }
 
     video#localVideo {
@@ -513,6 +529,22 @@
       font-weight: 700;
       z-index: 5;
       user-select: none;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* AR Prop Sticker */
+    .ar-prop-overlay {
+      position: absolute;
+      top: 18%;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 2.8rem;
+      pointer-events: none;
+      user-select: none;
+      z-index: 6;
+      display: none;
     }
 
     /* Desktop Controls Pill */
@@ -1024,14 +1056,26 @@
     </div>
     
     <div class="header-actions">
-      <select id="filterSelect" class="filter-select" title="Camera Filter">
-        <option value="none">✨ Filter: Normal</option>
+      <!-- Camera Filter -->
+      <select id="filterSelect" class="header-select" title="Camera Filter">
+        <option value="none">✨ Normal</option>
         <option value="grayscale(100%)">Noir (B&W)</option>
         <option value="sepia(60%) contrast(110%)">Warm Vintage</option>
         <option value="hue-rotate(180deg) saturate(180%)">Cyberpunk</option>
         <option value="brightness(110%) contrast(120%)">Soft Glow</option>
         <option value="invert(100%)">Invert</option>
       </select>
+
+      <!-- AR Props Selector -->
+      <select id="arPropSelect" class="header-select" title="AR Face Prop">
+        <option value="none">🎭 No Prop</option>
+        <option value="👑">👑 Crown</option>
+        <option value="😎">😎 Cool Shades</option>
+        <option value="🐱">🐱 Cat Ears</option>
+        <option value="🥸">🥸 Disguise</option>
+        <option value="💫">💫 Halo Glow</option>
+      </select>
+
       <button class="audio-mode-btn" id="btnToggleAudioOnly" title="Toggle Audio-Only Mode">🎧 Video ON</button>
       <button class="sound-btn" id="btnToggleSound" title="Toggle Audio Effects">🔊 Sound ON</button>
       <button class="cam-btn" id="btnToggleHardware">📹 Enable Camera & Mic</button>
@@ -1040,13 +1084,14 @@
 
   <!-- Main Viewports -->
   <main>
-    <div class="stage-column">
-      <div class="video-stage-container">
+    <div class="stage-column" id="stageColumn">
+      <div class="video-stage-container" id="videoStageContainer">
         <div class="remote-video-wrap">
           <div class="video-badge">
             <span class="badge-dot" id="strangerDot"></span>
             <span id="strangerLabel">Disconnected</span>
             <span class="call-timer" id="callTimer">00:00</span>
+            <span class="ping-indicator" id="pingIndicator">📶 --ms</span>
           </div>
           <div class="video-match-tag" id="strangerTag">Matched on: #music</div>
           <video id="remoteVideo" autoplay playsinline></video>
@@ -1057,7 +1102,7 @@
 
           <!-- Quick Reaction Buttons -->
           <div class="reactions-bar" id="reactionsBar">
-            <button class="reaction-trigger-btn" data-emoji="❤️">❤️</button>
+            <button class="reaction-trigger-btn" data-emoji="❤️️">❤️</button>
             <button class="reaction-trigger-btn" data-emoji="😂">😂</button>
             <button class="reaction-trigger-btn" data-emoji="🔥">🔥</button>
             <button class="reaction-trigger-btn" data-emoji="👏">👏</button>
@@ -1094,8 +1139,12 @@
         </div>
 
         <!-- Local PiP -->
-        <div class="local-pip-card">
-          <div class="local-pip-badge" id="localLabel">You</div>
+        <div class="local-pip-card" id="localPipCard">
+          <div class="local-pip-badge" id="localLabel">
+            <span>You</span>
+            <span id="micSpeakingBadge" style="font-size:0.6rem; display:none; color:#10b981;">● Talking</span>
+          </div>
+          <div class="ar-prop-overlay" id="arPropOverlay">👑</div>
           <video id="localVideo" class="mirrored" autoplay playsinline muted></video>
           <canvas id="localCanvas"></canvas>
         </div>
@@ -1106,6 +1155,7 @@
           <button id="btnToggleMirror" title="Flip Mirror">🪞</button>
           <button id="btnMuteAudio" title="Mute Mic">🎤</button>
           <button id="btnMuteVideo" title="Stop Video">📷</button>
+          <button id="btnToggleFullscreen" title="Toggle Fullscreen Mode">⛶</button>
         </div>
       </div>
 
@@ -1115,6 +1165,7 @@
         <button id="mBtnToggleMirror" class="m-tool-btn">🪞 Mirror</button>
         <button id="mBtnMuteAudio" class="m-tool-btn">🎤 Mic</button>
         <button id="mBtnMuteVideo" class="m-tool-btn">📷 Cam</button>
+        <button id="mBtnToggleFullscreen" class="m-tool-btn">⛶ Full</button>
       </div>
     </div>
 
@@ -1126,7 +1177,7 @@
           <span class="typing-label" id="typingIndicator">Stranger is typing...</span>
         </div>
         <div class="header-chat-actions">
-          <button id="btnExportChat" class="chat-tool-btn" title="Save chat log">📋 Log</button>
+          <button id="btnExportChat" class="chat-tool-btn" title="Save chat transcript">📋 Log</button>
           <button id="btnOpenGame" class="chat-tool-btn game-btn" title="Play Tic-Tac-Toe">🎮 Play</button>
           <button id="btnShareRoom" class="chat-tool-btn" title="Create invite link">🔗 Room</button>
           <button id="btnSnapshot" class="chat-tool-btn" title="Save photo snap">📸 Snap</button>
@@ -1225,6 +1276,12 @@
 
     let callTimerInterval = null;
     let callSecondsElapsed = 0;
+    let statsPollInterval = null;
+
+    // Web Audio Mic Visualizer
+    let micAnalyser = null;
+    let micDataArray = null;
+    let micAnimFrame = null;
 
     const ICEBREAKER_PROMPTS = [
       "If you could have dinner with any historical person, who would it be?",
@@ -1245,6 +1302,8 @@
 
     // UI Cache
     const filterSelect = document.getElementById("filterSelect");
+    const arPropSelect = document.getElementById("arPropSelect");
+    const arPropOverlay = document.getElementById("arPropOverlay");
     const btnToggleSound = document.getElementById("btnToggleSound");
     const btnToggleAudioOnly = document.getElementById("btnToggleAudioOnly");
     const strangersMetCount = document.getElementById("strangersMetCount");
@@ -1255,6 +1314,8 @@
     const remoteVideo = document.getElementById("remoteVideo");
     const localCanvas = document.getElementById("localCanvas");
     const remoteCanvas = document.getElementById("remoteCanvas");
+    const localPipCard = document.getElementById("localPipCard");
+    const micSpeakingBadge = document.getElementById("micSpeakingBadge");
     const blurOverlay = document.getElementById("blurOverlay");
     const btnUnblurVideo = document.getElementById("btnUnblurVideo");
     const reactionFlyContainer = document.getElementById("reactionFlyContainer");
@@ -1269,6 +1330,8 @@
     const gameStatusLabel = document.getElementById("gameStatusLabel");
     const tttGrid = document.getElementById("tttGrid");
     const callTimer = document.getElementById("callTimer");
+    const pingIndicator = document.getElementById("pingIndicator");
+    const videoStageContainer = document.getElementById("videoStageContainer");
     const strangerDot = document.getElementById("strangerDot");
     const strangerLabel = document.getElementById("strangerLabel");
     const strangerTag = document.getElementById("strangerTag");
@@ -1291,15 +1354,17 @@
     const btnToggleMirror = document.getElementById("btnToggleMirror");
     const btnMuteAudio = document.getElementById("btnMuteAudio");
     const btnMuteVideo = document.getElementById("btnMuteVideo");
+    const btnToggleFullscreen = document.getElementById("btnToggleFullscreen");
 
     // Mobile Buttons
     const mBtnSwitchCamera = document.getElementById("mBtnSwitchCamera");
     const mBtnToggleMirror = document.getElementById("mBtnToggleMirror");
     const mBtnMuteAudio = document.getElementById("mBtnMuteAudio");
     const mBtnMuteVideo = document.getElementById("mBtnMuteVideo");
+    const mBtnToggleFullscreen = document.getElementById("mBtnToggleFullscreen");
 
     // =========================================================================
-    // 2. SYNTHESIZED WEB AUDIO ENGINE
+    // 2. SYNTHESIZED WEB AUDIO ENGINE & MIC LEVEL DETECTOR
     // =========================================================================
     let audioCtx = null;
     function getAudioContext() {
@@ -1311,6 +1376,53 @@
         audioCtx.resume();
       }
       return audioCtx;
+    }
+
+    function setupMicVisualizer(stream) {
+      try {
+        const ctx = getAudioContext();
+        const audioTracks = stream.getAudioTracks();
+        if (audioTracks.length === 0) return;
+
+        const source = ctx.createMediaStreamSource(stream);
+        micAnalyser = ctx.createAnalyser();
+        micAnalyser.fftSize = 64;
+        source.connect(micAnalyser);
+
+        micDataArray = new Uint8Array(micAnalyser.frequencyBinCount);
+
+        function checkMicLevel() {
+          if (!localStream || micMuted) {
+            localPipCard.classList.remove("speaking");
+            micSpeakingBadge.style.display = "none";
+            micAnimFrame = requestAnimationFrame(checkMicLevel);
+            return;
+          }
+
+          micAnalyser.getByteFrequencyData(micDataArray);
+          let sum = 0;
+          for (let i = 0; i < micDataArray.length; i++) {
+            sum += micDataArray[i];
+          }
+          const avg = sum / micDataArray.length;
+
+          // If sound level passes voice threshold
+          if (avg > 25) {
+            localPipCard.classList.add("speaking");
+            micSpeakingBadge.style.display = "inline";
+          } else {
+            localPipCard.classList.remove("speaking");
+            micSpeakingBadge.style.display = "none";
+          }
+
+          micAnimFrame = requestAnimationFrame(checkMicLevel);
+        }
+
+        if (micAnimFrame) cancelAnimationFrame(micAnimFrame);
+        checkMicLevel();
+      } catch (e) {
+        console.warn("Could not bind mic analyzer:", e);
+      }
     }
 
     function playSound(type) {
@@ -1367,7 +1479,6 @@
       btnToggleSound.style.color = soundEnabled ? "#cbd5e1" : "#ef4444";
     });
 
-    // Audio-Only Low-Bandwidth Mode
     btnToggleAudioOnly.addEventListener("click", () => {
       isAudioOnlyMode = !isAudioOnlyMode;
       btnToggleAudioOnly.textContent = isAudioOnlyMode ? "📻 Audio Mode" : "🎧 Video ON";
@@ -1386,7 +1497,32 @@
     });
 
     // =========================================================================
-    // 3. FLOATING REACTIONS SYSTEM
+    // 3. FULLSCREEN ENGINE & AR PROPS
+    // =========================================================================
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        videoStageContainer.requestFullscreen().catch(err => {
+          console.warn("Fullscreen request error:", err);
+        });
+      } else {
+        document.exitFullscreen();
+      }
+    }
+    btnToggleFullscreen.addEventListener("click", toggleFullscreen);
+    mBtnToggleFullscreen.addEventListener("click", toggleFullscreen);
+
+    arPropSelect.addEventListener("change", (e) => {
+      const val = e.target.value;
+      if (val === "none") {
+        arPropOverlay.style.display = "none";
+      } else {
+        arPropOverlay.textContent = val;
+        arPropOverlay.style.display = "block";
+      }
+    });
+
+    // =========================================================================
+    // 4. FLOATING REACTIONS SYSTEM
     // =========================================================================
     function spawnFloatingEmoji(emoji) {
       const el = document.createElement("div");
@@ -1409,7 +1545,7 @@
     });
 
     // =========================================================================
-    // 4. CALL DURATION TIMER
+    // 5. CALL DURATION TIMER & WEBRTC PING STATS
     // =========================================================================
     function startCallTimer() {
       stopCallTimer();
@@ -1434,8 +1570,40 @@
       callSecondsElapsed = 0;
     }
 
+    function startStatsPolling(peerConnection) {
+      stopStatsPolling();
+      pingIndicator.style.display = "inline-block";
+      pingIndicator.textContent = "📶 ...";
+
+      statsPollInterval = setInterval(async () => {
+        if (!peerConnection || peerConnection.connectionState !== "connected") return;
+        try {
+          const stats = await peerConnection.getStats();
+          stats.forEach(report => {
+            if (report.type === "candidate-pair" && report.state === "succeeded") {
+              if (report.currentRoundTripTime !== undefined) {
+                const ms = Math.round(report.currentRoundTripTime * 1000);
+                pingIndicator.textContent = `📶 ${ms}ms`;
+                pingIndicator.style.color = ms < 80 ? "#10b981" : (ms < 180 ? "#f59e0b" : "#ef4444");
+              }
+            }
+          });
+        } catch (e) {
+          // ignore stat errors
+        }
+      }, 2000);
+    }
+
+    function stopStatsPolling() {
+      if (statsPollInterval) {
+        clearInterval(statsPollInterval);
+        statsPollInterval = null;
+      }
+      pingIndicator.style.display = "none";
+    }
+
     // =========================================================================
-    // 5. TIC-TAC-TOE REAL-TIME MINI-GAME
+    // 6. TIC-TAC-TOE REAL-TIME MINI-GAME
     // =========================================================================
     function openGameModal(isStarter = true) {
       if (!isConnected) {
@@ -1529,7 +1697,7 @@
     }
 
     // =========================================================================
-    // 6. ICEBREAKERS, CHAT LOG EXPORT & DIRECT ROOM
+    // 7. ICEBREAKERS, CHAT LOG EXPORT & DIRECT ROOM
     // =========================================================================
     btnRandomIcebreaker.addEventListener("click", () => {
       if (!isConnected) {
@@ -1588,7 +1756,7 @@
     }
 
     // =========================================================================
-    // 7. PRIVACY BLUR SHIELD
+    // 8. PRIVACY BLUR SHIELD & SNAPSHOT
     // =========================================================================
     function triggerPrivacyShield() {
       blurOverlay.style.display = "flex";
@@ -1603,9 +1771,6 @@
       clearTimeout(blurTimeout);
     });
 
-    // =========================================================================
-    // 8. INSTANT PHOTO SNAPSHOT
-    // =========================================================================
     btnSnapshot.addEventListener("click", () => {
       if (!isConnected) {
         appendMessage("", "Connect with someone first before snapping a memory!", "system");
@@ -1768,6 +1933,10 @@
         remoteVideo.style.display = isAudioOnlyMode ? "none" : "block";
         remoteCanvas.style.display = isAudioOnlyMode ? "block" : "none";
         triggerPrivacyShield();
+
+        if (call.peerConnection) {
+          startStatsPolling(call.peerConnection);
+        }
       });
       call.on("close", handleStrangerLeft);
       call.on("error", handleStrangerLeft);
@@ -1806,6 +1975,7 @@
       isConnected = false;
       playSound("leave");
       stopCallTimer();
+      stopStatsPolling();
       gameModal.style.display = "none";
       gameActive = false;
       typingIndicator.style.display = "none";
@@ -1824,6 +1994,7 @@
       isSearching = true;
       isConnected = false;
       stopCallTimer();
+      stopStatsPolling();
       gameModal.style.display = "none";
       gameActive = false;
 
@@ -1865,6 +2036,7 @@
       isConnected = false;
       isSearching = false;
       stopCallTimer();
+      stopStatsPolling();
       gameModal.style.display = "none";
       gameActive = false;
 
@@ -1969,7 +2141,9 @@
 
       btnToggleHardware.classList.add("active");
       btnToggleHardware.textContent = "✔ Camera Active";
-      localLabel.textContent = "You (Live)";
+      localLabel.querySelector("span").textContent = "You (Live)";
+
+      setupMicVisualizer(stream);
 
       if (activeCall && activeCall.peerConnection) {
         const videoTrack = stream.getVideoTracks()[0];
@@ -2020,7 +2194,7 @@
       localStream.getVideoTracks().forEach(t => (t.enabled = !camDisabled));
       localVideo.style.display = camDisabled ? "none" : "block";
       localCanvas.style.display = camDisabled ? "block" : "none";
-      localLabel.textContent = camDisabled ? "You (Paused)" : "You (Live)";
+      localLabel.querySelector("span").textContent = camDisabled ? "You (Paused)" : "You (Live)";
       btnMuteVideo.textContent = camDisabled ? "🚫" : "📷";
       if (mBtnMuteVideo) mBtnMuteVideo.textContent = camDisabled ? "📷 Show" : "📷 Cam";
     });
