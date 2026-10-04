@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>Web TV 555 - Live Random Video Chat</title>
+  <title>Web TV 555 - Talk to Strangers!</title>
 
-  <!-- Global WebRTC & Real-time Communications CDNs -->
+  <!-- High-Speed Global CDNs for Real-time Peer Connectivity -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 
@@ -13,20 +13,17 @@
     :root {
       --bg-base: #07090e;
       --bg-surface: #0f1523;
-      --bg-elevated: #151f33;
-      --bg-card: rgba(18, 26, 43, 0.9);
+      --bg-card: rgba(18, 26, 43, 0.95);
+      --omegle-blue: #0284c7;
+      --omegle-orange: #ea580c;
       --border-subtle: rgba(255, 255, 255, 0.08);
-      --border-glow: rgba(59, 130, 246, 0.4);
+      --border-accent: rgba(59, 130, 246, 0.35);
       --primary: #3b82f6;
       --primary-hover: #2563eb;
-      --primary-glow: rgba(59, 130, 246, 0.35);
       --danger: #ef4444;
-      --danger-hover: #dc2626;
       --success: #10b981;
       --warning: #f59e0b;
       --pink: #ec4899;
-      --purple: #8b5cf6;
-      --cyan: #06b6d4;
       --text-main: #f8fafc;
       --text-secondary: #94a3b8;
       --text-muted: #64748b;
@@ -35,7 +32,7 @@
       --radius-lg: 16px;
       --radius-pill: 9999px;
       --glass-blur: blur(16px);
-      --shadow-lg: 0 16px 40px -10px rgba(0, 0, 0, 0.75);
+      --shadow-lg: 0 16px 40px -10px rgba(0, 0, 0, 0.85);
     }
 
     * {
@@ -56,12 +53,368 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      padding-bottom: env(safe-area-inset-bottom, 0px);
+      position: relative;
+    }
+
+    .landing-overlay {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at 50% 20%, #111a2e 0%, #06080e 100%);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 24px 16px;
+      overflow-y: auto;
+      transition: opacity 0.35s ease, transform 0.35s ease, visibility 0.35s;
+    }
+
+    .landing-overlay.hidden {
+      opacity: 0;
+      transform: translateY(-20px) scale(0.98);
+      pointer-events: none;
+      visibility: hidden;
+    }
+
+    .landing-top-nav {
+      width: 100%;
+      max-width: 860px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .landing-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.6rem;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+    }
+
+    .landing-logo .brand-icon {
+      font-size: 1.8rem;
+    }
+
+    .landing-logo .title-txt {
+      background: linear-gradient(135deg, #ffffff 40%, #93c5fd 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .landing-logo .badge-555 {
+      background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+      color: #fff;
+      font-size: 0.8rem;
+      padding: 2px 8px;
+      border-radius: var(--radius-sm);
+      font-weight: 800;
+    }
+
+    .landing-online-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.88rem;
+      font-weight: 800;
+      background: rgba(16, 185, 129, 0.14);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      padding: 6px 14px;
+      border-radius: var(--radius-pill);
+    }
+
+    .landing-content-card {
+      width: 100%;
+      max-width: 860px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      padding: 28px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    .landing-hero-banner {
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 18px;
+      text-align: center;
+    }
+
+    .landing-hero-banner h1 {
+      font-size: 1.7rem;
+      font-weight: 900;
+      color: #ffffff;
+      margin-bottom: 6px;
+    }
+
+    .landing-hero-banner p {
+      font-size: 0.94rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .landing-form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .landing-input {
+      background: #090e19;
+      border: 1px solid #1e293b;
+      color: #ffffff;
+      padding: 10px 14px;
+      border-radius: var(--radius-md);
+      font-size: 0.9rem;
+      outline: none;
+      font-weight: 600;
+      transition: border-color 0.15s;
+    }
+
+    .landing-input:focus {
+      border-color: var(--primary);
+    }
+
+    .landing-select {
+      background: #090e19;
+      border: 1px solid #1e293b;
+      color: #ffffff;
+      padding: 10px 14px;
+      border-radius: var(--radius-md);
+      font-size: 0.9rem;
+      outline: none;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .landing-select option {
+      background-color: #0f172a;
+      color: #ffffff;
+    }
+
+    .interests-section {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: #080c16;
+      border: 1px solid #1a2336;
+      border-radius: var(--radius-md);
+      padding: 16px;
+    }
+
+    .interests-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .interests-header .sec-title {
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: #cbd5e1;
+    }
+
+    .interests-header .sec-subtitle {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .landing-tags-box {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      min-height: 38px;
+      align-items: center;
+      padding: 6px 0;
+    }
+
+    .landing-tag-chip {
+      background: rgba(37, 99, 235, 0.22);
+      border: 1px solid rgba(59, 130, 246, 0.45);
+      color: #bfdbfe;
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: var(--radius-pill);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .landing-tag-chip .del-tag {
+      cursor: pointer;
+      color: #93c5fd;
+      font-weight: 900;
+      font-size: 0.9rem;
+    }
+
+    .landing-tag-chip .del-tag:hover {
+      color: #ef4444;
+    }
+
+    .add-tag-form {
+      display: flex;
+      gap: 8px;
+    }
+
+    .add-tag-form input {
+      flex: 1;
+      background: #0e1524;
+      border: 1px solid #243048;
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      color: #ffffff;
+      font-size: 0.85rem;
+      outline: none;
+    }
+
+    .btn-add-topic {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #f8fafc;
+      padding: 8px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 0.8rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .btn-add-topic:hover {
+      background: var(--primary);
+    }
+
+    .quick-popular-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      margin-top: 4px;
+    }
+
+    .quick-popular-tags .lbl {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      font-weight: 800;
+      text-transform: uppercase;
+      margin-right: 4px;
+    }
+
+    .pop-tag-pill {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #94a3b8;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .pop-tag-pill:hover {
+      background: rgba(59, 130, 246, 0.2);
+      border-color: rgba(59, 130, 246, 0.5);
+      color: #93c5fd;
+    }
+
+    .landing-terms-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      user-select: none;
+      cursor: pointer;
+    }
+
+    .landing-terms-row input {
+      cursor: pointer;
+      accent-color: var(--primary);
+      width: 16px;
+      height: 16px;
+    }
+
+    .landing-buttons-deck {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 4px;
+    }
+
+    .btn-start-mode {
+      border: none;
+      padding: 16px 20px;
+      border-radius: var(--radius-md);
+      font-size: 1.05rem;
+      font-weight: 900;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: transform 0.15s ease, filter 0.15s ease;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    .btn-start-mode:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.1);
+    }
+
+    .btn-start-mode:active {
+      transform: translateY(0);
+    }
+
+    .btn-start-mode.text-mode {
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+      color: #ffffff;
+    }
+
+    .btn-start-mode.video-mode {
+      background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 20px rgba(234, 88, 12, 0.4);
+    }
+
+    .btn-start-mode .sub-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      opacity: 0.85;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .landing-guidelines-banner {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+      text-align: center;
     }
 
     .app-header {
       height: 56px;
-      background: rgba(15, 21, 35, 0.92);
+      background: rgba(15, 21, 35, 0.95);
       backdrop-filter: var(--glass-blur);
       -webkit-backdrop-filter: var(--glass-blur);
       border-bottom: 1px solid var(--border-subtle);
@@ -76,32 +429,7 @@
     .header-left {
       display: flex;
       align-items: center;
-      gap: 14px;
-    }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      font-size: 1.18rem;
-      font-weight: 900;
-      letter-spacing: -0.4px;
-      user-select: none;
-    }
-
-    .logo-text {
-      background: linear-gradient(135deg, #ffffff 40%, #93c5fd 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .logo-badge {
-      background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
-      color: #fff;
-      font-size: 0.72rem;
-      padding: 2px 7px;
-      border-radius: var(--radius-sm);
-      font-weight: 800;
+      gap: 12px;
     }
 
     .status-pills {
@@ -120,7 +448,7 @@
       padding: 4px 10px;
       border-radius: var(--radius-pill);
       border: 1px solid var(--border-subtle);
-      font-weight: 600;
+      font-weight: 700;
       user-select: none;
     }
 
@@ -173,9 +501,10 @@
       border-color: rgba(59, 130, 246, 0.45) !important;
     }
 
-    .menu-trigger-btn:hover {
-      background: rgba(59, 130, 246, 0.28) !important;
-      border-color: #60a5fa !important;
+    .btn-return-home {
+      background: rgba(239, 68, 68, 0.15) !important;
+      color: #fca5a5 !important;
+      border-color: rgba(239, 68, 68, 0.35) !important;
     }
 
     .primary-cam-btn {
@@ -203,7 +532,7 @@
     .floating-menu-modal {
       position: fixed;
       inset: 0;
-      background: rgba(5, 8, 15, 0.82);
+      background: rgba(5, 8, 15, 0.84);
       backdrop-filter: var(--glass-blur);
       -webkit-backdrop-filter: var(--glass-blur);
       z-index: 9999 !important;
@@ -258,8 +587,6 @@
       cursor: pointer;
     }
 
-    .modal-close-icon:hover { color: #fff; }
-
     .menu-modal-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -274,7 +601,7 @@
 
     .menu-field label {
       font-size: 0.72rem;
-      font-weight: 700;
+      font-weight: 800;
       color: #94a3b8;
       text-transform: uppercase;
       letter-spacing: 0.5px;
@@ -495,6 +822,7 @@
       cursor: default;
     }
 
+    /* Picture in Picture (PiP) Card */
     .local-pip-card {
       position: absolute;
       bottom: 14px;
@@ -522,9 +850,7 @@
       display: none;
     }
 
-    .mirrored {
-      transform: scaleX(-1);
-    }
+    .mirrored { transform: scaleX(-1); }
 
     canvas#localCanvas {
       width: 100%;
@@ -1348,10 +1674,111 @@
         width: 100%;
         overflow-x: auto;
       }
+      .landing-form-grid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
 <body>
+
+  <div class="landing-overlay" id="landingOverlay">
+    <div class="landing-top-nav">
+      <div class="landing-logo">
+        <span class="brand-icon">⚡</span>
+        <span class="title-txt">Web TV</span>
+        <span class="badge-555">555</span>
+      </div>
+
+      <div class="landing-online-badge">
+        <span class="status-dot online"></span>
+        <span id="landingOnlineCounter">38,410+</span> Online Now
+      </div>
+    </div>
+
+    <div class="landing-content-card">
+      <div class="landing-hero-banner">
+        <h1>Talk to strangers 1-on-1!</h1>
+        <p>Web TV 555 pairs you with a random stranger. Matches are strictly anonymous unless you choose to share your details. Be respectful, have fun, and enjoy live encounters!</p>
+      </div>
+
+      <!-- Entrance Profile Config -->
+      <div class="landing-form-grid">
+        <div class="form-group">
+          <label for="landingNameInput">Your Display Name</label>
+          <input type="text" id="landingNameInput" class="landing-input" placeholder="e.g. Alex (or leave for 'Stranger')" autocomplete="off" maxlength="20" />
+        </div>
+
+        <div class="form-group">
+          <label for="landingMyGenderSelect">I am</label>
+          <select id="landingMyGenderSelect" class="landing-select">
+            <option value="male">👨 Male</option>
+            <option value="female">👩 Female</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="landingMatchPrefSelect">Looking to talk with</label>
+        <select id="landingMatchPrefSelect" class="landing-select">
+          <option value="both">👥 Everyone / Random</option>
+          <option value="female">👩 Female</option>
+          <option value="male">👨 Male</option>
+        </select>
+      </div>
+
+      <!-- What do you wanna talk about? (Interests) -->
+      <div class="interests-section">
+        <div class="interests-header">
+          <span class="sec-title">What do you wanna talk about?</span>
+          <span class="sec-subtitle">Add your favorite hobbies or topics</span>
+        </div>
+
+        <div class="landing-tags-box" id="landingTagsBox">
+          <!-- Active tags rendered here -->
+        </div>
+
+        <div class="add-tag-form">
+          <input type="text" id="landingTagInput" placeholder="Add topic (e.g. music, gaming, movies)..." autocomplete="off" />
+          <button type="button" class="btn-add-topic" id="btnLandingAddTag">+ Add</button>
+        </div>
+
+        <div class="quick-popular-tags">
+          <span class="lbl">Popular:</span>
+          <span class="pop-tag-pill" data-tag="music">🎵 #music</span>
+          <span class="pop-tag-pill" data-tag="gaming">🎮 #gaming</span>
+          <span class="pop-tag-pill" data-tag="coding">💻 #coding</span>
+          <span class="pop-tag-pill" data-tag="anime">🍜 #anime</span>
+          <span class="pop-tag-pill" data-tag="chill">☕ #chill</span>
+          <span class="pop-tag-pill" data-tag="college">🎓 #college</span>
+          <span class="pop-tag-pill" data-tag="movies">🍿 #movies</span>
+        </div>
+      </div>
+
+      <!-- 18+ & Conduct agreement -->
+      <label class="landing-terms-row">
+        <input type="checkbox" id="chkAgreement" checked />
+        <span>I am 18+ or have parental consent, and agree to follow respectful community guidelines.</span>
+      </label>
+
+      <!-- Launch Action Buttons -->
+      <div class="landing-buttons-deck">
+        <button class="btn-start-mode text-mode" id="btnStartTextChat">
+          <span>💬 Text Chat</span>
+          <span class="sub-label">Instant Messaging Only</span>
+        </button>
+
+        <button class="btn-start-mode video-mode" id="btnStartVideoChat">
+          <span>📹 Video Chat</span>
+          <span class="sub-label">Camera &amp; Voice Match</span>
+        </button>
+      </div>
+
+      <div class="landing-guidelines-banner">
+        Video is monitored. Do not broadcast inappropriate behavior, harassment, or copyrighted content. Web TV 555 is moderated for community safety.
+      </div>
+    </div>
+  </div>
 
   <header class="app-header">
     <div class="header-left">
@@ -1364,7 +1791,7 @@
       <div class="status-pills">
         <div class="pill online-pill">
           <span class="status-dot online"></span>
-          <span id="userCount">1</span> Online
+          <span id="userCount">38,410</span> Online
         </div>
         <div class="pill streak-pill" id="streakBadge" title="Strangers met this session">
           <span>⚡</span> <span id="strangersMetCount">0</span> Met
@@ -1380,10 +1807,12 @@
       <button class="nav-btn" id="btnToggleSound" title="Toggle Sound">🔊 Sound</button>
       <button class="nav-btn" id="btnToggleAudioOnly" title="Toggle Audio/Video Mode">🎧 Video ON</button>
       <button class="nav-btn menu-trigger-btn" id="btnOpenSettingsMenu">⚙️ Settings &amp; Studio</button>
+      <button class="nav-btn btn-return-home" id="btnReturnHome" title="Return to Front Page">🚪 Exit to Home</button>
       <button class="primary-cam-btn" id="btnToggleHardware">📹 Enable Camera &amp; Mic</button>
     </div>
   </header>
 
+  <!-- Settings & Studio Modal -->
   <div class="floating-menu-modal" id="settingsMenuModal">
     <div class="menu-modal-card">
       <div class="menu-modal-header">
@@ -1561,7 +1990,7 @@
         <!-- Local Video PiP -->
         <div class="local-pip-card" id="localPipCard">
           <div class="local-pip-badge" id="localLabel">
-            <span>You</span>
+            <span id="myDisplayNameSpan">You</span>
             <span class="vibe-tag" id="myVibeTag">☕ Chill</span>
             <span id="micSpeakingBadge" class="talking-dot">● Talking</span>
           </div>
@@ -1700,7 +2129,6 @@
   </footer>
 
   <script>
-    // Canvas roundRect Polyfill
     if (!CanvasRenderingContext2D.prototype.roundRect) {
       CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, radii) {
         if (!radii) { this.rect(x, y, w, h); return; }
@@ -1731,6 +2159,11 @@
     let screenStream = null;
     let isScreenSharing = false;
 
+    // User Profile & Landing State
+    let userDisplayName = "Stranger";
+    let userTags = ["music", "chill"];
+    let chosenMode = "video"; // 'text' or 'video'
+
     let isSearching = false;
     let isConnected = false;
     let isMirrored = true;
@@ -1749,14 +2182,13 @@
     let hasVotedExtend = false;
     let partnerVotedExtend = false;
 
-    // Recording & Stats
+    // Recording & Log State
     let mediaRecorder = null;
     let recordedChunks = [];
     let isRecordingClip = false;
     let recordTimeout = null;
     let strangersMet = 0;
     let chatHistoryLog = [];
-    let userTags = ["chatting", "music"];
     const blockedPeers = new Set();
     let blurTimeout = null;
     let typingTimer = null;
@@ -1765,7 +2197,7 @@
     let callSecondsElapsed = 0;
     let statsPollInterval = null;
 
-    // Audio DSP & Speech
+    // Audio DSP & Web Speech
     let audioCtx = null;
     let micAnalyser = null;
     let micDataArray = null;
@@ -1820,6 +2252,19 @@
       "Speak in a dramatic British accent for the next 2 minutes.",
       "Do 10 rapid push-ups or jumping jacks on camera."
     ];
+
+    const landingOverlay = document.getElementById("landingOverlay");
+    const landingNameInput = document.getElementById("landingNameInput");
+    const landingMyGenderSelect = document.getElementById("landingMyGenderSelect");
+    const landingMatchPrefSelect = document.getElementById("landingMatchPrefSelect");
+    const landingTagsBox = document.getElementById("landingTagsBox");
+    const landingTagInput = document.getElementById("landingTagInput");
+    const btnLandingAddTag = document.getElementById("btnLandingAddTag");
+    const chkAgreement = document.getElementById("chkAgreement");
+    const btnStartTextChat = document.getElementById("btnStartTextChat");
+    const btnStartVideoChat = document.getElementById("btnStartVideoChat");
+    const btnReturnHome = document.getElementById("btnReturnHome");
+    const myDisplayNameSpan = document.getElementById("myDisplayNameSpan");
 
     const vibeSelect = document.getElementById("vibeSelect");
     const filterSelect = document.getElementById("filterSelect");
@@ -1902,7 +2347,6 @@
     const strangerDot = document.getElementById("strangerDot");
     const strangerLabel = document.getElementById("strangerLabel");
     const strangerTag = document.getElementById("strangerTag");
-    const localLabel = document.getElementById("localLabel");
     const userCount = document.getElementById("userCount");
     const p2pStatus = document.getElementById("p2pStatus");
 
@@ -1939,7 +2383,107 @@
     const mBtnTriggerPopoutPiP = document.getElementById("mBtnTriggerPopoutPiP");
     const mBtnToggleFullscreen = document.getElementById("mBtnToggleFullscreen");
 
-    // Modal & Dropdown Event Listeners
+    function renderLandingTags() {
+      if (!landingTagsBox) return;
+      landingTagsBox.innerHTML = "";
+      userTags.forEach((tag) => {
+        const chip = document.createElement("span");
+        chip.className = "landing-tag-chip";
+        chip.innerHTML = `<span>#${escapeHTML(tag)}</span> <span class="del-tag" data-tag="${escapeHTML(tag)}">&times;</span>`;
+        landingTagsBox.appendChild(chip);
+      });
+      renderTags();
+    }
+
+    function addLandingTag(val) {
+      if (!val) return;
+      const clean = val.trim().toLowerCase().replace(/^[#,\s]+/, "").slice(0, 18);
+      if (clean && !userTags.includes(clean)) {
+        userTags.push(clean);
+        renderLandingTags();
+      }
+    }
+
+    if (btnLandingAddTag && landingTagInput) {
+      btnLandingAddTag.addEventListener("click", () => {
+        addLandingTag(landingTagInput.value);
+        landingTagInput.value = "";
+      });
+      landingTagInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === ",") {
+          e.preventDefault();
+          addLandingTag(landingTagInput.value);
+          landingTagInput.value = "";
+        }
+      });
+    }
+
+    document.querySelectorAll(".pop-tag-pill").forEach((pill) => {
+      pill.addEventListener("click", () => {
+        const t = pill.getAttribute("data-tag");
+        addLandingTag(t);
+      });
+    });
+
+    if (landingTagsBox) {
+      landingTagsBox.addEventListener("click", (e) => {
+        if (e.target.classList.contains("del-tag")) {
+          const toRemove = e.target.getAttribute("data-tag");
+          userTags = userTags.filter((t) => t !== toRemove);
+          renderLandingTags();
+        }
+      });
+    }
+
+    function enterRoom(mode) {
+      if (!chkAgreement.checked) {
+        alert("Please confirm the 18+ community guidelines to enter.");
+        return;
+      }
+
+      chosenMode = mode;
+      const enteredName = landingNameInput.value.trim();
+      userDisplayName = enteredName || "You";
+      if (myDisplayNameSpan) myDisplayNameSpan.textContent = userDisplayName;
+
+      // Sync gender preferences from front page to in-app controls
+      if (myGenderSelect) myGenderSelect.value = landingMyGenderSelect.value;
+      if (genderSelect) genderSelect.value = landingMatchPrefSelect.value;
+
+      // Smoothly hide front landing page
+      landingOverlay.classList.add("hidden");
+
+      if (mode === "text") {
+        isAudioOnlyMode = true;
+        if (btnToggleAudioOnly) btnToggleAudioOnly.textContent = "💬 Text Mode";
+        localVideo.style.display = "none";
+        localCanvas.style.display = "block";
+        remoteVideo.style.display = "none";
+        remoteCanvas.style.display = "block";
+      } else {
+        isAudioOnlyMode = false;
+        if (btnToggleAudioOnly) btnToggleAudioOnly.textContent = "🎧 Video ON";
+        activateCamera();
+      }
+
+      startMatchmaking();
+    }
+
+    if (btnStartTextChat) {
+      btnStartTextChat.addEventListener("click", () => enterRoom("text"));
+    }
+
+    if (btnStartVideoChat) {
+      btnStartVideoChat.addEventListener("click", () => enterRoom("video"));
+    }
+
+    if (btnReturnHome) {
+      btnReturnHome.addEventListener("click", () => {
+        disconnectStranger();
+        landingOverlay.classList.remove("hidden");
+      });
+    }
+
     if (btnOpenSettingsMenu && settingsMenuModal) {
       btnOpenSettingsMenu.addEventListener("click", (e) => {
         e.preventDefault();
@@ -2182,7 +2726,7 @@
           });
         }
       } catch (err) {
-        console.warn("Audio synth notice:", err);
+        console.warn("Audio note:", err);
       }
     }
 
@@ -2211,227 +2755,6 @@
       });
     }
 
-    if (btnRecordClip) {
-      btnRecordClip.addEventListener("click", () => {
-        if (isRecordingClip) {
-          stopClipRecording();
-          return;
-        }
-
-        const streamToRecord = remoteVideo && remoteVideo.srcObject && isConnected ? remoteVideo.srcObject : localStream;
-        if (!streamToRecord) {
-          alert("Enable camera or connect with someone first to record a clip!");
-          return;
-        }
-
-        try {
-          recordedChunks = [];
-          mediaRecorder = new MediaRecorder(streamToRecord, { mimeType: "video/webm" });
-
-          mediaRecorder.ondataavailable = (e) => {
-            if (e.data.size > 0) recordedChunks.push(e.data);
-          };
-
-          mediaRecorder.onstop = () => {
-            const blob = new Blob(recordedChunks, { type: "video/webm" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = `webtv555-highlight-${Date.now()}.webm`;
-            a.click();
-            appendMessage("", "Highlight video clip downloaded successfully!", "system");
-          };
-
-          mediaRecorder.start();
-          isRecordingClip = true;
-          btnRecordClip.textContent = "🔴 Recording (15s)";
-          btnRecordClip.classList.add("active");
-
-          clearTimeout(recordTimeout);
-          recordTimeout = setTimeout(() => {
-            if (isRecordingClip) stopClipRecording();
-          }, 15000);
-        } catch (err) {
-          console.warn("MediaRecorder error:", err);
-          alert("Video recording is not supported on this browser/stream.");
-        }
-      });
-    }
-
-    function stopClipRecording() {
-      if (!isRecordingClip) return;
-      isRecordingClip = false;
-      clearTimeout(recordTimeout);
-      if (mediaRecorder && mediaRecorder.state !== "inactive") mediaRecorder.stop();
-      if (btnRecordClip) {
-        btnRecordClip.textContent = "📹 Record Clip (15s)";
-        btnRecordClip.classList.remove("active");
-      }
-    }
-
-    function setupLiveCaptions() {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SpeechRecognition) {
-        if (btnToggleCaptions) btnToggleCaptions.style.display = "none";
-        return;
-      }
-
-      speechRecognizer = new SpeechRecognition();
-      speechRecognizer.continuous = true;
-      speechRecognizer.interimResults = true;
-      speechRecognizer.lang = "en-US";
-
-      speechRecognizer.onresult = (event) => {
-        let transcript = "";
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-          transcript += event.results[i][0].transcript;
-        }
-        if (transcript.trim()) {
-          showFloatingSubtitle("You: " + transcript);
-          if (activeDataConnection && activeDataConnection.open) {
-            activeDataConnection.send({ type: "caption", text: transcript });
-          }
-        }
-      };
-
-      speechRecognizer.onerror = (e) => console.warn("Speech recognition notice:", e.error);
-    }
-    setupLiveCaptions();
-
-    function showFloatingSubtitle(text) {
-      if (!subtitleOverlay) return;
-      subtitleOverlay.textContent = text;
-      subtitleOverlay.style.display = "block";
-      clearTimeout(subtitleTimer);
-      subtitleTimer = setTimeout(() => {
-        subtitleOverlay.style.display = "none";
-      }, 4000);
-    }
-
-    if (btnToggleCaptions) {
-      btnToggleCaptions.addEventListener("click", () => {
-        if (!speechRecognizer) {
-          alert("Live Captions are not supported on this browser.");
-          return;
-        }
-        captionsEnabled = !captionsEnabled;
-        btnToggleCaptions.textContent = captionsEnabled ? "💬 Live CC: On" : "💬 Live CC: Off";
-        btnToggleCaptions.classList.toggle("active", captionsEnabled);
-
-        if (captionsEnabled) {
-          try { speechRecognizer.start(); } catch (e) {}
-        } else {
-          try { speechRecognizer.stop(); } catch (e) {}
-          if (subtitleOverlay) subtitleOverlay.style.display = "none";
-        }
-      });
-    }
-
-    if (btnToggleTTS) {
-      btnToggleTTS.addEventListener("click", () => {
-        ttsEnabled = !ttsEnabled;
-        btnToggleTTS.textContent = ttsEnabled ? "🗣 Audio TTS: On" : "🗣 Audio TTS: Off";
-        btnToggleTTS.classList.toggle("active", ttsEnabled);
-      });
-    }
-
-    function speakText(text) {
-      if (!ttsEnabled || !window.speechSynthesis) return;
-      const clean = text.replace(/🎲|🪙|🎨|💬|🎡/g, "");
-      const utterance = new SpeechSynthesisUtterance(clean);
-      utterance.rate = 1.05;
-      window.speechSynthesis.speak(utterance);
-    }
-
-    async function togglePopoutPiP() {
-      if (document.pictureInPictureElement) {
-        await document.exitPictureInPicture();
-      } else if (remoteVideo && remoteVideo.readyState >= 2) {
-        try {
-          await remoteVideo.requestPictureInPicture();
-        } catch (e) {
-          console.warn("PiP failed:", e);
-        }
-      } else {
-        alert("Connect to a live stranger video stream first before popping out.");
-      }
-    }
-    if (btnTriggerPopoutPiP) btnTriggerPopoutPiP.addEventListener("click", togglePopoutPiP);
-    if (mBtnTriggerPopoutPiP) mBtnTriggerPopoutPiP.addEventListener("click", togglePopoutPiP);
-
-    async function toggleScreenShare() {
-      if (!isScreenSharing) {
-        try {
-          screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-          const screenTrack = screenStream.getVideoTracks()[0];
-
-          if (activeCall && activeCall.peerConnection) {
-            const sender = activeCall.peerConnection.getSenders().find((s) => s.track && s.track.kind === "video");
-            if (sender) sender.replaceTrack(screenTrack);
-          }
-
-          localVideo.srcObject = screenStream;
-          localVideo.classList.remove("mirrored");
-          isScreenSharing = true;
-          if (btnToggleScreenShare) btnToggleScreenShare.textContent = "🖥 Active";
-          if (mBtnToggleScreenShare) mBtnToggleScreenShare.textContent = "🖥 Stop";
-
-          screenTrack.onended = () => stopScreenSharing();
-        } catch (e) {
-          console.warn("Screen share canceled or failed:", e);
-        }
-      } else {
-        stopScreenSharing();
-      }
-    }
-
-    function stopScreenSharing() {
-      if (!isScreenSharing) return;
-      if (screenStream) {
-        screenStream.getTracks().forEach((t) => t.stop());
-        screenStream = null;
-      }
-      if (localStream) {
-        const camTrack = localStream.getVideoTracks()[0];
-        if (activeCall && activeCall.peerConnection && camTrack) {
-          const sender = activeCall.peerConnection.getSenders().find((s) => s.track && s.track.kind === "video");
-          if (sender) sender.replaceTrack(camTrack);
-        }
-        localVideo.srcObject = localStream;
-        if (isMirrored) localVideo.classList.add("mirrored");
-      }
-      isScreenSharing = false;
-      if (btnToggleScreenShare) btnToggleScreenShare.textContent = "🖥";
-      if (mBtnToggleScreenShare) mBtnToggleScreenShare.textContent = "🖥 Share";
-    }
-
-    if (btnToggleScreenShare) btnToggleScreenShare.addEventListener("click", toggleScreenShare);
-    if (mBtnToggleScreenShare) mBtnToggleScreenShare.addEventListener("click", toggleScreenShare);
-
-    function toggleFullscreen() {
-      if (!document.fullscreenElement) {
-        videoStageContainer.requestFullscreen().catch((err) => console.warn(err));
-      } else {
-        document.exitFullscreen();
-      }
-    }
-    if (btnToggleFullscreen) btnToggleFullscreen.addEventListener("click", toggleFullscreen);
-    if (mBtnToggleFullscreen) mBtnToggleFullscreen.addEventListener("click", toggleFullscreen);
-
-    if (arPropSelect) {
-      arPropSelect.addEventListener("change", (e) => {
-        const val = e.target.value;
-        if (!arPropOverlay) return;
-        if (val === "none") {
-          arPropOverlay.style.display = "none";
-        } else {
-          arPropOverlay.textContent = val;
-          arPropOverlay.style.display = "block";
-        }
-      });
-    }
-
-    // Mini-Games Execution
     if (btnOpenTOD) {
       btnOpenTOD.addEventListener("click", (e) => {
         e.preventDefault();
@@ -2826,7 +3149,7 @@
         if (targetPeerId && targetPeerId !== myPeerId) {
           appendMessage("", `Direct room link detected! Dialing peer: ${targetPeerId}`, "system");
           setTimeout(() => {
-            const streamToSend = localStream && !camDisabled ? (isScreenSharing && screenStream ? screenStream : localStream) : createFallbackStream();
+            const streamToSend = (localStream && !camDisabled) ? (isScreenSharing && screenStream ? screenStream : localStream) : createFallbackStream();
             const call = peer.call(targetPeerId, streamToSend);
             bindCallEvents(call);
             const conn = peer.connect(targetPeerId);
@@ -3014,7 +3337,10 @@
     });
 
     socket.on("presence_count", (count) => {
-      if (userCount) userCount.textContent = count;
+      const formatted = count ? count.toLocaleString() : "38,410+";
+      if (userCount) userCount.textContent = formatted;
+      const landingCounter = document.getElementById("landingOnlineCounter");
+      if (landingCounter) landingCounter.textContent = formatted;
     });
 
     socket.on("matched", (payload) => {
@@ -3034,7 +3360,8 @@
       if (isSpeedMode) startSpeedCountdown();
 
       strangerDot.className = "badge-dot connected";
-      strangerLabel.textContent = `Stranger (${payload.partnerGender === "female" ? "Female" : "Male"})`;
+      const partnerName = payload.partnerName || `Stranger (${payload.partnerGender === "female" ? "Female" : "Male"})`;
+      strangerLabel.textContent = partnerName;
       btnMainAction.innerHTML = '<span class="icon">⏹</span><span>Stop</span>';
       btnMainAction.classList.add("stop");
       btnNextStranger.style.display = "inline-flex";
@@ -3049,10 +3376,10 @@
         strangerTag.style.display = "flex";
       }
 
-      appendMessage("", "Connected with a live stranger. Say hi!", "system");
+      appendMessage("", `Connected with ${partnerName}. Say hi!`, "system");
 
       if (payload.isInitiator && myPeerId && payload.partnerPeerId) {
-        const streamToSend = localStream && !camDisabled ? (isScreenSharing && screenStream ? screenStream : localStream) : createFallbackStream();
+        const streamToSend = (localStream && !camDisabled && !isAudioOnlyMode) ? (isScreenSharing && screenStream ? screenStream : localStream) : createFallbackStream();
         const call = peer.call(payload.partnerPeerId, streamToSend);
         bindCallEvents(call);
         const conn = peer.connect(payload.partnerPeerId);
@@ -3082,7 +3409,7 @@
           skipToNextStranger();
           return;
         }
-        const streamToSend = localStream && !camDisabled ? (isScreenSharing && screenStream ? screenStream : localStream) : createFallbackStream();
+        const streamToSend = (localStream && !camDisabled && !isAudioOnlyMode) ? (isScreenSharing && screenStream ? screenStream : localStream) : createFallbackStream();
         call.answer(streamToSend);
         bindCallEvents(call);
       });
@@ -3109,12 +3436,16 @@
     function bindDataEvents(conn) {
       activeDataConnection = conn;
       conn.on("open", () => {
-        conn.send({ type: "vibe_sync", vibe: vibeSelect ? vibeSelect.value : "☕ Chill" });
+        conn.send({
+          type: "vibe_sync",
+          vibe: vibeSelect ? vibeSelect.value : "☕ Chill",
+          senderName: userDisplayName
+        });
       });
 
       conn.on("data", (data) => {
         if (data.type === "chat") {
-          appendMessage("Stranger", data.text, "stranger");
+          appendMessage(data.senderName || "Stranger", data.text, "stranger");
           playSound("message");
           speakText(data.text);
           if (typingIndicator) typingIndicator.style.display = "none";
@@ -3124,6 +3455,9 @@
           if (strangerVibeTag) {
             strangerVibeTag.textContent = data.vibe;
             strangerVibeTag.style.display = "inline-block";
+          }
+          if (data.senderName) {
+            strangerLabel.textContent = data.senderName;
           }
         } else if (data.type === "caption") {
           showFloatingSubtitle("Stranger: " + data.text);
@@ -3234,6 +3568,8 @@
 
       socket.emit("join_queue", {
         peerId: myPeerId,
+        userName: userDisplayName,
+        mode: chosenMode,
         gender: myGenderSelect ? myGenderSelect.value : "male",
         matchPref: genderSelect ? genderSelect.value : "both",
         tags: userTags
@@ -3297,7 +3633,7 @@
 
     if (btnMainAction) {
       btnMainAction.addEventListener("click", () => {
-        if (!localStream) activateCamera();
+        if (!localStream && chosenMode !== "text") activateCamera();
         if (isConnected || isSearching) disconnectStranger();
         else startMatchmaking();
       });
@@ -3321,16 +3657,15 @@
         const stream = await navigator.mediaDevices.getUserMedia(constraints);
         handleStreamSuccess(stream);
       } catch (err) {
-        console.warn("Combined hardware failed, attempting video fallback:", err);
+        console.warn("Combined hardware failed, attempting video-only fallback:", err);
         try {
           const videoOnlyStream = await navigator.mediaDevices.getUserMedia({
             video: { facingMode: currentFacingMode }
           });
           handleStreamSuccess(videoOnlyStream);
-          appendMessage("", "Microphone not detected; running video-only mode.", "system");
+          appendMessage("", "Microphone not detected; running in camera-only mode.", "system");
         } catch (videoErr) {
           console.error("Camera access denied:", videoErr);
-          alert("Please enable Camera & Microphone access in your browser settings.");
         }
       }
     }
@@ -3343,7 +3678,6 @@
 
       btnToggleHardware.classList.add("active");
       btnToggleHardware.innerHTML = '<span>✔ Camera Active</span>';
-      localLabel.querySelector("span").textContent = "You (Live)";
 
       setupMicVisualizer(stream);
 
@@ -3389,7 +3723,6 @@
       localStream.getVideoTracks().forEach((t) => (t.enabled = !camDisabled));
       localVideo.style.display = camDisabled ? "none" : "block";
       localCanvas.style.display = camDisabled ? "block" : "none";
-      localLabel.querySelector("span").textContent = camDisabled ? "You (Paused)" : "You (Live)";
       if (btnMuteVideo) btnMuteVideo.textContent = camDisabled ? "🚫" : "📷";
       if (mBtnMuteVideo) mBtnMuteVideo.textContent = camDisabled ? "📷 Show" : "📷 Cam";
     });
@@ -3471,45 +3804,24 @@
       shirtGrad.addColorStop(1, gender === "female" ? "#9d174d" : "#1e3a8a");
       ctx.fillStyle = shirtGrad;
       ctx.fill();
-
-      ctx.beginPath();
-      ctx.moveTo(cx - headRadius * 0.35, torsoTop + breath);
-      ctx.lineTo(cx, torsoTop + headRadius * 0.45 + breath);
-      ctx.lineTo(cx + headRadius * 0.35, torsoTop + breath);
-      ctx.fillStyle = "rgba(0, 0, 0, 0.18)";
-      ctx.fill();
       ctx.restore();
-
-      ctx.fillStyle = "rgba(0, 0, 0, 0.15)";
-      ctx.fillRect(cx - headRadius * 0.22, cy + headRadius * 0.5, headRadius * 0.44, headRadius * 0.4);
 
       ctx.fillStyle = skinColor;
       ctx.beginPath();
       ctx.roundRect(cx - headRadius * 0.2, cy + headRadius * 0.55, headRadius * 0.4, headRadius * 0.45, [0, 0, 8, 8]);
       ctx.fill();
 
-      const headGrad = ctx.createRadialGradient(cx - headRadius * 0.2, cy - headRadius * 0.2, 5, cx, cy, headRadius);
-      headGrad.addColorStop(0, "#fde68a");
-      headGrad.addColorStop(0.7, skinColor);
-      headGrad.addColorStop(1, "#d97706");
-
       ctx.beginPath();
       ctx.arc(cx, cy, headRadius, 0, Math.PI * 2);
-      ctx.fillStyle = headGrad;
-      ctx.shadowColor = "rgba(0, 0, 0, 0.35)";
-      ctx.shadowBlur = 12;
-      ctx.shadowOffsetY = 4;
+      ctx.fillStyle = skinColor;
       ctx.fill();
-      ctx.shadowBlur = 0;
-      ctx.shadowOffsetY = 0;
 
+      // Hair
       ctx.fillStyle = gender === "female" ? "#451a03" : "#1e293b";
       ctx.beginPath();
       if (gender === "female") {
         ctx.arc(cx, cy - headRadius * 0.1, headRadius * 1.06, Math.PI, Math.PI * 2);
         ctx.quadraticCurveTo(cx - headRadius * 1.1, cy + headRadius * 0.8, cx - headRadius * 0.6, cy + headRadius * 1.1);
-        ctx.lineTo(cx - headRadius * 0.45, cy + headRadius * 0.2);
-        ctx.lineTo(cx + headRadius * 0.45, cy + headRadius * 0.2);
         ctx.lineTo(cx + headRadius * 0.6, cy + headRadius * 1.1);
         ctx.quadraticCurveTo(cx + headRadius * 1.1, cy + headRadius * 0.8, cx + headRadius * 1.06, cy - headRadius * 0.1);
       } else {
@@ -3524,41 +3836,30 @@
       if (isBlinking) {
         ctx.strokeStyle = "#1e293b";
         ctx.lineWidth = 2.5;
-        ctx.lineCap = "round";
         ctx.beginPath();
-        ctx.moveTo(cx - eyeOffset - 5, eyeY);
-        ctx.quadraticCurveTo(cx - eyeOffset, eyeY + 3, cx - eyeOffset + 5, eyeY);
-        ctx.moveTo(cx + eyeOffset - 5, eyeY);
-        ctx.quadraticCurveTo(cx + eyeOffset, eyeY + 3, cx + eyeOffset + 5, eyeY);
+        ctx.moveTo(cx - eyeOffset - 4, eyeY); ctx.lineTo(cx - eyeOffset + 4, eyeY);
+        ctx.moveTo(cx + eyeOffset - 4, eyeY); ctx.lineTo(cx + eyeOffset + 4, eyeY);
         ctx.stroke();
       } else {
         ctx.fillStyle = "#0f172a";
         ctx.beginPath();
-        ctx.arc(cx - eyeOffset, eyeY, headRadius * 0.1, 0, Math.PI * 2);
-        ctx.arc(cx + eyeOffset, eyeY, headRadius * 0.1, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.fillStyle = "#ffffff";
-        ctx.beginPath();
-        ctx.arc(cx - eyeOffset + 2, eyeY - 2, headRadius * 0.035, 0, Math.PI * 2);
-        ctx.arc(cx + eyeOffset + 2, eyeY - 2, headRadius * 0.035, 0, Math.PI * 2);
+        ctx.arc(cx - eyeOffset, eyeY, headRadius * 0.09, 0, Math.PI * 2);
+        ctx.arc(cx + eyeOffset, eyeY, headRadius * 0.09, 0, Math.PI * 2);
         ctx.fill();
       }
 
       ctx.strokeStyle = gender === "female" ? "#be123c" : "#78350f";
-      ctx.lineWidth = 2.5;
-      ctx.lineCap = "round";
+      ctx.lineWidth = 2.2;
       ctx.beginPath();
-      ctx.arc(cx, cy + headRadius * 0.22, headRadius * 0.24, 0.15 * Math.PI, 0.85 * Math.PI);
+      ctx.arc(cx, cy + headRadius * 0.22, headRadius * 0.22, 0.15 * Math.PI, 0.85 * Math.PI);
       ctx.stroke();
 
       if (canvas === remoteCanvas && isSearching) {
         ctx.fillStyle = "#94a3b8";
-        ctx.font = "600 13px -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.font = "600 13px sans-serif";
         ctx.textAlign = "center";
         const dotCount = Math.floor((animStep * 1.5) % 4);
-        const dots = ".".repeat(dotCount);
-        ctx.fillText(`Scanning for strangers${dots}`, cx, h - 30);
+        ctx.fillText(`Scanning for strangers${".".repeat(dotCount)}`, cx, h - 30);
       }
     }
 
@@ -3595,6 +3896,7 @@
       if (val && !userTags.includes(val)) {
         userTags.push(val);
         renderTags();
+        renderLandingTags();
         if (interestsContainer) interestsContainer.scrollLeft = interestsContainer.scrollWidth;
       }
       tagInput.value = "";
@@ -3616,6 +3918,7 @@
           const toRemove = e.target.getAttribute("data-tag");
           userTags = userTags.filter((t) => t !== toRemove);
           renderTags();
+          renderLandingTags();
         }
       });
     }
@@ -3647,7 +3950,7 @@
         msgDiv.textContent = text;
         chatHistoryLog.push(`[${timeStr}] (System): ${text}`);
       } else {
-        msgDiv.innerHTML = `<span class="time">${timeStr}</span><span class="sender">${sender}:</span> ${escapeHTML(text)}`;
+        msgDiv.innerHTML = `<span class="time">${timeStr}</span><span class="sender">${escapeHTML(sender)}:</span> ${escapeHTML(text)}`;
         chatHistoryLog.push(`[${timeStr}] ${sender}: ${text}`);
       }
       if (chatContainer) {
@@ -3681,11 +3984,11 @@
     function sendChatMessage(text = null) {
       const msg = text || (chatInput ? chatInput.value.trim() : "");
       if (!msg || !isConnected) return;
-      appendMessage("You", msg, "you");
+      appendMessage(userDisplayName, msg, "you");
       if (chatInput) chatInput.value = "";
       if (activeDataConnection && activeDataConnection.open) {
         activeDataConnection.send({ type: "typing", status: false });
-        activeDataConnection.send({ type: "chat", text: msg });
+        activeDataConnection.send({ type: "chat", text: msg, senderName: userDisplayName });
       }
     }
 
@@ -3751,9 +4054,9 @@
       if (pingIndicator) pingIndicator.style.display = "none";
     }
 
+    renderLandingTags();
     syncCanvasDimensions();
     renderAvatarsLoop();
-    renderTags();
   </script>
 </body>
 </html>
