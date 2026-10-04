@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>Web TV 555 - Live Random Video Chat</title>
   
-  <!-- High-Speed Global CDNs (Cloudflare Edge) -->
+  <!-- High-Speed Global CDNs -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 
@@ -513,7 +513,7 @@
       touch-action: none;
     }
 
-    /* "Would You Rather" & "Truth or Dare" Cards */
+    /* Would You Rather & Truth or Dare Cards */
     .wyr-modal-overlay, .tod-modal-overlay {
       position: absolute;
       inset: 0;
@@ -1299,6 +1299,15 @@
         <option value="✨ Hyped">✨ Hyped</option>
       </select>
 
+      <!-- Video Filter Effect (Added to fix missing element crash) -->
+      <select id="filterSelect" class="header-select" title="Camera Visual Filter">
+        <option value="none">🎬 Normal</option>
+        <option value="grayscale(100%)">🖤 B&amp;W</option>
+        <option value="sepia(80%)">🎞 Retro</option>
+        <option value="contrast(140%) brightness(110%)">🌟 Vivid</option>
+        <option value="hue-rotate(90deg)">👾 Cyber</option>
+      </select>
+
       <!-- Voice Filter FX -->
       <select id="voiceFxSelect" class="header-select" title="Microphone Voice Modulation">
         <option value="normal">🎙 Normal Voice</option>
@@ -1320,9 +1329,9 @@
       <button class="tool-header-btn" id="btnRecordClip" title="Record 15s Highlight Video">📹 Clip</button>
       <button class="tool-header-btn" id="btnToggleCaptions" title="Live Closed Captions">💬 CC: Off</button>
       <button class="tool-header-btn" id="btnToggleTTS" title="Read incoming messages aloud">🗣 TTS: Off</button>
-      <button class="audio-mode-btn" id="btnToggleAudioOnly" title="Toggle Audio-Only Mode">🎧 Video ON</button>
-      <button class="sound-btn" id="btnToggleSound" title="Toggle Audio Effects">🔊 Sound ON</button>
-      <button class="cam-btn" id="btnToggleHardware">📹 Enable Camera & Mic</button>
+      <button class="tool-header-btn" id="btnToggleAudioOnly" title="Toggle Audio-Only Mode">🎧 Video ON</button>
+      <button class="tool-header-btn" id="btnToggleSound" title="Toggle Audio Effects">🔊 Sound ON</button>
+      <button class="cam-btn" id="btnToggleHardware">📹 Enable Camera &amp; Mic</button>
     </div>
   </header>
 
@@ -1515,7 +1524,7 @@
   <footer>
     <button class="btn-main-action" id="btnMainAction">▶ Start Chat</button>
     <button class="btn-next-action" id="btnNextStranger">⏭ Next (Esc)</button>
-    <button class="btn-report-action" id="btnReportUser" title="Report & Block this user">🚩 Block & Next</button>
+    <button class="btn-report-action" id="btnReportUser" title="Report &amp; Block this user">🚩 Block &amp; Next</button>
 
     <div class="gender-picker-wrap">
       <label for="myGenderSelect">I am:</label>
@@ -1546,6 +1555,26 @@
   </footer>
 
   <script>
+    // =========================================================================
+    // 0. COMPATIBILITY & CANVAS POLYFILLS
+    // =========================================================================
+    if (!CanvasRenderingContext2D.prototype.roundRect) {
+      CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, radii) {
+        if (!radii) {
+          this.rect(x, y, w, h);
+          return;
+        }
+        let r = typeof radii === "number" ? radii : (radii[0] || 0);
+        this.beginPath();
+        this.moveTo(x + r, y);
+        this.arcTo(x + w, y, x + w, y + h, r);
+        this.arcTo(x + w, y + h, x, y + h, r);
+        this.arcTo(x, y + h, x, y, r);
+        this.arcTo(x, y, x + w, y, r);
+        this.closePath();
+      };
+    }
+
     // =========================================================================
     // 1. BACKEND & SOCKET INITIALIZATION
     // =========================================================================
@@ -1658,6 +1687,7 @@
 
     // UI Cache
     const vibeSelect = document.getElementById("vibeSelect");
+    const filterSelect = document.getElementById("filterSelect");
     const myVibeTag = document.getElementById("myVibeTag");
     const strangerVibeTag = document.getElementById("strangerVibeTag");
     const voiceFxSelect = document.getElementById("voiceFxSelect");
@@ -1752,6 +1782,13 @@
     const mBtnTriggerPopoutPiP = document.getElementById("mBtnTriggerPopoutPiP");
     const mBtnToggleFullscreen = document.getElementById("mBtnToggleFullscreen");
 
+    // Safe Filter Listener
+    if (filterSelect) {
+      filterSelect.addEventListener("change", (e) => {
+        localVideo.style.filter = e.target.value;
+      });
+    }
+
     // =========================================================================
     // 2. SYNTHESIZED WEB AUDIO & DSP VOICE FILTER ENGINE
     // =========================================================================
@@ -1820,17 +1857,18 @@
 
     function applyVoiceFilter(mode) {
       if (!micFilterNode) return;
+      const ctx = getAudioContext();
       if (mode === "deep") {
         micFilterNode.type = "lowpass";
-        micFilterNode.frequency.setValueAtTime(380, getAudioContext().currentTime);
+        micFilterNode.frequency.setValueAtTime(380, ctx.currentTime);
       } else if (mode === "telephone") {
         micFilterNode.type = "bandpass";
-        micFilterNode.frequency.setValueAtTime(1400, getAudioContext().currentTime);
-        micFilterNode.Q.setValueAtTime(3.0, getAudioContext().currentTime);
+        micFilterNode.frequency.setValueAtTime(1400, ctx.currentTime);
+        micFilterNode.Q.setValueAtTime(3.0, ctx.currentTime);
       } else if (mode === "cave") {
         micFilterNode.type = "peaking";
-        micFilterNode.frequency.setValueAtTime(800, getAudioContext().currentTime);
-        micFilterNode.gain.setValueAtTime(15, getAudioContext().currentTime);
+        micFilterNode.frequency.setValueAtTime(800, ctx.currentTime);
+        micFilterNode.gain.setValueAtTime(15, ctx.currentTime);
       } else {
         micFilterNode.type = "allpass";
       }
@@ -1952,7 +1990,7 @@
     btnToggleAudioOnly.addEventListener("click", () => {
       isAudioOnlyMode = !isAudioOnlyMode;
       btnToggleAudioOnly.textContent = isAudioOnlyMode ? "📻 Audio Mode" : "🎧 Video ON";
-      btnToggleAudioOnly.style.background = isAudioOnlyMode ? "#2563eb" : "#334155";
+      btnToggleAudioOnly.classList.toggle("active", isAudioOnlyMode);
 
       if (localStream) {
         localStream.getVideoTracks().forEach(t => t.enabled = !isAudioOnlyMode);
@@ -1967,7 +2005,7 @@
     });
 
     // =========================================================================
-    // 3. 15-SECOND VIDEO CLIP RECORDER (MEDIARECORDER)
+    // 3. 15-SECOND VIDEO CLIP RECORDER
     // =========================================================================
     btnRecordClip.addEventListener("click", () => {
       if (isRecordingClip) {
@@ -2026,7 +2064,7 @@
     }
 
     // =========================================================================
-    // 4. LIVE CLOSED CAPTIONS & TEXT-TO-SPEECH (TTS)
+    // 4. LIVE CLOSED CAPTIONS & TTS
     // =========================================================================
     function setupLiveCaptions() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -2190,7 +2228,7 @@
     });
 
     // =========================================================================
-    // 6. "TRUTH OR DARE" & "WOULD YOU RATHER?"
+    // 6. TRUTH OR DARE & WOULD YOU RATHER
     // =========================================================================
     btnOpenTOD.addEventListener("click", () => {
       if (!isConnected) {
@@ -2359,7 +2397,7 @@
     }
 
     // =========================================================================
-    // 8. SYNCHRONIZED LIVE WHITEBOARD (DOODLE PAD)
+    // 8. SYNCHRONIZED LIVE WHITEBOARD
     // =========================================================================
     function resizeWhiteboard() {
       const rect = whiteboardCanvas.getBoundingClientRect();
@@ -2552,7 +2590,7 @@
     }
 
     // =========================================================================
-    // 10. COIN FLIP, DICE, ICEBREAKERS & DIRECT ROOM
+    // 10. QUICK TOOLS (COIN FLIP, DICE, DIRECT ROOM)
     // =========================================================================
     btnCoinFlip.addEventListener("click", () => {
       if (!isConnected) return;
@@ -2905,7 +2943,7 @@
     }
 
     // =========================================================================
-    // 14. MATCHMAKING ACTIONS (WITH FAST SKIP & REPORT)
+    // 14. MATCHMAKING ACTIONS
     // =========================================================================
     function startMatchmaking() {
       if (!myPeerId) {
@@ -3098,13 +3136,11 @@
       });
     }
 
-    // Switch Camera
     bindMediaAction(btnSwitchCamera, mBtnSwitchCamera, () => {
       currentFacingMode = currentFacingMode === "user" ? "environment" : "user";
       activateCamera();
     });
 
-    // Mirror Flip
     bindMediaAction(btnToggleMirror, mBtnToggleMirror, () => {
       isMirrored = !isMirrored;
       if (!isScreenSharing) {
@@ -3112,7 +3148,6 @@
       }
     });
 
-    // Mute / Unmute Mic
     bindMediaAction(btnMuteAudio, mBtnMuteAudio, () => {
       if (!localStream) return;
       micMuted = !micMuted;
@@ -3121,7 +3156,6 @@
       if (mBtnMuteAudio) mBtnMuteAudio.textContent = micMuted ? "🔇 Unmute" : "🎤 Mic";
     });
 
-    // Video Pause / Resume
     bindMediaAction(btnMuteVideo, mBtnMuteVideo, () => {
       if (!localStream) return;
       camDisabled = !camDisabled;
@@ -3133,10 +3167,6 @@
       if (mBtnMuteVideo) mBtnMuteVideo.textContent = camDisabled ? "📷 Show" : "📷 Cam";
     });
 
-    filterSelect.addEventListener("change", (e) => {
-      localVideo.style.filter = e.target.value;
-    });
-
     function createFallbackStream() {
       const fallbackCanvas = document.createElement("canvas");
       fallbackCanvas.width = 320;
@@ -3144,7 +3174,10 @@
       const ctx = fallbackCanvas.getContext("2d");
       ctx.fillStyle = "#0c1322";
       ctx.fillRect(0, 0, 320, 240);
-      return fallbackCanvas.captureStream(10);
+      if (fallbackCanvas.captureStream) {
+        return fallbackCanvas.captureStream(10);
+      }
+      return null;
     }
 
     // =========================================================================
@@ -3310,13 +3343,16 @@
       [localCanvas, remoteCanvas].forEach(c => {
         if (!c) return;
         const rect = c.getBoundingClientRect();
-        if (c.width !== rect.width || c.height !== rect.height) {
-          c.width = rect.width;
-          c.height = rect.height;
+        if (rect.width > 0 && rect.height > 0) {
+          if (c.width !== rect.width || c.height !== rect.height) {
+            c.width = rect.width;
+            c.height = rect.height;
+          }
         }
       });
     }
     window.addEventListener("resize", syncCanvasDimensions);
+    window.addEventListener("load", syncCanvasDimensions);
 
     // =========================================================================
     // 17. TAGS SYSTEM
