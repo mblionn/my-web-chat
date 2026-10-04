@@ -114,7 +114,7 @@
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 7px;
     }
 
     .header-select {
@@ -154,19 +154,25 @@
       background: #2563eb;
     }
 
-    .sound-btn, .audio-mode-btn {
+    .tool-header-btn {
       background: #334155;
       color: #cbd5e1;
       border: 1px solid #475569;
-      padding: 6px 11px;
+      padding: 6px 10px;
       border-radius: 7px;
-      font-size: 0.82rem;
+      font-size: 0.8rem;
       font-weight: 700;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 4px;
       user-select: none;
+    }
+
+    .tool-header-btn.active {
+      background: #2563eb;
+      color: #ffffff;
+      border-color: #60a5fa;
     }
 
     /* Main Split Layout */
@@ -223,7 +229,28 @@
       display: block;
     }
 
-    /* Floating Reactions Canvas/Container */
+    /* Live Subtitles Overlay */
+    .subtitle-overlay {
+      position: absolute;
+      bottom: 48px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.78);
+      backdrop-filter: blur(6px);
+      color: #fef08a;
+      font-weight: 700;
+      font-size: 0.92rem;
+      padding: 5px 16px;
+      border-radius: 18px;
+      max-width: 85%;
+      text-align: center;
+      display: none;
+      z-index: 17;
+      pointer-events: none;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Floating Reactions Container */
     .reaction-fly-container {
       position: absolute;
       inset: 0;
@@ -281,6 +308,39 @@
 
     .reaction-trigger-btn:active {
       transform: scale(1.3);
+    }
+
+    /* Soundboard Quick Drawer */
+    .soundboard-drawer {
+      position: absolute;
+      left: 12px;
+      bottom: 56px;
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      padding: 6px 10px;
+      display: none;
+      gap: 8px;
+      z-index: 24;
+    }
+
+    .soundboard-btn {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #f8fafc;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .soundboard-btn:hover {
+      background: #2563eb;
     }
 
     /* Privacy Blur Shield */
@@ -391,6 +451,120 @@
       z-index: 10;
       display: none;
       backdrop-filter: blur(4px);
+    }
+
+    /* Shared Whiteboard Modal */
+    .whiteboard-modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(7, 9, 14, 0.92);
+      backdrop-filter: blur(12px);
+      z-index: 28;
+      display: none;
+      flex-direction: column;
+      border-radius: 12px;
+      padding: 10px;
+    }
+
+    .whiteboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 8px;
+    }
+
+    .whiteboard-tools {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .whiteboard-tools input[type="color"] {
+      border: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      cursor: pointer;
+      background: transparent;
+    }
+
+    canvas#whiteboardCanvas {
+      flex: 1;
+      background: #020617;
+      border-radius: 8px;
+      border: 1px solid #1e293b;
+      cursor: crosshair;
+      touch-action: none;
+    }
+
+    /* "Would You Rather" Dilemma Card Overlay */
+    .wyr-modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(7, 9, 14, 0.88);
+      backdrop-filter: blur(12px);
+      z-index: 29;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .wyr-box {
+      background: #0f172a;
+      border: 1px solid rgba(236, 72, 153, 0.4);
+      padding: 18px;
+      border-radius: 14px;
+      max-width: 320px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+    }
+
+    .wyr-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: #f472b6;
+    }
+
+    .wyr-btn {
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #334155;
+      font-weight: 700;
+      font-size: 0.84rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: left;
+    }
+
+    .wyr-btn.opt-a {
+      background: #1e1b4b;
+      color: #c7d2fe;
+      border-color: #4338ca;
+    }
+
+    .wyr-btn.opt-b {
+      background: #3b0764;
+      color: #fbcfe8;
+      border-color: #9333ea;
+    }
+
+    .wyr-btn:active {
+      transform: scale(0.98);
+    }
+
+    .wyr-status-label {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      text-align: center;
     }
 
     /* Tic-Tac-Toe Modal */
@@ -1076,6 +1250,8 @@
         <option value="💫">💫 Halo Glow</option>
       </select>
 
+      <button class="tool-header-btn" id="btnToggleCaptions" title="Live Closed Captions">💬 CC: Off</button>
+      <button class="tool-header-btn" id="btnToggleTTS" title="Read incoming messages aloud">🗣 TTS: Off</button>
       <button class="audio-mode-btn" id="btnToggleAudioOnly" title="Toggle Audio-Only Mode">🎧 Video ON</button>
       <button class="sound-btn" id="btnToggleSound" title="Toggle Audio Effects">🔊 Sound ON</button>
       <button class="cam-btn" id="btnToggleHardware">📹 Enable Camera & Mic</button>
@@ -1097,22 +1273,60 @@
           <video id="remoteVideo" autoplay playsinline></video>
           <canvas id="remoteCanvas"></canvas>
 
+          <!-- Floating Subtitles -->
+          <div class="subtitle-overlay" id="subtitleOverlay"></div>
+
           <!-- Floating Reactions Surface -->
           <div class="reaction-fly-container" id="reactionFlyContainer"></div>
 
           <!-- Quick Reaction Buttons -->
           <div class="reactions-bar" id="reactionsBar">
-            <button class="reaction-trigger-btn" data-emoji="❤️️">❤️</button>
+            <button class="reaction-trigger-btn" data-emoji="❤️">❤️</button>
             <button class="reaction-trigger-btn" data-emoji="😂">😂</button>
             <button class="reaction-trigger-btn" data-emoji="🔥">🔥</button>
             <button class="reaction-trigger-btn" data-emoji="👏">👏</button>
             <button class="reaction-trigger-btn" data-emoji="😮">😮</button>
+            <button class="reaction-trigger-btn" id="btnTriggerSoundboard" title="Open Soundboard">🎺</button>
+          </div>
+
+          <!-- Soundboard Quick Drawer -->
+          <div class="soundboard-drawer" id="soundboardDrawer">
+            <button class="soundboard-btn" data-sfx="airhorn">📢 Airhorn</button>
+            <button class="soundboard-btn" data-sfx="laser">⚡ Laser</button>
+            <button class="soundboard-btn" data-sfx="applause">👏 Claps</button>
+            <button class="soundboard-btn" data-sfx="victory">🎺 Ta-Da!</button>
           </div>
 
           <!-- Auto-Blur Privacy Overlay -->
           <div class="blur-overlay" id="blurOverlay">
             <button id="btnUnblurVideo" class="unblur-btn">👁 Reveal Video</button>
             <span class="blur-tip">Auto-reveals in 5s</span>
+          </div>
+
+          <!-- "Would You Rather" Dilemma Card Overlay -->
+          <div class="wyr-modal-overlay" id="wyrModal">
+            <div class="wyr-box">
+              <div class="wyr-header">
+                <span>🤔 Would You Rather?</span>
+                <button class="game-close-btn" id="btnWyrClose">&times;</button>
+              </div>
+              <button class="wyr-btn opt-a" id="btnWyrOptA">Option A</button>
+              <button class="wyr-btn opt-b" id="btnWyrOptB">Option B</button>
+              <div class="wyr-status-label" id="wyrStatusLabel">Pick an answer to see what the stranger picked!</div>
+            </div>
+          </div>
+
+          <!-- Shared Whiteboard Modal Overlay -->
+          <div class="whiteboard-modal-overlay" id="whiteboardModal">
+            <div class="whiteboard-header">
+              <div class="whiteboard-tools">
+                <span style="font-size:0.85rem; font-weight:800;">🎨 Live Shared Doodle</span>
+                <input type="color" id="wbColorPicker" value="#38bdf8" />
+                <button class="chat-tool-btn" id="btnWbClear">🗑 Clear</button>
+              </div>
+              <button class="game-close-btn" id="btnWbClose">&times;</button>
+            </div>
+            <canvas id="whiteboardCanvas"></canvas>
           </div>
 
           <!-- Tic-Tac-Toe Game Modal Overlay -->
@@ -1155,6 +1369,8 @@
           <button id="btnToggleMirror" title="Flip Mirror">🪞</button>
           <button id="btnMuteAudio" title="Mute Mic">🎤</button>
           <button id="btnMuteVideo" title="Stop Video">📷</button>
+          <button id="btnToggleScreenShare" title="Share Screen">🖥</button>
+          <button id="btnTriggerPopoutPiP" title="Pop-out Floating Video">🪟</button>
           <button id="btnToggleFullscreen" title="Toggle Fullscreen Mode">⛶</button>
         </div>
       </div>
@@ -1165,6 +1381,8 @@
         <button id="mBtnToggleMirror" class="m-tool-btn">🪞 Mirror</button>
         <button id="mBtnMuteAudio" class="m-tool-btn">🎤 Mic</button>
         <button id="mBtnMuteVideo" class="m-tool-btn">📷 Cam</button>
+        <button id="mBtnToggleScreenShare" class="m-tool-btn">🖥 Share</button>
+        <button id="mBtnTriggerPopoutPiP" class="m-tool-btn">🪟 Pop</button>
         <button id="mBtnToggleFullscreen" class="m-tool-btn">⛶ Full</button>
       </div>
     </div>
@@ -1177,8 +1395,10 @@
           <span class="typing-label" id="typingIndicator">Stranger is typing...</span>
         </div>
         <div class="header-chat-actions">
-          <button id="btnExportChat" class="chat-tool-btn" title="Save chat transcript">📋 Log</button>
+          <button id="btnOpenWYR" class="chat-tool-btn" style="color:#f472b6; border-color:#db2777;" title="Would You Rather Game">🤔 WYR</button>
+          <button id="btnOpenWhiteboard" class="chat-tool-btn" title="Open Doodle Pad">🎨 Doodle</button>
           <button id="btnOpenGame" class="chat-tool-btn game-btn" title="Play Tic-Tac-Toe">🎮 Play</button>
+          <button id="btnExportChat" class="chat-tool-btn" title="Save chat transcript">📋 Log</button>
           <button id="btnShareRoom" class="chat-tool-btn" title="Create invite link">🔗 Room</button>
           <button id="btnSnapshot" class="chat-tool-btn" title="Save photo snap">📸 Snap</button>
           <span id="p2pStatus" style="font-size: 0.74rem; color: #10b981;">Server: Connecting...</span>
@@ -1191,6 +1411,8 @@
 
       <div class="quick-replies">
         <button class="quick-chip chip-highlight" id="btnRandomIcebreaker">🎲 Icebreaker</button>
+        <button class="quick-chip" id="btnCoinFlip">🪙 Flip Coin</button>
+        <button class="quick-chip" id="btnDiceRoll">🎲 Roll D6</button>
         <button class="quick-chip" data-msg="Hey!">👋 Hey</button>
         <button class="quick-chip" data-msg="Where are you from?">📍 Location?</button>
         <button class="quick-chip" data-msg="What are your favorite hobbies?">🎮 Hobbies</button>
@@ -1256,6 +1478,8 @@
     let activeCall = null;
     let activeDataConnection = null;
     let localStream = null;
+    let screenStream = null;
+    let isScreenSharing = false;
 
     let isSearching = false;
     let isConnected = false;
@@ -1264,6 +1488,8 @@
     let camDisabled = false;
     let isAudioOnlyMode = false;
     let soundEnabled = true;
+    let ttsEnabled = false;
+    let captionsEnabled = false;
     let currentFacingMode = "user";
 
     let strangersMet = 0;
@@ -1273,6 +1499,7 @@
     const blockedPeers = new Set();
     let blurTimeout = null;
     let typingTimer = null;
+    let subtitleTimer = null;
 
     let callTimerInterval = null;
     let callSecondsElapsed = 0;
@@ -1282,6 +1509,9 @@
     let micAnalyser = null;
     let micDataArray = null;
     let micAnimFrame = null;
+
+    // Speech Recognition
+    let speechRecognizer = null;
 
     const ICEBREAKER_PROMPTS = [
       "If you could have dinner with any historical person, who would it be?",
@@ -1294,11 +1524,28 @@
       "What is one place on Earth you dream of traveling to?"
     ];
 
+    const WYR_DILEMMAS = [
+      { a: "Always speak your mind", b: "Never speak again" },
+      { a: "Live in space for 1 year", b: "Live under the ocean for 1 year" },
+      { a: "Have the ability to fly", b: "Have the ability to be invisible" },
+      { a: "Never have to sleep", b: "Never gain weight regardless of what you eat" },
+      { a: "Know how you will die", b: "Know when you will die" },
+      { a: "Teleport anywhere instantly", b: "Pause time for 10 minutes every day" }
+    ];
+
+    let currentWyr = null;
+    let myWyrVote = null;
+
     // Tic-Tac-Toe State
     let tttBoard = Array(9).fill(null);
     let mySymbol = "X";
     let isMyTurn = false;
     let gameActive = false;
+
+    // Whiteboard Drawing State
+    let isDrawing = false;
+    let lastX = 0;
+    let lastY = 0;
 
     // UI Cache
     const filterSelect = document.getElementById("filterSelect");
@@ -1306,6 +1553,9 @@
     const arPropOverlay = document.getElementById("arPropOverlay");
     const btnToggleSound = document.getElementById("btnToggleSound");
     const btnToggleAudioOnly = document.getElementById("btnToggleAudioOnly");
+    const btnToggleCaptions = document.getElementById("btnToggleCaptions");
+    const btnToggleTTS = document.getElementById("btnToggleTTS");
+    const subtitleOverlay = document.getElementById("subtitleOverlay");
     const strangersMetCount = document.getElementById("strangersMetCount");
     const myGenderSelect = document.getElementById("myGenderSelect");
     const genderSelect = document.getElementById("genderSelect");
@@ -1319,16 +1569,32 @@
     const blurOverlay = document.getElementById("blurOverlay");
     const btnUnblurVideo = document.getElementById("btnUnblurVideo");
     const reactionFlyContainer = document.getElementById("reactionFlyContainer");
+    const btnTriggerSoundboard = document.getElementById("btnTriggerSoundboard");
+    const soundboardDrawer = document.getElementById("soundboardDrawer");
     const typingIndicator = document.getElementById("typingIndicator");
     const btnExportChat = document.getElementById("btnExportChat");
     const btnSnapshot = document.getElementById("btnSnapshot");
     const btnShareRoom = document.getElementById("btnShareRoom");
     const btnRandomIcebreaker = document.getElementById("btnRandomIcebreaker");
+    const btnCoinFlip = document.getElementById("btnCoinFlip");
+    const btnDiceRoll = document.getElementById("btnDiceRoll");
+    const btnOpenWYR = document.getElementById("btnOpenWYR");
+    const wyrModal = document.getElementById("wyrModal");
+    const btnWyrClose = document.getElementById("btnWyrClose");
+    const btnWyrOptA = document.getElementById("btnWyrOptA");
+    const btnWyrOptB = document.getElementById("btnWyrOptB");
+    const wyrStatusLabel = document.getElementById("wyrStatusLabel");
     const btnOpenGame = document.getElementById("btnOpenGame");
     const gameModal = document.getElementById("gameModal");
     const btnGameClose = document.getElementById("btnGameClose");
     const gameStatusLabel = document.getElementById("gameStatusLabel");
     const tttGrid = document.getElementById("tttGrid");
+    const btnOpenWhiteboard = document.getElementById("btnOpenWhiteboard");
+    const whiteboardModal = document.getElementById("whiteboardModal");
+    const whiteboardCanvas = document.getElementById("whiteboardCanvas");
+    const wbColorPicker = document.getElementById("wbColorPicker");
+    const btnWbClear = document.getElementById("btnWbClear");
+    const btnWbClose = document.getElementById("btnWbClose");
     const callTimer = document.getElementById("callTimer");
     const pingIndicator = document.getElementById("pingIndicator");
     const videoStageContainer = document.getElementById("videoStageContainer");
@@ -1354,6 +1620,8 @@
     const btnToggleMirror = document.getElementById("btnToggleMirror");
     const btnMuteAudio = document.getElementById("btnMuteAudio");
     const btnMuteVideo = document.getElementById("btnMuteVideo");
+    const btnToggleScreenShare = document.getElementById("btnToggleScreenShare");
+    const btnTriggerPopoutPiP = document.getElementById("btnTriggerPopoutPiP");
     const btnToggleFullscreen = document.getElementById("btnToggleFullscreen");
 
     // Mobile Buttons
@@ -1361,6 +1629,8 @@
     const mBtnToggleMirror = document.getElementById("mBtnToggleMirror");
     const mBtnMuteAudio = document.getElementById("mBtnMuteAudio");
     const mBtnMuteVideo = document.getElementById("mBtnMuteVideo");
+    const mBtnToggleScreenShare = document.getElementById("mBtnToggleScreenShare");
+    const mBtnTriggerPopoutPiP = document.getElementById("mBtnTriggerPopoutPiP");
     const mBtnToggleFullscreen = document.getElementById("mBtnToggleFullscreen");
 
     // =========================================================================
@@ -1406,7 +1676,6 @@
           }
           const avg = sum / micDataArray.length;
 
-          // If sound level passes voice threshold
           if (avg > 25) {
             localPipCard.classList.add("speaking");
             micSpeakingBadge.style.display = "inline";
@@ -1429,47 +1698,94 @@
       if (!soundEnabled) return;
       try {
         const ctx = getAudioContext();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
         const now = ctx.currentTime;
 
         if (type === "match") {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain); gain.connect(ctx.destination);
           osc.type = "sine";
           osc.frequency.setValueAtTime(523.25, now);
           osc.frequency.exponentialRampToValueAtTime(783.99, now + 0.12);
           gain.gain.setValueAtTime(0.25, now);
           gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
-          osc.start(now);
-          osc.stop(now + 0.35);
+          osc.start(now); osc.stop(now + 0.35);
         } else if (type === "message") {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain); gain.connect(ctx.destination);
           osc.type = "triangle";
           osc.frequency.setValueAtTime(400, now);
           osc.frequency.exponentialRampToValueAtTime(800, now + 0.08);
           gain.gain.setValueAtTime(0.2, now);
           gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
-          osc.start(now);
-          osc.stop(now + 0.15);
+          osc.start(now); osc.stop(now + 0.15);
         } else if (type === "leave") {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain); gain.connect(ctx.destination);
           osc.type = "sine";
           osc.frequency.setValueAtTime(320, now);
           osc.frequency.exponentialRampToValueAtTime(140, now + 0.2);
           gain.gain.setValueAtTime(0.2, now);
           gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
-          osc.start(now);
-          osc.stop(now + 0.25);
+          osc.start(now); osc.stop(now + 0.25);
         } else if (type === "reaction") {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain); gain.connect(ctx.destination);
           osc.type = "sine";
           osc.frequency.setValueAtTime(600, now);
           osc.frequency.exponentialRampToValueAtTime(950, now + 0.1);
           gain.gain.setValueAtTime(0.12, now);
           gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
-          osc.start(now);
-          osc.stop(now + 0.2);
+          osc.start(now); osc.stop(now + 0.2);
+        } else if (type === "airhorn") {
+          [466.16, 470].forEach(freq => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.type = "sawtooth";
+            osc.frequency.setValueAtTime(freq, now);
+            gain.gain.setValueAtTime(0.25, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
+            osc.start(now); osc.stop(now + 0.45);
+          });
+        } else if (type === "laser") {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain); gain.connect(ctx.destination);
+          osc.type = "sawtooth";
+          osc.frequency.setValueAtTime(1600, now);
+          osc.frequency.exponentialRampToValueAtTime(120, now + 0.25);
+          gain.gain.setValueAtTime(0.22, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+          osc.start(now); osc.stop(now + 0.25);
+        } else if (type === "applause") {
+          for (let i = 0; i < 6; i++) {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.type = "triangle";
+            osc.frequency.setValueAtTime(150 + Math.random() * 200, now + i * 0.05);
+            gain.gain.setValueAtTime(0.15, now + i * 0.05);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.05 + 0.08);
+            osc.start(now + i * 0.05); osc.stop(now + i * 0.05 + 0.08);
+          }
+        } else if (type === "victory") {
+          [523.25, 659.25, 783.99, 1046.5].forEach((note, idx) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(note, now + idx * 0.1);
+            gain.gain.setValueAtTime(0.2, now + idx * 0.1);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + idx * 0.1 + 0.3);
+            osc.start(now + idx * 0.1); osc.stop(now + idx * 0.1 + 0.3);
+          });
         }
       } catch (err) {
-        console.warn("Audio FX skipped:", err);
+        console.warn("Audio FX error:", err);
       }
     }
 
@@ -1497,12 +1813,152 @@
     });
 
     // =========================================================================
-    // 3. FULLSCREEN ENGINE & AR PROPS
+    // 3. LIVE CLOSED CAPTIONS & TEXT-TO-SPEECH (TTS)
     // =========================================================================
+    function setupLiveCaptions() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        btnToggleCaptions.style.display = "none";
+        return;
+      }
+
+      speechRecognizer = new SpeechRecognition();
+      speechRecognizer.continuous = true;
+      speechRecognizer.interimResults = true;
+      speechRecognizer.lang = "en-US";
+
+      speechRecognizer.onresult = (event) => {
+        let transcript = "";
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          transcript += event.results[i][0].transcript;
+        }
+        if (transcript.trim()) {
+          showFloatingSubtitle("You: " + transcript);
+          if (activeDataConnection && activeDataConnection.open) {
+            activeDataConnection.send({ type: "caption", text: transcript });
+          }
+        }
+      };
+
+      speechRecognizer.onerror = (e) => {
+        console.warn("Speech recognition note:", e.error);
+      };
+    }
+    setupLiveCaptions();
+
+    function showFloatingSubtitle(text) {
+      subtitleOverlay.textContent = text;
+      subtitleOverlay.style.display = "block";
+      clearTimeout(subtitleTimer);
+      subtitleTimer = setTimeout(() => {
+        subtitleOverlay.style.display = "none";
+      }, 4000);
+    }
+
+    btnToggleCaptions.addEventListener("click", () => {
+      if (!speechRecognizer) {
+        alert("Live Captions are not supported on this browser.");
+        return;
+      }
+      captionsEnabled = !captionsEnabled;
+      btnToggleCaptions.textContent = captionsEnabled ? "💬 CC: Live" : "💬 CC: Off";
+      btnToggleCaptions.classList.toggle("active", captionsEnabled);
+
+      if (captionsEnabled) {
+        try { speechRecognizer.start(); } catch(e){}
+      } else {
+        try { speechRecognizer.stop(); } catch(e){}
+        subtitleOverlay.style.display = "none";
+      }
+    });
+
+    btnToggleTTS.addEventListener("click", () => {
+      ttsEnabled = !ttsEnabled;
+      btnToggleTTS.textContent = ttsEnabled ? "🗣 TTS: On" : "🗣 TTS: Off";
+      btnToggleTTS.classList.toggle("active", ttsEnabled);
+    });
+
+    function speakText(text) {
+      if (!ttsEnabled || !window.speechSynthesis) return;
+      const clean = text.replace(/🎲|🪙|🎨|💬/g, "");
+      const utterance = new SpeechSynthesisUtterance(clean);
+      utterance.rate = 1.05;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    // =========================================================================
+    // 4. PICTURE-IN-PICTURE (POPOUT) & SCREEN SHARING
+    // =========================================================================
+    async function togglePopoutPiP() {
+      if (document.pictureInPictureElement) {
+        await document.exitPictureInPicture();
+      } else if (remoteVideo && remoteVideo.readyState >= 2) {
+        try {
+          await remoteVideo.requestPictureInPicture();
+        } catch (e) {
+          console.warn("PiP failed:", e);
+        }
+      } else {
+        alert("Connect to a live stranger video stream first before popping out.");
+      }
+    }
+    btnTriggerPopoutPiP.addEventListener("click", togglePopoutPiP);
+    if (mBtnTriggerPopoutPiP) mBtnTriggerPopoutPiP.addEventListener("click", togglePopoutPiP);
+
+    async function toggleScreenShare() {
+      if (!isScreenSharing) {
+        try {
+          screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+          const screenTrack = screenStream.getVideoTracks()[0];
+
+          if (activeCall && activeCall.peerConnection) {
+            const sender = activeCall.peerConnection.getSenders().find(s => s.track && s.track.kind === "video");
+            if (sender) sender.replaceTrack(screenTrack);
+          }
+
+          localVideo.srcObject = screenStream;
+          localVideo.classList.remove("mirrored");
+          isScreenSharing = true;
+          btnToggleScreenShare.textContent = "🖥 Active";
+          if (mBtnToggleScreenShare) mBtnToggleScreenShare.textContent = "🖥 Stop";
+
+          screenTrack.onended = () => stopScreenSharing();
+        } catch (e) {
+          console.warn("Screen share canceled or failed:", e);
+        }
+      } else {
+        stopScreenSharing();
+      }
+    }
+
+    function stopScreenSharing() {
+      if (!isScreenSharing) return;
+      if (screenStream) {
+        screenStream.getTracks().forEach(t => t.stop());
+        screenStream = null;
+      }
+      if (localStream) {
+        const camTrack = localStream.getVideoTracks()[0];
+        if (activeCall && activeCall.peerConnection && camTrack) {
+          const sender = activeCall.peerConnection.getSenders().find(s => s.track && s.track.kind === "video");
+          if (sender) sender.replaceTrack(camTrack);
+        }
+        localVideo.srcObject = localStream;
+        if (isMirrored) localVideo.classList.add("mirrored");
+      }
+      isScreenSharing = false;
+      btnToggleScreenShare.textContent = "🖥";
+      if (mBtnToggleScreenShare) mBtnToggleScreenShare.textContent = "🖥 Share";
+    }
+
+    btnToggleScreenShare.addEventListener("click", toggleScreenShare);
+    if (mBtnToggleScreenShare) mBtnToggleScreenShare.addEventListener("click", toggleScreenShare);
+
+    // Fullscreen
     function toggleFullscreen() {
       if (!document.fullscreenElement) {
         videoStageContainer.requestFullscreen().catch(err => {
-          console.warn("Fullscreen request error:", err);
+          console.warn("Fullscreen error:", err);
         });
       } else {
         document.exitFullscreen();
@@ -1522,7 +1978,49 @@
     });
 
     // =========================================================================
-    // 4. FLOATING REACTIONS SYSTEM
+    // 5. "WOULD YOU RATHER?" GAME
+    // =========================================================================
+    function startWyrGame(promptObj = null) {
+      if (!isConnected) {
+        appendMessage("", "Connect with someone before starting Would You Rather!", "system");
+        return;
+      }
+      currentWyr = promptObj || WYR_DILEMMAS[Math.floor(Math.random() * WYR_DILEMMAS.length)];
+      myWyrVote = null;
+      btnWyrOptA.textContent = "A: " + currentWyr.a;
+      btnWyrOptB.textContent = "B: " + currentWyr.b;
+      btnWyrOptA.style.opacity = "1";
+      btnWyrOptB.style.opacity = "1";
+      wyrStatusLabel.textContent = "Cast your vote to see what the stranger picked!";
+      wyrModal.style.display = "flex";
+
+      if (!promptObj && activeDataConnection && activeDataConnection.open) {
+        activeDataConnection.send({ type: "wyr_prompt", data: currentWyr });
+      }
+    }
+
+    btnOpenWYR.addEventListener("click", () => startWyrGame());
+    btnWyrClose.addEventListener("click", () => {
+      wyrModal.style.display = "none";
+    });
+
+    btnWyrOptA.addEventListener("click", () => handleWyrVote("A"));
+    btnWyrOptB.addEventListener("click", () => handleWyrVote("B"));
+
+    function handleWyrVote(choice) {
+      if (myWyrVote) return;
+      myWyrVote = choice;
+      wyrStatusLabel.textContent = `You picked: [${choice}]. Waiting for stranger's vote...`;
+      if (choice === "A") btnWyrOptB.style.opacity = "0.5";
+      if (choice === "B") btnWyrOptA.style.opacity = "0.5";
+
+      if (activeDataConnection && activeDataConnection.open) {
+        activeDataConnection.send({ type: "wyr_vote", choice: choice });
+      }
+    }
+
+    // =========================================================================
+    // 6. REACTIONS, SOUNDBOARD & TIMERS
     // =========================================================================
     function spawnFloatingEmoji(emoji) {
       const el = document.createElement("div");
@@ -1535,6 +2033,7 @@
     }
 
     document.querySelectorAll(".reaction-trigger-btn").forEach(btn => {
+      if (btn.id === "btnTriggerSoundboard") return;
       btn.addEventListener("click", () => {
         const emoji = btn.getAttribute("data-emoji");
         spawnFloatingEmoji(emoji);
@@ -1544,9 +2043,26 @@
       });
     });
 
-    // =========================================================================
-    // 5. CALL DURATION TIMER & WEBRTC PING STATS
-    // =========================================================================
+    btnTriggerSoundboard.addEventListener("click", (e) => {
+      e.stopPropagation();
+      soundboardDrawer.style.display = soundboardDrawer.style.display === "flex" ? "none" : "flex";
+    });
+
+    document.querySelectorAll(".soundboard-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const sfx = btn.getAttribute("data-sfx");
+        playSound(sfx);
+        if (activeDataConnection && activeDataConnection.open) {
+          activeDataConnection.send({ type: "sfx", sfx: sfx });
+        }
+        soundboardDrawer.style.display = "none";
+      });
+    });
+
+    window.addEventListener("click", () => {
+      soundboardDrawer.style.display = "none";
+    });
+
     function startCallTimer() {
       stopCallTimer();
       callSecondsElapsed = 0;
@@ -1588,9 +2104,7 @@
               }
             }
           });
-        } catch (e) {
-          // ignore stat errors
-        }
+        } catch (e) {}
       }, 2000);
     }
 
@@ -1603,7 +2117,106 @@
     }
 
     // =========================================================================
-    // 6. TIC-TAC-TOE REAL-TIME MINI-GAME
+    // 7. SYNCHRONIZED LIVE WHITEBOARD (DOODLE PAD)
+    // =========================================================================
+    function resizeWhiteboard() {
+      const rect = whiteboardCanvas.getBoundingClientRect();
+      whiteboardCanvas.width = rect.width;
+      whiteboardCanvas.height = rect.height;
+    }
+
+    btnOpenWhiteboard.addEventListener("click", () => {
+      if (!isConnected) {
+        appendMessage("", "Connect with someone before doodling together!", "system");
+        return;
+      }
+      whiteboardModal.style.display = "flex";
+      resizeWhiteboard();
+      if (activeDataConnection && activeDataConnection.open) {
+        activeDataConnection.send({ type: "whiteboard_open" });
+      }
+    });
+
+    btnWbClose.addEventListener("click", () => {
+      whiteboardModal.style.display = "none";
+      if (activeDataConnection && activeDataConnection.open) {
+        activeDataConnection.send({ type: "whiteboard_close" });
+      }
+    });
+
+    btnWbClear.addEventListener("click", () => {
+      const ctx = whiteboardCanvas.getContext("2d");
+      ctx.clearRect(0, 0, whiteboardCanvas.width, whiteboardCanvas.height);
+      if (activeDataConnection && activeDataConnection.open) {
+        activeDataConnection.send({ type: "whiteboard_clear" });
+      }
+    });
+
+    function drawSegment(x0, y0, x1, y1, color, emit = false) {
+      const ctx = whiteboardCanvas.getContext("2d");
+      ctx.beginPath();
+      ctx.moveTo(x0, y0);
+      ctx.lineTo(x1, y1);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 3;
+      ctx.lineCap = "round";
+      ctx.stroke();
+      ctx.closePath();
+
+      if (emit && activeDataConnection && activeDataConnection.open) {
+        activeDataConnection.send({
+          type: "whiteboard_draw",
+          x0: x0 / whiteboardCanvas.width,
+          y0: y0 / whiteboardCanvas.height,
+          x1: x1 / whiteboardCanvas.width,
+          y1: y1 / whiteboardCanvas.height,
+          color: color
+        });
+      }
+    }
+
+    function getWbPointerPos(e) {
+      const rect = whiteboardCanvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return {
+        x: clientX - rect.left,
+        y: clientY - rect.top
+      };
+    }
+
+    whiteboardCanvas.addEventListener("mousedown", (e) => {
+      isDrawing = true;
+      const pos = getWbPointerPos(e);
+      lastX = pos.x; lastY = pos.y;
+    });
+
+    whiteboardCanvas.addEventListener("mousemove", (e) => {
+      if (!isDrawing) return;
+      const pos = getWbPointerPos(e);
+      drawSegment(lastX, lastY, pos.x, pos.y, wbColorPicker.value, true);
+      lastX = pos.x; lastY = pos.y;
+    });
+
+    window.addEventListener("mouseup", () => { isDrawing = false; });
+
+    whiteboardCanvas.addEventListener("touchstart", (e) => {
+      isDrawing = true;
+      const pos = getWbPointerPos(e);
+      lastX = pos.x; lastY = pos.y;
+    }, { passive: true });
+
+    whiteboardCanvas.addEventListener("touchmove", (e) => {
+      if (!isDrawing) return;
+      const pos = getWbPointerPos(e);
+      drawSegment(lastX, lastY, pos.x, pos.y, wbColorPicker.value, true);
+      lastX = pos.x; lastY = pos.y;
+    }, { passive: true });
+
+    whiteboardCanvas.addEventListener("touchend", () => { isDrawing = false; });
+
+    // =========================================================================
+    // 8. TIC-TAC-TOE MINI-GAME
     // =========================================================================
     function openGameModal(isStarter = true) {
       if (!isConnected) {
@@ -1697,8 +2310,20 @@
     }
 
     // =========================================================================
-    // 7. ICEBREAKERS, CHAT LOG EXPORT & DIRECT ROOM
+    // 9. COIN FLIP, DICE, ICEBREAKERS & DIRECT ROOM
     // =========================================================================
+    btnCoinFlip.addEventListener("click", () => {
+      if (!isConnected) return;
+      const result = Math.random() > 0.5 ? "🪙 Heads!" : "🪙 Tails!";
+      sendChatMessage(`[Coin Flip]: ${result}`);
+    });
+
+    btnDiceRoll.addEventListener("click", () => {
+      if (!isConnected) return;
+      const dice = Math.floor(Math.random() * 6) + 1;
+      sendChatMessage(`[Dice Roll]: Rolled a 🎲 ${dice}!`);
+    });
+
     btnRandomIcebreaker.addEventListener("click", () => {
       if (!isConnected) {
         appendMessage("", "Start a chat first before sending an icebreaker question!", "system");
@@ -1756,7 +2381,7 @@
     }
 
     // =========================================================================
-    // 8. PRIVACY BLUR SHIELD & SNAPSHOT
+    // 10. PRIVACY BLUR SHIELD & SNAPSHOT
     // =========================================================================
     function triggerPrivacyShield() {
       blurOverlay.style.display = "flex";
@@ -1803,7 +2428,7 @@
 
       if (localVideo.style.display === "block" && localVideo.videoWidth) {
         sCtx.save();
-        if (isMirrored) {
+        if (isMirrored && !isScreenSharing) {
           sCtx.translate(pipX + pipW, pipY);
           sCtx.scale(-1, 1);
           sCtx.drawImage(localVideo, 0, 0, pipW, pipH);
@@ -1827,7 +2452,7 @@
     });
 
     // =========================================================================
-    // 9. SOCKET.IO PRESENCE & MATCHMAKING
+    // 11. SOCKET.IO PRESENCE & MATCHMAKING
     // =========================================================================
     socket.on("connect", () => {
       p2pStatus.textContent = "Server: Connected";
@@ -1877,7 +2502,7 @@
       appendMessage("", "Connected with a live stranger. Say hi!", "system");
 
       if (payload.isInitiator && myPeerId && payload.partnerPeerId) {
-        const streamToSend = (localStream && !camDisabled) ? localStream : createFallbackStream();
+        const streamToSend = (localStream && !camDisabled) ? (isScreenSharing && screenStream ? screenStream : localStream) : createFallbackStream();
         const call = peer.call(payload.partnerPeerId, streamToSend);
         bindCallEvents(call);
 
@@ -1887,7 +2512,7 @@
     });
 
     // =========================================================================
-    // 10. WEBRTC ENGINE (PEERJS)
+    // 12. WEBRTC ENGINE (PEERJS)
     // =========================================================================
     function initializePeer() {
       peer = new Peer({
@@ -1911,7 +2536,7 @@
           skipToNextStranger();
           return;
         }
-        const streamToSend = (localStream && !camDisabled) ? localStream : createFallbackStream();
+        const streamToSend = (localStream && !camDisabled) ? (isScreenSharing && screenStream ? screenStream : localStream) : createFallbackStream();
         call.answer(streamToSend);
         bindCallEvents(call);
       });
@@ -1948,11 +2573,20 @@
         if (data.type === "chat") {
           appendMessage("Stranger", data.text, "stranger");
           playSound("message");
+          speakText(data.text);
           typingIndicator.style.display = "none";
         } else if (data.type === "typing") {
           typingIndicator.style.display = data.status ? "inline" : "none";
+        } else if (data.type === "caption") {
+          showFloatingSubtitle("Stranger: " + data.text);
         } else if (data.type === "reaction") {
           spawnFloatingEmoji(data.emoji);
+        } else if (data.type === "sfx") {
+          playSound(data.sfx);
+        } else if (data.type === "wyr_prompt") {
+          startWyrGame(data.data);
+        } else if (data.type === "wyr_vote") {
+          wyrStatusLabel.textContent = `Stranger voted [${data.choice}]! ${myWyrVote ? (myWyrVote === data.choice ? "🎉 You both agreed!" : "⚡ You picked differently!") : ""}`;
         } else if (data.type === "game_invite") {
           openGameModal(false);
           appendMessage("", "Stranger started a Tic-Tac-Toe match!", "system");
@@ -1965,6 +2599,24 @@
         } else if (data.type === "game_close") {
           gameModal.style.display = "none";
           gameActive = false;
+        } else if (data.type === "whiteboard_open") {
+          whiteboardModal.style.display = "flex";
+          resizeWhiteboard();
+          appendMessage("", "Stranger opened the live doodle pad!", "system");
+        } else if (data.type === "whiteboard_close") {
+          whiteboardModal.style.display = "none";
+        } else if (data.type === "whiteboard_clear") {
+          const ctx = whiteboardCanvas.getContext("2d");
+          ctx.clearRect(0, 0, whiteboardCanvas.width, whiteboardCanvas.height);
+        } else if (data.type === "whiteboard_draw") {
+          drawSegment(
+            data.x0 * whiteboardCanvas.width,
+            data.y0 * whiteboardCanvas.height,
+            data.x1 * whiteboardCanvas.width,
+            data.y1 * whiteboardCanvas.height,
+            data.color,
+            false
+          );
         }
       });
       conn.on("close", handleStrangerLeft);
@@ -1976,15 +2628,19 @@
       playSound("leave");
       stopCallTimer();
       stopStatsPolling();
+      stopScreenSharing();
       gameModal.style.display = "none";
       gameActive = false;
+      whiteboardModal.style.display = "none";
+      wyrModal.style.display = "none";
+      subtitleOverlay.style.display = "none";
       typingIndicator.style.display = "none";
       appendMessage("", "Stranger has disconnected.", "system");
       disconnectStranger();
     }
 
     // =========================================================================
-    // 11. MATCHMAKING ACTIONS (WITH FAST SKIP & REPORT)
+    // 13. MATCHMAKING ACTIONS (WITH FAST SKIP & REPORT)
     // =========================================================================
     function startMatchmaking() {
       if (!myPeerId) {
@@ -1995,8 +2651,11 @@
       isConnected = false;
       stopCallTimer();
       stopStatsPolling();
+      stopScreenSharing();
       gameModal.style.display = "none";
       gameActive = false;
+      whiteboardModal.style.display = "none";
+      wyrModal.style.display = "none";
 
       strangerDot.className = "badge-dot waiting";
       strangerLabel.textContent = "Looking for someone...";
@@ -2037,8 +2696,11 @@
       isSearching = false;
       stopCallTimer();
       stopStatsPolling();
+      stopScreenSharing();
       gameModal.style.display = "none";
       gameActive = false;
+      whiteboardModal.style.display = "none";
+      wyrModal.style.display = "none";
 
       strangerDot.className = "badge-dot";
       strangerLabel.textContent = "Disconnected";
@@ -2098,7 +2760,7 @@
     });
 
     // =========================================================================
-    // 12. CAMERA & HARDWARE ACCESS
+    // 14. CAMERA & HARDWARE ACCESS
     // =========================================================================
     async function activateCamera() {
       const constraints = {
@@ -2155,7 +2817,6 @@
     }
     btnToggleHardware.addEventListener("click", activateCamera);
 
-    // Unified Action Binder
     function bindMediaAction(desktopBtn, mobileBtn, actionFn) {
       [desktopBtn, mobileBtn].forEach(btn => {
         if (!btn) return;
@@ -2175,7 +2836,9 @@
     // 2. Mirror Flip
     bindMediaAction(btnToggleMirror, mBtnToggleMirror, () => {
       isMirrored = !isMirrored;
-      localVideo.classList.toggle("mirrored", isMirrored);
+      if (!isScreenSharing) {
+        localVideo.classList.toggle("mirrored", isMirrored);
+      }
     });
 
     // 3. Mute / Unmute Microphone
@@ -2214,7 +2877,7 @@
     }
 
     // =========================================================================
-    // 13. PROCEDURAL AVATAR RENDERER
+    // 15. PROCEDURAL AVATAR RENDERER
     // =========================================================================
     let animStep = 0;
     function renderAvatarsLoop() {
@@ -2243,7 +2906,6 @@
 
       ctx.clearRect(0, 0, w, h);
 
-      // Subtle Radial Vignette
       const bgGrad = ctx.createRadialGradient(w / 2, h * 0.44, 20, w / 2, h * 0.44, Math.max(w, h) * 0.7);
       bgGrad.addColorStop(0, "#131b2e");
       bgGrad.addColorStop(1, "#07090e");
@@ -2254,7 +2916,6 @@
       const cy = h * 0.44 + breath;
       const headRadius = Math.min(w, h) * 0.15;
 
-      // Radar Pulse Rings while Searching
       if (canvas === remoteCanvas && isSearching) {
         for (let i = 0; i < 3; i++) {
           const waveRadius = (headRadius * 1.3) + ((animStep * 28 + i * 55) % (Math.min(w, h) * 0.48));
@@ -2267,7 +2928,6 @@
         }
       }
 
-      // Torso & Shoulders
       const torsoW = headRadius * 2.6;
       const torsoTop = cy + headRadius * 0.75;
       
@@ -2285,7 +2945,6 @@
       ctx.fillStyle = shirtGrad;
       ctx.fill();
 
-      // V-Neck Accent
       ctx.beginPath();
       ctx.moveTo(cx - headRadius * 0.35, torsoTop + breath);
       ctx.lineTo(cx, torsoTop + headRadius * 0.45 + breath);
@@ -2294,7 +2953,6 @@
       ctx.fill();
       ctx.restore();
 
-      // Neck
       ctx.fillStyle = "rgba(0, 0, 0, 0.15)";
       ctx.fillRect(cx - headRadius * 0.22, cy + headRadius * 0.5, headRadius * 0.44, headRadius * 0.4);
 
@@ -2303,7 +2961,6 @@
       ctx.roundRect(cx - headRadius * 0.2, cy + headRadius * 0.55, headRadius * 0.4, headRadius * 0.45, [0, 0, 8, 8]);
       ctx.fill();
 
-      // Head Shape with Radial Shading
       const headGrad = ctx.createRadialGradient(cx - headRadius * 0.2, cy - headRadius * 0.2, 5, cx, cy, headRadius);
       headGrad.addColorStop(0, "#fde68a");
       headGrad.addColorStop(0.7, skinColor);
@@ -2319,7 +2976,6 @@
       ctx.shadowBlur = 0;
       ctx.shadowOffsetY = 0;
 
-      // Styled Hair
       ctx.fillStyle = gender === "female" ? "#451a03" : "#1e293b";
       ctx.beginPath();
       if (gender === "female") {
@@ -2335,7 +2991,6 @@
       }
       ctx.fill();
 
-      // Eyes & Highlights
       const eyeOffset = headRadius * 0.35;
       const eyeY = cy + headRadius * 0.05;
 
@@ -2363,7 +3018,6 @@
         ctx.fill();
       }
 
-      // Smile
       ctx.strokeStyle = gender === "female" ? "#be123c" : "#78350f";
       ctx.lineWidth = 2.5;
       ctx.lineCap = "round";
@@ -2371,7 +3025,6 @@
       ctx.arc(cx, cy + headRadius * 0.22, headRadius * 0.24, 0.15 * Math.PI, 0.85 * Math.PI);
       ctx.stroke();
 
-      // Scanning indicator text
       if (canvas === remoteCanvas && isSearching) {
         ctx.fillStyle = "#94a3b8";
         ctx.font = "600 13px -apple-system, BlinkMacSystemFont, sans-serif";
@@ -2395,7 +3048,7 @@
     window.addEventListener("resize", syncCanvasDimensions);
 
     // =========================================================================
-    // 14. TAGS SYSTEM
+    // 16. TAGS SYSTEM
     // =========================================================================
     function renderTags() {
       tagsList.innerHTML = "";
@@ -2450,7 +3103,7 @@
     });
 
     // =========================================================================
-    // 15. CHAT ENGINE & TYPING DETECTION
+    // 17. CHAT ENGINE & TYPING DETECTION
     // =========================================================================
     function appendMessage(sender, text, type = "stranger") {
       const now = new Date();
@@ -2502,14 +3155,14 @@
     });
 
     document.querySelectorAll(".quick-chip").forEach(chip => {
-      if (chip.id === "btnRandomIcebreaker") return;
+      if (chip.id === "btnRandomIcebreaker" || chip.id === "btnCoinFlip" || chip.id === "btnDiceRoll") return;
       chip.addEventListener("click", () => {
         sendChatMessage(chip.getAttribute("data-msg"));
       });
     });
 
     // =========================================================================
-    // 16. INSTANT DOM BOOTSTRAP
+    // 18. INSTANT DOM BOOTSTRAP
     // =========================================================================
     syncCanvasDimensions();
     renderAvatarsLoop();
