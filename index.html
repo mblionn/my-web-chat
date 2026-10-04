@@ -34,6 +34,61 @@
       --shadow-lg: 0 16px 40px -10px rgba(0, 0, 0, 0.85);
     }
 
+/* ==========================================
+   MODERN MINIMALIST SCROLLBAR STYLING
+   ========================================== */
+
+/* Firefox minimal scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+}
+
+/* Chrome, Safari, Edge, WebKit modern scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px; /* Thin, sleek horizontal track */
+}
+
+::-webkit-scrollbar-track {
+  background: transparent; /* Seamless blend into dark backdrop */
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 9999px; /* Smooth rounded pill edges */
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(59, 130, 246, 0.5); /* Glowing blue tint on hover */
+}
+
+/* Remove default browser scroll arrows */
+::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Specific enhancement for the quick replies chip deck */
+.quick-replies-deck {
+  scrollbar-width: thin;
+  padding-bottom: 6px !important;
+}
+
+.quick-replies-deck::-webkit-scrollbar {
+  height: 4px;
+}
+
+.quick-replies-deck::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.quick-replies-deck::-webkit-scrollbar-thumb:hover {
+  background: #3b82f6;
+}
+
     * {
       box-sizing: border-box;
       margin: 0;
