@@ -180,6 +180,7 @@
       flex-direction: column;
       gap: 8px;
       min-height: 0;
+      position: relative;
     }
 
     .video-stage-container {
@@ -315,6 +316,92 @@
       z-index: 10;
       display: none;
       backdrop-filter: blur(4px);
+    }
+
+    /* Tic-Tac-Toe Game Modal Overlay */
+    .game-modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(7, 9, 14, 0.88);
+      backdrop-filter: blur(12px);
+      z-index: 28;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+    }
+
+    .game-box {
+      background: #0f172a;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      padding: 16px;
+      border-radius: 14px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      width: 270px;
+    }
+
+    .game-header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.86rem;
+      font-weight: 800;
+    }
+
+    .game-close-btn {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      font-size: 1.1rem;
+      cursor: pointer;
+    }
+
+    .game-status-label {
+      font-size: 0.78rem;
+      color: #38bdf8;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .ttt-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      width: 210px;
+      height: 210px;
+    }
+
+    .ttt-cell {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: #f8fafc;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s;
+    }
+
+    .ttt-cell:hover {
+      background: #334155;
+    }
+
+    .ttt-cell.x-cell {
+      color: #3b82f6;
+    }
+
+    .ttt-cell.o-cell {
+      color: #ec4899;
     }
 
     /* Picture-In-Picture Floating Card */
@@ -465,6 +552,12 @@
 
     .chat-tool-btn:hover {
       background: #334155;
+    }
+
+    .chat-tool-btn.game-btn {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: rgba(16, 185, 129, 0.5);
+      color: #34d399;
     }
 
     .messages-container {
@@ -895,6 +988,28 @@
             <button id="btnUnblurVideo" class="unblur-btn">👁 Reveal Video</button>
             <span class="blur-tip">Auto-reveals in 5s</span>
           </div>
+
+          <!-- Tic-Tac-Toe Game Modal Overlay -->
+          <div class="game-modal-overlay" id="gameModal">
+            <div class="game-box">
+              <div class="game-header">
+                <span>🎮 Tic-Tac-Toe</span>
+                <button class="game-close-btn" id="btnGameClose">&times;</button>
+              </div>
+              <div class="game-status-label" id="gameStatusLabel">Your turn (X)</div>
+              <div class="ttt-grid" id="tttGrid">
+                <div class="ttt-cell" data-idx="0"></div>
+                <div class="ttt-cell" data-idx="1"></div>
+                <div class="ttt-cell" data-idx="2"></div>
+                <div class="ttt-cell" data-idx="3"></div>
+                <div class="ttt-cell" data-idx="4"></div>
+                <div class="ttt-cell" data-idx="5"></div>
+                <div class="ttt-cell" data-idx="6"></div>
+                <div class="ttt-cell" data-idx="7"></div>
+                <div class="ttt-cell" data-idx="8"></div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Local PiP (Face display only) -->
@@ -930,6 +1045,7 @@
           <span class="typing-label" id="typingIndicator">Stranger is typing...</span>
         </div>
         <div class="header-chat-actions">
+          <button id="btnOpenGame" class="chat-tool-btn game-btn" title="Play Tic-Tac-Toe with stranger">🎮 Play</button>
           <button id="btnShareRoom" class="chat-tool-btn" title="Create invite link to reconnect">🔗 Room</button>
           <button id="btnSnapshot" class="chat-tool-btn" title="Capture call memory">📸 Snap</button>
           <span id="p2pStatus" style="font-size: 0.74rem; color: #10b981;">Server: Connecting...</span>
@@ -1037,6 +1153,12 @@
       "What is one place on Earth you dream of traveling to?"
     ];
 
+    // Tic-Tac-Toe State
+    let tttBoard = Array(9).fill(null);
+    let mySymbol = "X";
+    let isMyTurn = false;
+    let gameActive = false;
+
     // UI Cache
     const filterSelect = document.getElementById("filterSelect");
     const btnToggleSound = document.getElementById("btnToggleSound");
@@ -1053,6 +1175,11 @@
     const btnSnapshot = document.getElementById("btnSnapshot");
     const btnShareRoom = document.getElementById("btnShareRoom");
     const btnRandomIcebreaker = document.getElementById("btnRandomIcebreaker");
+    const btnOpenGame = document.getElementById("btnOpenGame");
+    const gameModal = document.getElementById("gameModal");
+    const btnGameClose = document.getElementById("btnGameClose");
+    const gameStatusLabel = document.getElementById("gameStatusLabel");
+    const tttGrid = document.getElementById("tttGrid");
     const callTimer = document.getElementById("callTimer");
     const strangerDot = document.getElementById("strangerDot");
     const strangerLabel = document.getElementById("strangerLabel");
@@ -1171,7 +1298,101 @@
     }
 
     // =========================================================================
-    // 4. ICEBREAKERS & DIRECT FRIEND ROOM GENERATOR
+    // 4. TIC-TAC-TOE REAL-TIME MINI-GAME
+    // =========================================================================
+    function openGameModal(isStarter = true) {
+      if (!isConnected) {
+        appendMessage("", "Connect with someone before starting a game!", "system");
+        return;
+      }
+      resetTTTBoard();
+      mySymbol = isStarter ? "X" : "O";
+      isMyTurn = isStarter;
+      gameActive = true;
+      gameModal.style.display = "flex";
+      updateGameStatus();
+    }
+
+    btnOpenGame.addEventListener("click", () => {
+      openGameModal(true);
+      if (activeDataConnection && activeDataConnection.open) {
+        activeDataConnection.send({ type: "game_invite" });
+      }
+    });
+
+    btnGameClose.addEventListener("click", () => {
+      gameModal.style.display = "none";
+      gameActive = false;
+      if (activeDataConnection && activeDataConnection.open) {
+        activeDataConnection.send({ type: "game_close" });
+      }
+    });
+
+    function resetTTTBoard() {
+      tttBoard = Array(9).fill(null);
+      document.querySelectorAll(".ttt-cell").forEach(cell => {
+        cell.textContent = "";
+        cell.className = "ttt-cell";
+      });
+    }
+
+    function updateGameStatus() {
+      if (!gameActive) return;
+      gameStatusLabel.textContent = isMyTurn ? `Your turn (${mySymbol})` : `Stranger's turn (${mySymbol === "X" ? "O" : "X"})`;
+    }
+
+    tttGrid.addEventListener("click", (e) => {
+      if (!gameActive || !isMyTurn) return;
+      const cell = e.target.closest(".ttt-cell");
+      if (!cell) return;
+      const idx = parseInt(cell.getAttribute("data-idx"));
+      if (tttBoard[idx] !== null) return;
+
+      applyMove(idx, mySymbol);
+      if (activeDataConnection && activeDataConnection.open) {
+        activeDataConnection.send({ type: "game_move", index: idx, symbol: mySymbol });
+      }
+
+      if (checkTTTWinner()) return;
+      isMyTurn = false;
+      updateGameStatus();
+    });
+
+    function applyMove(index, symbol) {
+      tttBoard[index] = symbol;
+      const cell = document.querySelector(`.ttt-cell[data-idx="${index}"]`);
+      if (cell) {
+        cell.textContent = symbol;
+        cell.classList.add(symbol === "X" ? "x-cell" : "o-cell");
+      }
+    }
+
+    function checkTTTWinner() {
+      const wins = [
+        [0,1,2], [3,4,5], [6,7,8],
+        [0,3,6], [1,4,7], [2,5,8],
+        [0,4,8], [2,4,6]
+      ];
+
+      for (let [a, b, c] of wins) {
+        if (tttBoard[a] && tttBoard[a] === tttBoard[b] && tttBoard[a] === tttBoard[c]) {
+          const winner = tttBoard[a];
+          gameStatusLabel.textContent = winner === mySymbol ? "🎉 You Won!" : "Stranger Won!";
+          gameActive = false;
+          return true;
+        }
+      }
+
+      if (tttBoard.every(c => c !== null)) {
+        gameStatusLabel.textContent = "🤝 It's a Draw!";
+        gameActive = false;
+        return true;
+      }
+      return false;
+    }
+
+    // =========================================================================
+    // 5. ICEBREAKERS & DIRECT FRIEND ROOM GENERATOR
     // =========================================================================
     btnRandomIcebreaker.addEventListener("click", () => {
       if (!isConnected) {
@@ -1193,19 +1414,18 @@
       }
       const inviteUrl = `${window.location.origin}${window.location.pathname}#room=${myPeerId}`;
       navigator.clipboard.writeText(inviteUrl).then(() => {
-        appendMessage("", `Room link copied to clipboard! Share it with a friend: ${inviteUrl}`, "system");
+        appendMessage("", `Room link copied! Share to reconnect directly: ${inviteUrl}`, "system");
       }).catch(() => {
         prompt("Copy this link to invite a friend directly:", inviteUrl);
       });
     });
 
-    // Handle Direct Room Hash in URL (e.g. #room=xxxx)
     function checkDirectInviteRoom() {
       const hash = window.location.hash;
       if (hash.startsWith("#room=")) {
         const targetPeerId = hash.replace("#room=", "").trim();
         if (targetPeerId && targetPeerId !== myPeerId) {
-          appendMessage("", `Direct room detected! Connecting to peer: ${targetPeerId}`, "system");
+          appendMessage("", `Direct room link detected! Dialing peer: ${targetPeerId}`, "system");
           setTimeout(() => {
             const streamToSend = (localStream && !camDisabled) ? localStream : createFallbackStream();
             const call = peer.call(targetPeerId, streamToSend);
@@ -1218,7 +1438,7 @@
     }
 
     // =========================================================================
-    // 5. PRIVACY BLUR SHIELD
+    // 6. PRIVACY BLUR SHIELD
     // =========================================================================
     function triggerPrivacyShield() {
       blurOverlay.style.display = "flex";
@@ -1234,7 +1454,7 @@
     });
 
     // =========================================================================
-    // 6. INSTANT PHOTO SNAPSHOT
+    // 7. INSTANT PHOTO SNAPSHOT
     // =========================================================================
     btnSnapshot.addEventListener("click", () => {
       if (!isConnected) {
@@ -1292,7 +1512,7 @@
     });
 
     // =========================================================================
-    // 7. SOCKET.IO PRESENCE & MATCHMAKING
+    // 8. SOCKET.IO PRESENCE & MATCHMAKING
     // =========================================================================
     socket.on("connect", () => {
       p2pStatus.textContent = "Server: Connected";
@@ -1349,7 +1569,7 @@
     });
 
     // =========================================================================
-    // 8. WEBRTC ENGINE (PEERJS)
+    // 9. WEBRTC ENGINE (PEERJS)
     // =========================================================================
     function initializePeer() {
       peer = new Peer({
@@ -1409,6 +1629,18 @@
           typingIndicator.style.display = "none";
         } else if (data.type === "typing") {
           typingIndicator.style.display = data.status ? "inline" : "none";
+        } else if (data.type === "game_invite") {
+          openGameModal(false);
+          appendMessage("", "Stranger started a Tic-Tac-Toe match!", "system");
+        } else if (data.type === "game_move") {
+          applyMove(data.index, data.symbol);
+          if (!checkTTTWinner()) {
+            isMyTurn = true;
+            updateGameStatus();
+          }
+        } else if (data.type === "game_close") {
+          gameModal.style.display = "none";
+          gameActive = false;
         }
       });
       conn.on("close", handleStrangerLeft);
@@ -1419,13 +1651,15 @@
       isConnected = false;
       playSound("leave");
       stopCallTimer();
+      gameModal.style.display = "none";
+      gameActive = false;
       typingIndicator.style.display = "none";
       appendMessage("", "Stranger has disconnected.", "system");
       disconnectStranger();
     }
 
     // =========================================================================
-    // 9. MATCHMAKING ACTIONS (WITH FAST SKIP & REPORT)
+    // 10. MATCHMAKING ACTIONS (WITH FAST SKIP & REPORT)
     // =========================================================================
     function startMatchmaking() {
       if (!myPeerId) {
@@ -1435,6 +1669,8 @@
       isSearching = true;
       isConnected = false;
       stopCallTimer();
+      gameModal.style.display = "none";
+      gameActive = false;
 
       strangerDot.className = "badge-dot waiting";
       strangerLabel.textContent = "Looking for someone...";
@@ -1474,6 +1710,8 @@
       isConnected = false;
       isSearching = false;
       stopCallTimer();
+      gameModal.style.display = "none";
+      gameActive = false;
 
       strangerDot.className = "badge-dot";
       strangerLabel.textContent = "Disconnected";
@@ -1533,7 +1771,7 @@
     });
 
     // =========================================================================
-    // 10. CAMERA & HARDWARE ACCESS
+    // 11. CAMERA & HARDWARE ACCESS
     // =========================================================================
     async function activateCamera() {
       const constraints = {
@@ -1647,7 +1885,7 @@
     }
 
     // =========================================================================
-    // 11. PROCEDURAL AVATAR RENDERER WITH RADAR WAVES
+    // 12. PROCEDURAL AVATAR RENDERER WITH RADAR WAVES
     // =========================================================================
     let animStep = 0;
     function renderAvatarsLoop() {
@@ -1828,7 +2066,7 @@
     window.addEventListener("resize", syncCanvasDimensions);
 
     // =========================================================================
-    // 12. TAGS SYSTEM
+    // 13. TAGS SYSTEM
     // =========================================================================
     function renderTags() {
       tagsList.innerHTML = "";
@@ -1883,7 +2121,7 @@
     });
 
     // =========================================================================
-    // 13. CHAT ENGINE & TYPING DETECTION
+    // 14. CHAT ENGINE & TYPING DETECTION
     // =========================================================================
     function appendMessage(sender, text, type = "stranger") {
       const now = new Date();
@@ -1940,7 +2178,7 @@
     });
 
     // =========================================================================
-    // 14. INSTANT DOM BOOTSTRAP
+    // 15. INSTANT DOM BOOTSTRAP
     // =========================================================================
     syncCanvasDimensions();
     renderAvatarsLoop();
