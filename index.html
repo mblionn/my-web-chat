@@ -62,7 +62,7 @@
     .brand-group {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
     }
 
     .logo {
@@ -85,7 +85,7 @@
       font-weight: 800;
     }
 
-    .online-counter-badge, .streak-badge {
+    .online-counter-badge, .streak-badge, .server-status-badge {
       display: flex;
       align-items: center;
       gap: 7px;
@@ -96,6 +96,10 @@
       border-radius: 20px;
       border: 1px solid rgba(255, 255, 255, 0.08);
       user-select: none;
+    }
+
+    .server-status-badge {
+      border-color: rgba(16, 185, 129, 0.25);
     }
 
     .streak-badge {
@@ -509,7 +513,7 @@
       touch-action: none;
     }
 
-    /* "Would You Rather" Dilemma Card Overlay */
+    /* "Would You Rather" & "Truth or Dare" Cards */
     .wyr-modal-overlay, .tod-modal-overlay {
       position: absolute;
       inset: 0;
@@ -1279,6 +1283,10 @@
       <div class="streak-badge" id="streakBadge" title="Strangers met this session">
         ⚡ <span id="strangersMetCount">0</span> Met
       </div>
+      <div class="server-status-badge" id="serverStatusBadge" title="Backend Connection Status">
+        <span class="online-dot" id="serverDot" style="background:#f59e0b; box-shadow:0 0 6px #f59e0b;"></span>
+        <span id="p2pStatus" style="font-weight:700; color:#f59e0b;">Server: Connecting...</span>
+      </div>
     </div>
     
     <div class="header-actions">
@@ -1309,7 +1317,7 @@
         <option value="💫">💫 Halo Glow</option>
       </select>
 
-      <button class="tool-header-btn" id="btnRecordClip" title="Record 15s Highlight Video">📹 Record Clip</button>
+      <button class="tool-header-btn" id="btnRecordClip" title="Record 15s Highlight Video">📹 Clip</button>
       <button class="tool-header-btn" id="btnToggleCaptions" title="Live Closed Captions">💬 CC: Off</button>
       <button class="tool-header-btn" id="btnToggleTTS" title="Read incoming messages aloud">🗣 TTS: Off</button>
       <button class="audio-mode-btn" id="btnToggleAudioOnly" title="Toggle Audio-Only Mode">🎧 Video ON</button>
@@ -1342,7 +1350,7 @@
 
           <!-- Quick Reaction Buttons -->
           <div class="reactions-bar" id="reactionsBar">
-            <button class="reaction-trigger-btn" data-emoji="❤️">❤️️</button>
+            <button class="reaction-trigger-btn" data-emoji="❤️">❤️</button>
             <button class="reaction-trigger-btn" data-emoji="😂">😂</button>
             <button class="reaction-trigger-btn" data-emoji="🔥">🔥</button>
             <button class="reaction-trigger-btn" data-emoji="👏">👏</button>
@@ -1479,7 +1487,6 @@
           <button id="btnExportChat" class="chat-tool-btn" title="Save chat transcript">📋 Log</button>
           <button id="btnShareRoom" class="chat-tool-btn" title="Create invite link">🔗 Room</button>
           <button id="btnSnapshot" class="chat-tool-btn" title="Save photo snap">📸 Snap</button>
-          <span id="p2pStatus" style="font-size: 0.74rem; color: #10b981;">Server: Connecting...</span>
         </div>
       </div>
 
@@ -1833,7 +1840,6 @@
       applyVoiceFilter(e.target.value);
     });
 
-    // Vibe Tag Sync
     vibeSelect.addEventListener("change", (e) => {
       const vibe = e.target.value;
       myVibeTag.textContent = vibe;
@@ -1995,10 +2001,9 @@
 
         mediaRecorder.start();
         isRecordingClip = true;
-        btnRecordClip.textContent = "🔴 Recording... (15s)";
+        btnRecordClip.textContent = "🔴 Clip (15s)";
         btnRecordClip.classList.add("record-btn-indicator");
 
-        // Automatically stop after 15 seconds
         clearTimeout(recordTimeout);
         recordTimeout = setTimeout(() => {
           if (isRecordingClip) stopClipRecording();
@@ -2016,7 +2021,7 @@
       if (mediaRecorder && mediaRecorder.state !== "inactive") {
         mediaRecorder.stop();
       }
-      btnRecordClip.textContent = "📹 Record Clip";
+      btnRecordClip.textContent = "📹 Clip";
       btnRecordClip.classList.remove("record-btn-indicator");
     }
 
@@ -2694,11 +2699,21 @@
     socket.on("connect", () => {
       p2pStatus.textContent = "Server: Connected";
       p2pStatus.style.color = "#10b981";
+      const serverDot = document.getElementById("serverDot");
+      if (serverDot) {
+        serverDot.style.background = "#10b981";
+        serverDot.style.boxShadow = "0 0 6px #10b981";
+      }
     });
 
     socket.on("connect_error", () => {
-      p2pStatus.textContent = "Connecting to Server...";
+      p2pStatus.textContent = "Server: Reconnecting...";
       p2pStatus.style.color = "#f59e0b";
+      const serverDot = document.getElementById("serverDot");
+      if (serverDot) {
+        serverDot.style.background = "#f59e0b";
+        serverDot.style.boxShadow = "0 0 6px #f59e0b";
+      }
     });
 
     socket.on("presence_count", (count) => {
@@ -2807,7 +2822,6 @@
     function bindDataEvents(conn) {
       activeDataConnection = conn;
       conn.on("open", () => {
-        // Send our current vibe tag immediately upon connection
         conn.send({ type: "vibe_sync", vibe: vibeSelect.value });
       });
 
