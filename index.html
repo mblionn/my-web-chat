@@ -70,6 +70,7 @@
         <option value="💫">💫 Halo Glow</option>
       </select>
 
+      <button class="tool-header-btn" id="btnToggleSpeedMode" title="Toggle 60s Speed Chat">⏱ Speed: Off</button>
       <button class="tool-header-btn" id="btnRecordClip" title="Record 15s Highlight Video">📹 Clip</button>
       <button class="tool-header-btn" id="btnToggleCaptions" title="Live Closed Captions">💬 CC: Off</button>
       <button class="tool-header-btn" id="btnToggleTTS" title="Read incoming messages aloud">🗣 TTS: Off</button>
@@ -91,6 +92,14 @@
             <span class="call-timer" id="callTimer">00:00</span>
             <span class="ping-indicator" id="pingIndicator">📶 --ms</span>
           </div>
+
+          <!-- Speed Chat Countdown HUD -->
+          <div class="speed-timer-badge" id="speedTimerBadge">
+            <span class="speed-icon">⏳</span>
+            <span id="speedTimerValue">60s</span>
+            <button class="btn-extend-time" id="btnExtendTime" title="Vote to add +60s">+60s Extend</button>
+          </div>
+
           <div class="video-match-tag" id="strangerTag">Matched on: #music</div>
           <video id="remoteVideo" autoplay playsinline></video>
           <canvas id="remoteCanvas"></canvas>
