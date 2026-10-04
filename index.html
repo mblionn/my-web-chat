@@ -1730,11 +1730,130 @@
       touch-action: none;
     }
 @media (max-width: 900px) {
+
   /* 1. App Workspace Container: Edge-to-edge mobile feel */
   .app-workspace {
     flex-direction: column;
     padding: 6px;
     gap: 8px;
+  }
+
+  /* Mobile Menu Bar: Single Sleek Pill */
+  .mobile-media-toolbar {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    padding: 2px 0;
+    margin: 0;
+    border: none;
+    box-shadow: none;
+    flex-shrink: 0;
+  }
+
+  .mobile-menu-trigger-btn {
+    width: 100%;
+    background: rgba(15, 23, 42, 0.88);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(59, 130, 246, 0.35);
+    color: #93c5fd;
+    border-radius: 14px;
+    padding: 9px 16px;
+    font-size: 0.84rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+    transition: all 0.15s ease;
+  }
+
+  .mobile-menu-trigger-btn:active {
+    transform: scale(0.98);
+    background: rgba(30, 41, 59, 0.95);
+  }
+
+  /* Floating Pop-up Action Sheet Modal */
+  .mobile-action-sheet {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(11, 17, 32, 0.96);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 20px 20px 0 0;
+    padding: 16px;
+    z-index: 999;
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.85);
+    animation: slideUpSheet 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .mobile-action-sheet.show {
+    display: block !important;
+  }
+
+  @keyframes slideUpSheet {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+
+  .action-sheet-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: #e2e8f0;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .action-sheet-close {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    font-size: 1.5rem;
+    cursor: pointer;
+    line-height: 1;
+  }
+
+  .action-sheet-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+
+  .sheet-action-item {
+    background: #1e293b;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #f8fafc;
+    border-radius: 12px;
+    padding: 12px 6px;
+    font-size: 1.1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .sheet-action-item span {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #cbd5e1;
+  }
+
+  .sheet-action-item:active {
+    background: #2563eb;
+    transform: scale(0.94);
   }
 
   .status-pills, .deck-trailing-hint, .desktop-only {
@@ -2255,7 +2374,7 @@
       </div>
 
       <!-- Dedicated Mobile Toolbar -->
-      <!-- Mobile Quick Tools Trigger & Pop-up Action Menu -->
+     <!-- Mobile Quick Tools Trigger & Pop-up Action Menu -->
 <div class="mobile-media-toolbar">
   <button id="btnToggleMobileMenu" class="mobile-menu-trigger-btn" type="button">
     <span>🎛️ Media Controls</span>
@@ -2390,6 +2509,45 @@
   </footer>
 
   <script>
+
+    // Mobile Action Sheet Trigger & Dismiss Logic
+const btnToggleMobileMenu = document.getElementById("btnToggleMobileMenu");
+const mobileActionSheet = document.getElementById("mobileActionSheet");
+const btnCloseMobileSheet = document.getElementById("btnCloseMobileSheet");
+const mobileMenuArrow = document.getElementById("mobileMenuArrow");
+
+if (btnToggleMobileMenu && mobileActionSheet) {
+  btnToggleMobileMenu.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const isShowing = mobileActionSheet.classList.toggle("show");
+    if (mobileMenuArrow) {
+      mobileMenuArrow.style.transform = isShowing ? "rotate(180deg)" : "rotate(0deg)";
+    }
+  });
+}
+
+if (btnCloseMobileSheet && mobileActionSheet) {
+  btnCloseMobileSheet.addEventListener("click", () => {
+    mobileActionSheet.classList.remove("show");
+    if (mobileMenuArrow) mobileMenuArrow.style.transform = "rotate(0deg)";
+  });
+}
+
+// Close sheet automatically when any tool button inside it is clicked
+document.querySelectorAll(".sheet-action-item").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    if (mobileActionSheet) mobileActionSheet.classList.remove("show");
+    if (mobileMenuArrow) mobileMenuArrow.style.transform = "rotate(0deg)";
+  });
+});
+
+// Close sheet if user taps outside
+window.addEventListener("click", (e) => {
+  if (mobileActionSheet && mobileActionSheet.classList.contains("show") && !mobileActionSheet.contains(e.target) && e.target !== btnToggleMobileMenu) {
+    mobileActionSheet.classList.remove("show");
+    if (mobileMenuArrow) mobileMenuArrow.style.transform = "rotate(0deg)";
+  }
+});
     /* Canvas roundRect polyfill */
     if (!CanvasRenderingContext2D.prototype.roundRect) {
       CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, radii) {
