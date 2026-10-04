@@ -1873,7 +1873,32 @@
   display: none;
 }
 @media (max-width: 900px) {
+/* Ensure header sits above all video layers and canvases */
+  .app-header {
+    position: relative !important;
+    z-index: 99999 !important;
+    overflow: visible !important;
+  }
 
+  .header-right {
+    position: relative !important;
+    z-index: 100000 !important;
+    overflow: visible !important;
+  }
+
+  .mobile-header-menu-wrap {
+    position: relative !important;
+    z-index: 100001 !important;
+  }
+
+  /* Force the dropdown popup to top-most layer */
+  .mobile-header-dropdown {
+    position: absolute !important;
+    top: calc(100% + 8px) !important;
+    right: 0 !important;
+    z-index: 999999 !important;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(255, 255, 255, 0.15) !important;
+  }
   /* ==========================================
      MOBILE HEADER OVERFLOW DROPDOWN
      ========================================== */
@@ -5332,7 +5357,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // Also run immediately in case DOM is already parsed
 initMobileHeaderDropdown();
-
+// ==========================================
+// MOBILE HEADER DROPDOWN HANDLER (TOP LAYER)
+// ==========================================
 function initMobileHeaderDropdown() {
   const dotsBtn = document.getElementById("btnToggleMobileHeaderMenu");
   const dropdown = document.getElementById("mobileHeaderDropdown");
@@ -5343,13 +5370,20 @@ function initMobileHeaderDropdown() {
   const header = document.querySelector(".app-header");
   if (header) {
     header.style.overflow = "visible";
+    header.style.zIndex = "99999";
   }
 
-  // Toggle on click
+  // Toggle on click with highest z-index
   dotsBtn.onclick = (e) => {
     e.stopPropagation();
     const isHidden = dropdown.style.display === "none" || dropdown.style.display === "";
-    dropdown.style.display = isHidden ? "flex" : "none";
+    if (isHidden) {
+      dropdown.style.display = "flex";
+      dropdown.style.zIndex = "999999";
+      dropdown.style.position = "absolute";
+    } else {
+      dropdown.style.display = "none";
+    }
   };
 
   // Close when tapping anywhere outside
@@ -5378,6 +5412,9 @@ function initMobileHeaderDropdown() {
   bindAction("mHeaderToggleHardware", "btnToggleHardware");
   bindAction("mHeaderReturnHome", "btnReturnHome");
 }
+
+// Run immediately
+initMobileHeaderDropdown();
   </script>
 </body>
 </html>
