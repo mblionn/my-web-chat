@@ -1987,11 +1987,22 @@
           </select>
         </div>
 
+        <!-- VIRTUAL BACKGROUND DROPDOWN -->
+        <div class="menu-field">
+          <label for="virtualBgSelect">Virtual Background</label>
+          <select id="virtualBgSelect" class="clean-select">
+            <option value="none">Off (Original Camera)</option>
+            <option value="blur">Privacy Blur (Canvas Depth)</option>
+            <option value="studio">Studio Slate Glow</option>
+            <option value="cyber">Cyber Neon Room</option>
+          </select>
+        </div>
+
         <!-- RELOCATED SCREEN SHARE OPTION (DISABLED) -->
-        <div class="menu-field" style="grid-column: span 2; background: rgba(255,255,255,0.03); padding: 8px 12px; border-radius: 8px; border: 1px dashed rgba(255,255,255,0.12); opacity: 0.65;">
+        <div class="menu-field" style="background: rgba(255,255,255,0.03); padding: 8px 12px; border-radius: 8px; border: 1px dashed rgba(255,255,255,0.12); opacity: 0.65;">
           <label style="color: #94a3b8;">Screen Sharing</label>
-          <button id="btnSettingsScreenShare" disabled type="button" style="background: #1e293b; color: #64748b; border: 1px solid #334155; padding: 8px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: not-allowed; text-align: left;">
-            🖥 Share Screen (Temporarily Disabled)
+          <button id="btnSettingsScreenShare" disabled type="button" style="background: #1e293b; color: #64748b; border: 1px solid #334155; padding: 6px 10px; border-radius: 6px; font-size: 0.76rem; font-weight: 700; cursor: not-allowed; text-align: left; width: 100%;">
+            🖥 Disabled
           </button>
         </div>
       </div>
@@ -2158,7 +2169,7 @@
           <button id="btnMuteAudio" title="Mute Mic">🎤</button>
           <button id="btnMuteVideo" title="Stop Video">📷</button>
           
-          <!-- Kept in DOM, hidden via inline style so existing logic and references stay safe -->
+          <!-- Preserved in DOM, hidden via CSS -->
           <button id="btnToggleScreenShare" title="Share Screen" style="display: none !important;">🖥</button>
           
           <button id="btnTriggerPopoutPiP" title="Pop-out Video">🪟</button>
@@ -2173,7 +2184,7 @@
         <button id="mBtnMuteAudio" class="m-tool-btn">🎤 Mic</button>
         <button id="mBtnMuteVideo" class="m-tool-btn">📷 Cam</button>
         
-        <!-- Kept in DOM, hidden via inline style -->
+        <!-- Preserved in DOM, hidden via CSS -->
         <button id="mBtnToggleScreenShare" class="m-tool-btn" style="display: none !important;">🖥 Share</button>
         
         <button id="mBtnTriggerPopoutPiP" class="m-tool-btn">🪟 Pop</button>
@@ -2319,6 +2330,90 @@
     let screenStream = null;
     let isScreenSharing = false;
 
+    // ==========================================
+    // VIRTUAL BACKGROUND CANVAS STREAM PROCESSOR
+    // ==========================================
+    let virtualBgCanvas = document.createElement("canvas");
+    let virtualBgCtx = virtualBgCanvas.getContext("2d");
+    let virtualBgStream = null;
+    let currentVirtualBgMode = "none";
+    let virtualBgAnimId = null;
+
+    function syncVirtualBgCanvasDimensions(width = 640, height = 480) {
+      virtualBgCanvas.width = width;
+      virtualBgCanvas.height = height;
+    }
+
+    function runVirtualBackgroundLoop() {
+      if (!localVideo || localVideo.readyState < 2) {
+        virtualBgAnimId = requestAnimationFrame(runVirtualBackgroundLoop);
+        return;
+      }
+
+      const w = virtualBgCanvas.width;
+      const h = virtualBgCanvas.height;
+      virtualBgCtx.clearRect(0, 0, w, h);
+
+      if (currentVirtualBgMode === "none") {
+        virtualBgCtx.drawImage(localVideo, 0, 0, w, h);
+      } else if (currentVirtualBgMode === "blur") {
+        virtualBgCtx.save();
+        virtualBgCtx.filter = "blur(18px) brightness(0.85)";
+        virtualBgCtx.drawImage(localVideo, 0, 0, w, h);
+        virtualBgCtx.restore();
+
+        virtualBgCtx.save();
+        virtualBgCtx.beginPath();
+        virtualBgCtx.ellipse(w / 2, h * 0.52, w * 0.38, h * 0.46, 0, 0, Math.PI * 2);
+        virtualBgCtx.clip();
+        virtualBgCtx.drawImage(localVideo, 0, 0, w, h);
+        virtualBgCtx.restore();
+      } else if (currentVirtualBgMode === "studio" || currentVirtualBgMode === "cyber") {
+        virtualBgCtx.save();
+        const grad = virtualBgCtx.createRadialGradient(w / 2, h * 0.45, 40, w / 2, h * 0.45, Math.max(w, h) * 0.8);
+        if (currentVirtualBgMode === "studio") {
+          grad.addColorStop(0, "#1e293b");
+          grad.addColorStop(1, "#020617");
+        } else {
+          grad.addColorStop(0, "#3b0764");
+          grad.addColorStop(1, "#020617");
+        }
+        virtualBgCtx.fillStyle = grad;
+        virtualBgCtx.fillRect(0, 0, w, h);
+        virtualBgCtx.restore();
+
+        virtualBgCtx.save();
+        virtualBgCtx.beginPath();
+        virtualBgCtx.ellipse(w / 2, h * 0.52, w * 0.38, h * 0.46, 0, 0, Math.PI * 2);
+        virtualBgCtx.clip();
+        virtualBgCtx.drawImage(localVideo, 0, 0, w, h);
+        virtualBgCtx.restore();
+      }
+
+      virtualBgAnimId = requestAnimationFrame(runVirtualBackgroundLoop);
+    }
+
+    function getOutgoingVideoStream() {
+      if (currentVirtualBgMode !== "none" && virtualBgCanvas.captureStream) {
+        if (!virtualBgStream) {
+          virtualBgStream = virtualBgCanvas.captureStream(30);
+        }
+        return virtualBgStream;
+      }
+      return localStream;
+    }
+
+    function applyOutgoingVideoTrack() {
+      if (activeCall && activeCall.peerConnection) {
+        const activeVideoStream = (isScreenSharing && screenStream) ? screenStream : getOutgoingVideoStream();
+        const videoTrack = activeVideoStream ? activeVideoStream.getVideoTracks()[0] : null;
+        const sender = activeCall.peerConnection.getSenders().find((s) => s.track && s.track.kind === "video");
+        if (sender && videoTrack) {
+          sender.replaceTrack(videoTrack);
+        }
+      }
+    }
+
     // Profile & Mode State
     let userDisplayName = "Stranger";
     let userTags = ["music", "chill"];
@@ -2438,6 +2533,7 @@
 
     const vibeSelect = document.getElementById("vibeSelect");
     const filterSelect = document.getElementById("filterSelect");
+    const virtualBgSelect = document.getElementById("virtualBgSelect");
     const myVibeTag = document.getElementById("myVibeTag");
     const strangerVibeTag = document.getElementById("strangerVibeTag");
     const voiceFxSelect = document.getElementById("voiceFxSelect");
@@ -2571,12 +2667,18 @@
       if (landingCounter) landingCounter.textContent = formatted;
     }
     
-    // Natural slight delta every 3.5 seconds
     setInterval(() => {
-      const delta = Math.floor(Math.random() * 13) - 6; // -6 to +6 users
+      const delta = Math.floor(Math.random() * 13) - 6;
       simulatedOnlineCount = Math.max(41800, Math.min(43900, simulatedOnlineCount + delta));
       updateFakeOnlineDisplay();
     }, 3500);
+
+    if (virtualBgSelect) {
+      virtualBgSelect.addEventListener("change", (e) => {
+        currentVirtualBgMode = e.target.value;
+        applyOutgoingVideoTrack();
+      });
+    }
 
     function updateAutoNextUI() {
       if (btnToggleAutoNext) {
@@ -3969,7 +4071,7 @@
       appendMessage("", `Connected with ${partnerName}. Say hi!`, "system");
 
       if (payload.isInitiator && myPeerId && payload.partnerPeerId) {
-        const streamToSend = (localStream && !camDisabled && !isAudioOnlyMode) ? (isScreenSharing && screenStream ? screenStream : localStream) : createFallbackStream();
+        const streamToSend = (localStream && !camDisabled && !isAudioOnlyMode) ? (isScreenSharing && screenStream ? screenStream : getOutgoingVideoStream()) : createFallbackStream();
         const call = peer.call(payload.partnerPeerId, streamToSend);
         bindCallEvents(call);
         const conn = peer.connect(payload.partnerPeerId);
@@ -3998,7 +4100,7 @@
           skipToNextStranger();
           return;
         }
-        const streamToSend = (localStream && !camDisabled && !isAudioOnlyMode) ? (isScreenSharing && screenStream ? screenStream : localStream) : createFallbackStream();
+        const streamToSend = (localStream && !camDisabled && !isAudioOnlyMode) ? (isScreenSharing && screenStream ? screenStream : getOutgoingVideoStream()) : createFallbackStream();
         call.answer(streamToSend);
         bindCallEvents(call);
       });
@@ -4135,11 +4237,17 @@
 
       setupMicVisualizer(stream);
 
-      if (activeCall && activeCall.peerConnection) {
-        const videoTrack = stream.getVideoTracks()[0];
-        const sender = activeCall.peerConnection.getSenders().find((s) => s.track && s.track.kind === "video");
-        if (sender && videoTrack) sender.replaceTrack(videoTrack);
+      const track = stream.getVideoTracks()[0];
+      if (track) {
+        const settings = track.getSettings();
+        syncVirtualBgCanvasDimensions(settings.width || 640, settings.height || 480);
       }
+
+      if (!virtualBgAnimId) {
+        runVirtualBackgroundLoop();
+      }
+
+      applyOutgoingVideoTrack();
     }
     if (btnToggleHardware) btnToggleHardware.addEventListener("click", activateCamera);
 
@@ -4181,7 +4289,6 @@
       if (mBtnMuteVideo) mBtnMuteVideo.textContent = camDisabled ? "📷 Show" : "📷 Cam";
     });
 
-    // Screen sharing functions preserved in logic
     async function toggleScreenShare() {
       if (!isScreenSharing) {
         try {
@@ -4215,7 +4322,8 @@
         screenStream = null;
       }
       if (localStream) {
-        const camTrack = localStream.getVideoTracks()[0];
+        const activeStream = getOutgoingVideoStream();
+        const camTrack = activeStream ? activeStream.getVideoTracks()[0] : localStream.getVideoTracks()[0];
         if (activeCall && activeCall.peerConnection && camTrack) {
           const sender = activeCall.peerConnection.getSenders().find((s) => s.track && s.track.kind === "video");
           if (sender) sender.replaceTrack(camTrack);
