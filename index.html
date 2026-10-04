@@ -85,7 +85,7 @@
       font-weight: 800;
     }
 
-    .online-counter-badge {
+    .online-counter-badge, .streak-badge {
       display: flex;
       align-items: center;
       gap: 7px;
@@ -96,6 +96,11 @@
       border-radius: 20px;
       border: 1px solid rgba(255, 255, 255, 0.08);
       user-select: none;
+    }
+
+    .streak-badge {
+      color: #f59e0b;
+      border-color: rgba(245, 158, 11, 0.3);
     }
 
     .online-dot {
@@ -109,7 +114,7 @@
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
 
     .filter-select {
@@ -149,11 +154,11 @@
       background: #2563eb;
     }
 
-    .sound-btn {
+    .sound-btn, .audio-mode-btn {
       background: #334155;
       color: #cbd5e1;
       border: 1px solid #475569;
-      padding: 6px 12px;
+      padding: 6px 11px;
       border-radius: 7px;
       font-size: 0.82rem;
       font-weight: 700;
@@ -216,6 +221,66 @@
       width: 100%;
       height: 100%;
       display: block;
+    }
+
+    /* Floating Reactions Canvas/Container */
+    .reaction-fly-container {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 18;
+    }
+
+    .floating-emoji {
+      position: absolute;
+      bottom: 20px;
+      font-size: 2.2rem;
+      opacity: 1;
+      animation: floatUp 2.4s ease-out forwards;
+      pointer-events: none;
+    }
+
+    @keyframes floatUp {
+      0% {
+        transform: translateY(0) scale(0.7);
+        opacity: 1;
+      }
+      50% {
+        transform: translateY(-160px) scale(1.2);
+        opacity: 0.9;
+      }
+      100% {
+        transform: translateY(-340px) scale(1);
+        opacity: 0;
+      }
+    }
+
+    .reactions-bar {
+      position: absolute;
+      left: 12px;
+      bottom: 12px;
+      display: flex;
+      gap: 6px;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(8px);
+      padding: 4px 8px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      z-index: 20;
+    }
+
+    .reaction-trigger-btn {
+      background: none;
+      border: none;
+      font-size: 1.15rem;
+      cursor: pointer;
+      transition: transform 0.15s ease;
+      touch-action: manipulation;
+    }
+
+    .reaction-trigger-btn:active {
+      transform: scale(1.3);
     }
 
     /* Privacy Blur Shield */
@@ -318,7 +383,7 @@
       backdrop-filter: blur(4px);
     }
 
-    /* Tic-Tac-Toe Game Modal Overlay */
+    /* Tic-Tac-Toe Modal */
     .game-modal-overlay {
       position: absolute;
       inset: 0;
@@ -450,7 +515,7 @@
       user-select: none;
     }
 
-    /* Desktop Pill Controls */
+    /* Desktop Controls Pill */
     .pip-controls {
       position: absolute;
       bottom: 14px;
@@ -487,7 +552,7 @@
       transform: scale(1.1);
     }
 
-    /* Dedicated Mobile Controls Bar */
+    /* Mobile Dedicated Controls Bar */
     .mobile-media-toolbar {
       display: none;
     }
@@ -533,21 +598,21 @@
     .header-chat-actions {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
     }
 
     .chat-tool-btn {
       background: #1e293b;
       border: 1px solid #334155;
       color: #f8fafc;
-      padding: 4px 8px;
+      padding: 4px 7px;
       border-radius: 6px;
       font-size: 0.72rem;
       font-weight: 700;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 3px;
     }
 
     .chat-tool-btn:hover {
@@ -953,6 +1018,9 @@
         <span class="online-dot"></span>
         <span id="userCount">1</span> online
       </div>
+      <div class="streak-badge" id="streakBadge" title="Strangers met this session">
+        ⚡ <span id="strangersMetCount">0</span> Met
+      </div>
     </div>
     
     <div class="header-actions">
@@ -964,6 +1032,7 @@
         <option value="brightness(110%) contrast(120%)">Soft Glow</option>
         <option value="invert(100%)">Invert</option>
       </select>
+      <button class="audio-mode-btn" id="btnToggleAudioOnly" title="Toggle Audio-Only Mode">🎧 Video ON</button>
       <button class="sound-btn" id="btnToggleSound" title="Toggle Audio Effects">🔊 Sound ON</button>
       <button class="cam-btn" id="btnToggleHardware">📹 Enable Camera & Mic</button>
     </div>
@@ -982,6 +1051,18 @@
           <div class="video-match-tag" id="strangerTag">Matched on: #music</div>
           <video id="remoteVideo" autoplay playsinline></video>
           <canvas id="remoteCanvas"></canvas>
+
+          <!-- Floating Reactions Surface -->
+          <div class="reaction-fly-container" id="reactionFlyContainer"></div>
+
+          <!-- Quick Reaction Buttons -->
+          <div class="reactions-bar" id="reactionsBar">
+            <button class="reaction-trigger-btn" data-emoji="❤️">❤️</button>
+            <button class="reaction-trigger-btn" data-emoji="😂">😂</button>
+            <button class="reaction-trigger-btn" data-emoji="🔥">🔥</button>
+            <button class="reaction-trigger-btn" data-emoji="👏">👏</button>
+            <button class="reaction-trigger-btn" data-emoji="😮">😮</button>
+          </div>
 
           <!-- Auto-Blur Privacy Overlay -->
           <div class="blur-overlay" id="blurOverlay">
@@ -1012,14 +1093,14 @@
           </div>
         </div>
 
-        <!-- Local PiP (Face display only) -->
+        <!-- Local PiP -->
         <div class="local-pip-card">
           <div class="local-pip-badge" id="localLabel">You</div>
           <video id="localVideo" class="mirrored" autoplay playsinline muted></video>
           <canvas id="localCanvas"></canvas>
         </div>
 
-        <!-- Desktop Floating Controls -->
+        <!-- Desktop Controls Pill -->
         <div class="pip-controls desktop-only-controls">
           <button id="btnSwitchCamera" title="Switch Front/Rear Cam">🔄</button>
           <button id="btnToggleMirror" title="Flip Mirror">🪞</button>
@@ -1028,7 +1109,7 @@
         </div>
       </div>
 
-      <!-- Mobile Dedicated Toolbar (Positioned below the video stage) -->
+      <!-- Mobile Dedicated Toolbar -->
       <div class="mobile-media-toolbar">
         <button id="mBtnSwitchCamera" class="m-tool-btn">🔄 Flip</button>
         <button id="mBtnToggleMirror" class="m-tool-btn">🪞 Mirror</button>
@@ -1045,9 +1126,10 @@
           <span class="typing-label" id="typingIndicator">Stranger is typing...</span>
         </div>
         <div class="header-chat-actions">
-          <button id="btnOpenGame" class="chat-tool-btn game-btn" title="Play Tic-Tac-Toe with stranger">🎮 Play</button>
-          <button id="btnShareRoom" class="chat-tool-btn" title="Create invite link to reconnect">🔗 Room</button>
-          <button id="btnSnapshot" class="chat-tool-btn" title="Capture call memory">📸 Snap</button>
+          <button id="btnExportChat" class="chat-tool-btn" title="Save chat log">📋 Log</button>
+          <button id="btnOpenGame" class="chat-tool-btn game-btn" title="Play Tic-Tac-Toe">🎮 Play</button>
+          <button id="btnShareRoom" class="chat-tool-btn" title="Create invite link">🔗 Room</button>
+          <button id="btnSnapshot" class="chat-tool-btn" title="Save photo snap">📸 Snap</button>
           <span id="p2pStatus" style="font-size: 0.74rem; color: #10b981;">Server: Connecting...</span>
         </div>
       </div>
@@ -1129,19 +1211,21 @@
     let isMirrored = true;
     let micMuted = false;
     let camDisabled = false;
+    let isAudioOnlyMode = false;
     let soundEnabled = true;
     let currentFacingMode = "user";
+
+    let strangersMet = 0;
+    let chatHistoryLog = [];
 
     let userTags = ["chatting", "music"];
     const blockedPeers = new Set();
     let blurTimeout = null;
     let typingTimer = null;
 
-    // Call duration timer variables
     let callTimerInterval = null;
     let callSecondsElapsed = 0;
 
-    // Curated Icebreaker Prompts
     const ICEBREAKER_PROMPTS = [
       "If you could have dinner with any historical person, who would it be?",
       "What is the single best movie or series you watched recently?",
@@ -1162,6 +1246,8 @@
     // UI Cache
     const filterSelect = document.getElementById("filterSelect");
     const btnToggleSound = document.getElementById("btnToggleSound");
+    const btnToggleAudioOnly = document.getElementById("btnToggleAudioOnly");
+    const strangersMetCount = document.getElementById("strangersMetCount");
     const myGenderSelect = document.getElementById("myGenderSelect");
     const genderSelect = document.getElementById("genderSelect");
     const btnToggleHardware = document.getElementById("btnToggleHardware");
@@ -1171,7 +1257,9 @@
     const remoteCanvas = document.getElementById("remoteCanvas");
     const blurOverlay = document.getElementById("blurOverlay");
     const btnUnblurVideo = document.getElementById("btnUnblurVideo");
+    const reactionFlyContainer = document.getElementById("reactionFlyContainer");
     const typingIndicator = document.getElementById("typingIndicator");
+    const btnExportChat = document.getElementById("btnExportChat");
     const btnSnapshot = document.getElementById("btnSnapshot");
     const btnShareRoom = document.getElementById("btnShareRoom");
     const btnRandomIcebreaker = document.getElementById("btnRandomIcebreaker");
@@ -1259,6 +1347,14 @@
           gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
           osc.start(now);
           osc.stop(now + 0.25);
+        } else if (type === "reaction") {
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(600, now);
+          osc.frequency.exponentialRampToValueAtTime(950, now + 0.1);
+          gain.gain.setValueAtTime(0.12, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+          osc.start(now);
+          osc.stop(now + 0.2);
         }
       } catch (err) {
         console.warn("Audio FX skipped:", err);
@@ -1271,8 +1367,49 @@
       btnToggleSound.style.color = soundEnabled ? "#cbd5e1" : "#ef4444";
     });
 
+    // Audio-Only Low-Bandwidth Mode
+    btnToggleAudioOnly.addEventListener("click", () => {
+      isAudioOnlyMode = !isAudioOnlyMode;
+      btnToggleAudioOnly.textContent = isAudioOnlyMode ? "📻 Audio Mode" : "🎧 Video ON";
+      btnToggleAudioOnly.style.background = isAudioOnlyMode ? "#2563eb" : "#334155";
+
+      if (localStream) {
+        localStream.getVideoTracks().forEach(t => t.enabled = !isAudioOnlyMode);
+        localVideo.style.display = isAudioOnlyMode ? "none" : "block";
+        localCanvas.style.display = isAudioOnlyMode ? "block" : "none";
+      }
+
+      if (remoteVideo) {
+        remoteVideo.style.display = (isConnected && !isAudioOnlyMode) ? "block" : "none";
+        remoteCanvas.style.display = (isConnected && !isAudioOnlyMode) ? "none" : "block";
+      }
+    });
+
     // =========================================================================
-    // 3. CALL DURATION TIMER
+    // 3. FLOATING REACTIONS SYSTEM
+    // =========================================================================
+    function spawnFloatingEmoji(emoji) {
+      const el = document.createElement("div");
+      el.className = "floating-emoji";
+      el.textContent = emoji;
+      el.style.left = `${Math.floor(Math.random() * 60) + 20}%`;
+      reactionFlyContainer.appendChild(el);
+      playSound("reaction");
+      setTimeout(() => el.remove(), 2400);
+    }
+
+    document.querySelectorAll(".reaction-trigger-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const emoji = btn.getAttribute("data-emoji");
+        spawnFloatingEmoji(emoji);
+        if (activeDataConnection && activeDataConnection.open) {
+          activeDataConnection.send({ type: "reaction", emoji: emoji });
+        }
+      });
+    });
+
+    // =========================================================================
+    // 4. CALL DURATION TIMER
     // =========================================================================
     function startCallTimer() {
       stopCallTimer();
@@ -1298,7 +1435,7 @@
     }
 
     // =========================================================================
-    // 4. TIC-TAC-TOE REAL-TIME MINI-GAME
+    // 5. TIC-TAC-TOE REAL-TIME MINI-GAME
     // =========================================================================
     function openGameModal(isStarter = true) {
       if (!isConnected) {
@@ -1392,20 +1529,33 @@
     }
 
     // =========================================================================
-    // 5. ICEBREAKERS & DIRECT FRIEND ROOM GENERATOR
+    // 6. ICEBREAKERS, CHAT LOG EXPORT & DIRECT ROOM
     // =========================================================================
     btnRandomIcebreaker.addEventListener("click", () => {
       if (!isConnected) {
         appendMessage("", "Start a chat first before sending an icebreaker question!", "system");
         return;
       }
-      const randomQ = ICEBREAKERS_PROMPTS_PICK();
+      const randomQ = ICEBREAKER_PROMPTS[Math.floor(Math.random() * ICEBREAKER_PROMPTS.length)];
       sendChatMessage(`🎲 [Icebreaker]: ${randomQ}`);
     });
 
-    function ICEBREAKERS_PROMPTS_PICK() {
-      return ICEBREAKER_PROMPTS[Math.floor(Math.random() * ICEBREAKER_PROMPTS.length)];
-    }
+    btnExportChat.addEventListener("click", () => {
+      if (chatHistoryLog.length === 0) {
+        appendMessage("", "No chat messages to export yet.", "system");
+        return;
+      }
+      const logText = chatHistoryLog.join("\n");
+      navigator.clipboard.writeText(logText).then(() => {
+        appendMessage("", "Chat transcript copied to clipboard!", "system");
+      }).catch(() => {
+        const blob = new Blob([logText], { type: "text/plain" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = `webtv555-chat-${Date.now()}.txt`;
+        a.click();
+      });
+    });
 
     btnShareRoom.addEventListener("click", () => {
       if (!myPeerId) {
@@ -1438,7 +1588,7 @@
     }
 
     // =========================================================================
-    // 6. PRIVACY BLUR SHIELD
+    // 7. PRIVACY BLUR SHIELD
     // =========================================================================
     function triggerPrivacyShield() {
       blurOverlay.style.display = "flex";
@@ -1454,7 +1604,7 @@
     });
 
     // =========================================================================
-    // 7. INSTANT PHOTO SNAPSHOT
+    // 8. INSTANT PHOTO SNAPSHOT
     // =========================================================================
     btnSnapshot.addEventListener("click", () => {
       if (!isConnected) {
@@ -1512,7 +1662,7 @@
     });
 
     // =========================================================================
-    // 8. SOCKET.IO PRESENCE & MATCHMAKING
+    // 9. SOCKET.IO PRESENCE & MATCHMAKING
     // =========================================================================
     socket.on("connect", () => {
       p2pStatus.textContent = "Server: Connected";
@@ -1536,6 +1686,9 @@
 
       isSearching = false;
       isConnected = true;
+
+      strangersMet++;
+      strangersMetCount.textContent = strangersMet;
 
       playSound("match");
       startCallTimer();
@@ -1569,7 +1722,7 @@
     });
 
     // =========================================================================
-    // 9. WEBRTC ENGINE (PEERJS)
+    // 10. WEBRTC ENGINE (PEERJS)
     // =========================================================================
     function initializePeer() {
       peer = new Peer({
@@ -1612,8 +1765,8 @@
       activeCall = call;
       call.on("stream", (remoteMediaStream) => {
         remoteVideo.srcObject = remoteMediaStream;
-        remoteVideo.style.display = "block";
-        remoteCanvas.style.display = "none";
+        remoteVideo.style.display = isAudioOnlyMode ? "none" : "block";
+        remoteCanvas.style.display = isAudioOnlyMode ? "block" : "none";
         triggerPrivacyShield();
       });
       call.on("close", handleStrangerLeft);
@@ -1629,6 +1782,8 @@
           typingIndicator.style.display = "none";
         } else if (data.type === "typing") {
           typingIndicator.style.display = data.status ? "inline" : "none";
+        } else if (data.type === "reaction") {
+          spawnFloatingEmoji(data.emoji);
         } else if (data.type === "game_invite") {
           openGameModal(false);
           appendMessage("", "Stranger started a Tic-Tac-Toe match!", "system");
@@ -1659,7 +1814,7 @@
     }
 
     // =========================================================================
-    // 10. MATCHMAKING ACTIONS (WITH FAST SKIP & REPORT)
+    // 11. MATCHMAKING ACTIONS (WITH FAST SKIP & REPORT)
     // =========================================================================
     function startMatchmaking() {
       if (!myPeerId) {
@@ -1771,7 +1926,7 @@
     });
 
     // =========================================================================
-    // 11. CAMERA & HARDWARE ACCESS
+    // 12. CAMERA & HARDWARE ACCESS
     // =========================================================================
     async function activateCamera() {
       const constraints = {
@@ -1809,8 +1964,8 @@
     function handleStreamSuccess(stream) {
       localStream = stream;
       localVideo.srcObject = stream;
-      localVideo.style.display = "block";
-      localCanvas.style.display = "none";
+      localVideo.style.display = isAudioOnlyMode ? "none" : "block";
+      localCanvas.style.display = isAudioOnlyMode ? "block" : "none";
 
       btnToggleHardware.classList.add("active");
       btnToggleHardware.textContent = "✔ Camera Active";
@@ -1826,7 +1981,7 @@
     }
     btnToggleHardware.addEventListener("click", activateCamera);
 
-    // Unified Mobile & Desktop Action Binder
+    // Unified Action Binder
     function bindMediaAction(desktopBtn, mobileBtn, actionFn) {
       [desktopBtn, mobileBtn].forEach(btn => {
         if (!btn) return;
@@ -1885,7 +2040,7 @@
     }
 
     // =========================================================================
-    // 12. PROCEDURAL AVATAR RENDERER WITH RADAR WAVES
+    // 13. PROCEDURAL AVATAR RENDERER
     // =========================================================================
     let animStep = 0;
     function renderAvatarsLoop() {
@@ -2066,7 +2221,7 @@
     window.addEventListener("resize", syncCanvasDimensions);
 
     // =========================================================================
-    // 13. TAGS SYSTEM
+    // 14. TAGS SYSTEM
     // =========================================================================
     function renderTags() {
       tagsList.innerHTML = "";
@@ -2121,7 +2276,7 @@
     });
 
     // =========================================================================
-    // 14. CHAT ENGINE & TYPING DETECTION
+    // 15. CHAT ENGINE & TYPING DETECTION
     // =========================================================================
     function appendMessage(sender, text, type = "stranger") {
       const now = new Date();
@@ -2131,8 +2286,10 @@
       msgDiv.className = `message ${type}`;
       if (type === "system") {
         msgDiv.textContent = text;
+        chatHistoryLog.push(`[${timeStr}] (System): ${text}`);
       } else {
         msgDiv.innerHTML = `<span class="time">${timeStr}</span><span class="sender">${sender}:</span> ${escapeHTML(text)}`;
+        chatHistoryLog.push(`[${timeStr}] ${sender}: ${text}`);
       }
       chatContainer.appendChild(msgDiv);
       chatContainer.scrollTop = chatContainer.scrollHeight;
@@ -2178,7 +2335,7 @@
     });
 
     // =========================================================================
-    // 15. INSTANT DOM BOOTSTRAP
+    // 16. INSTANT DOM BOOTSTRAP
     // =========================================================================
     syncCanvasDimensions();
     renderAvatarsLoop();
