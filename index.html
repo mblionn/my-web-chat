@@ -840,20 +840,21 @@
     }
 
     /* Picture-in-Picture (PiP) Local Box */
-    .local-pip-card {
-      position: absolute;
-      bottom: 14px;
-      right: 14px;
-      width: 196px;
-      height: 146px;
-      background: #0f172a;
-      border-radius: var(--radius-md);
-      border: 2px solid rgba(59, 130, 246, 0.45);
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.75);
-      overflow: hidden;
-      z-index: 20;
-      transition: all 0.2s ease;
-    }
+  .local-pip-card {
+  position: absolute;
+  bottom: 14px;
+  right: 14px;
+  width: 196px;
+  height: 146px;
+  background: #0f172a;
+  border-radius: var(--radius-md);
+  border: 2px solid rgba(59, 130, 246, 0.45);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.75);
+  overflow: hidden;
+  z-index: 20;
+  transition: border-color 0.08s ease-out, box-shadow 0.08s ease-out;
+  will-change: border-color, box-shadow;
+}
 
     .local-pip-card.speaking {
       border-color: var(--success) !important;
@@ -1728,76 +1729,152 @@
       cursor: crosshair;
       touch-action: none;
     }
+@media (max-width: 900px) {
+  /* 1. App Workspace Container: Edge-to-edge mobile feel */
+  .app-workspace {
+    flex-direction: column;
+    padding: 6px;
+    gap: 8px;
+  }
 
-    @media (max-width: 900px) {
-      .app-workspace {
-        flex-direction: column;
-        padding: 8px;
-        gap: 8px;
-      }
-      .status-pills, .deck-trailing-hint, .desktop-only {
-        display: none !important;
-      }
-      .stage-column {
-        flex: 1;
-        min-height: 50%;
-      }
-      .local-pip-card {
-        width: 110px !important;
-        height: 84px !important;
-        bottom: 8px !important;
-        right: 8px !important;
-      }
-      .mobile-media-toolbar {
-        display: flex;
-        align-items: center;
-        justify-content: space-around;
-        background: var(--bg-surface);
-        border: 1px solid var(--border-subtle);
-        border-radius: var(--radius-md);
-        padding: 6px;
-        gap: 6px;
-        flex-shrink: 0;
-      }
-      .m-tool-btn {
-        flex: 1;
-        background: #1e293b;
-        color: #f8fafc;
-        border: 1px solid #334155;
-        border-radius: 6px;
-        padding: 8px 4px;
-        font-size: 0.74rem;
-        font-weight: 700;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-      .chat-section {
-        flex: 1;
-        max-width: 100%;
-        min-width: 0;
-        min-height: 40%;
-      }
-      .app-deck {
-        height: auto;
-        padding: 8px 10px;
-        flex-wrap: wrap;
-        gap: 8px;
-      }
-      .deck-main-actions {
-        width: 100%;
-        justify-content: space-between;
-      }
-      .btn-primary-action {
-        flex: 1;
-        justify-content: center;
-      }
-      .deck-filters {
-        width: 100%;
-        overflow-x: auto;
-      }
-      .landing-form-grid { grid-template-columns: 1fr; }
-    }
+  .status-pills, .deck-trailing-hint, .desktop-only {
+    display: none !important;
+  }
+
+  /* 2. Video Stage: Rounded corners with immersive depth */
+  .stage-column {
+    flex: 1;
+    min-height: 48%;
+    border-radius: 16px;
+  }
+
+  .video-stage-container {
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+  }
+
+  /* 3. Floating Mobile Local PiP: Frosted glass pill style with elevation */
+  .local-pip-card {
+    width: 116px !important;
+    height: 88px !important;
+    bottom: 10px !important;
+    right: 10px !important;
+    border-radius: 14px !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.75), inset 0 0 8px rgba(0, 0, 0, 0.4) !important;
+    transition: transform 0.15s ease, border-color 0.1s ease !important;
+  }
+
+  .local-pip-card:active {
+    transform: scale(0.95);
+  }
+
+  /* 4. Interactive Mobile Media Toolbar: Glassmorphic Floating Island */
+  .mobile-media-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 18px;
+    padding: 6px 8px;
+    gap: 6px;
+    flex-shrink: 0;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+  }
+
+  .m-tool-btn {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.05);
+    color: #e2e8f0;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 7px 2px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+  }
+
+  .m-tool-btn:active {
+    transform: scale(0.92);
+    background: rgba(59, 130, 246, 0.28);
+    border-color: rgba(59, 130, 246, 0.6);
+    color: #60a5fa;
+  }
+
+  /* 5. Mobile Chat Section: Modernized card container */
+  .chat-section {
+    flex: 1;
+    max-width: 100%;
+    min-width: 0;
+    min-height: 40%;
+    border-radius: 16px;
+  }
+
+  .chat-input-deck {
+    padding: 8px 10px;
+    gap: 8px;
+    background: rgba(14, 21, 38, 0.95);
+  }
+
+  .chat-input-deck input {
+    background: rgba(0, 0, 0, 0.35);
+    border-radius: 10px;
+    padding: 8px 12px;
+  }
+
+  .send-btn {
+    border-radius: 10px;
+    padding: 8px 14px;
+  }
+
+  /* 6. Mobile Bottom Deck: Responsive spacing and tactile action buttons */
+  .app-deck {
+    height: auto;
+    padding: 8px 10px;
+    flex-wrap: wrap;
+    gap: 8px;
+    background: rgba(15, 21, 35, 0.98);
+  }
+
+  .deck-main-actions {
+    width: 100%;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .btn-primary-action {
+    flex: 1;
+    justify-content: center;
+    padding: 12px 16px;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
+  }
+
+  .btn-primary-action:active {
+    transform: scale(0.96);
+  }
+
+  .btn-secondary-action {
+    padding: 12px 14px;
+    border-radius: 12px;
+  }
+
+  .deck-filters {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+
+  .landing-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
   </style>
 </head>
 <body>
@@ -3130,52 +3207,72 @@
       return audioCtx;
     }
 
-    function setupMicVisualizer(stream) {
-      try {
-        const ctx = getAudioContext();
-        const audioTracks = stream.getAudioTracks();
-        if (audioTracks.length === 0) return;
+  function setupMicVisualizer(stream) {
+  try {
+    const ctx = getAudioContext();
+    const audioTracks = stream.getAudioTracks();
+    if (audioTracks.length === 0) return;
 
-        micSourceNode = ctx.createMediaStreamSource(stream);
-        micAnalyser = ctx.createAnalyser();
-        micAnalyser.fftSize = 64;
+    micSourceNode = ctx.createMediaStreamSource(stream);
+    micAnalyser = ctx.createAnalyser();
+    micAnalyser.fftSize = 64;
 
-        micFilterNode = ctx.createBiquadFilter();
-        applyVoiceFilter(voiceFxSelect ? voiceFxSelect.value : "normal");
+    micFilterNode = ctx.createBiquadFilter();
+    applyVoiceFilter(voiceFxSelect ? voiceFxSelect.value : "normal");
 
-        micSourceNode.connect(micFilterNode);
-        micFilterNode.connect(micAnalyser);
-        micDataArray = new Uint8Array(micAnalyser.frequencyBinCount);
+    micSourceNode.connect(micFilterNode);
+    micFilterNode.connect(micAnalyser);
+    micDataArray = new Uint8Array(micAnalyser.frequencyBinCount);
 
-        function checkMicLevel() {
-          if (!localStream || micMuted) {
-            localPipCard.classList.remove("speaking");
-            if (micSpeakingBadge) micSpeakingBadge.style.display = "none";
-            micAnimFrame = requestAnimationFrame(checkMicLevel);
-            return;
-          }
+    function checkMicLevel() {
+      if (!localStream || micMuted) {
+        localPipCard.classList.remove("speaking");
+        localPipCard.style.borderColor = "rgba(59, 130, 246, 0.45)";
+        localPipCard.style.boxShadow = "0 12px 32px rgba(0, 0, 0, 0.75)";
+        if (micSpeakingBadge) micSpeakingBadge.style.display = "none";
+        micAnimFrame = requestAnimationFrame(checkMicLevel);
+        return;
+      }
 
-          micAnalyser.getByteFrequencyData(micDataArray);
-          let sum = 0;
-          for (let i = 0; i < micDataArray.length; i++) sum += micDataArray[i];
-          const avg = sum / micDataArray.length;
+      micAnalyser.getByteFrequencyData(micDataArray);
+      let sum = 0;
+      for (let i = 0; i < micDataArray.length; i++) sum += micDataArray[i];
+      const avg = sum / micDataArray.length;
 
-          if (avg > 25) {
-            localPipCard.classList.add("speaking");
-            if (micSpeakingBadge) micSpeakingBadge.style.display = "inline";
-          } else {
-            localPipCard.classList.remove("speaking");
-            if (micSpeakingBadge) micSpeakingBadge.style.display = "none";
-          }
-          micAnimFrame = requestAnimationFrame(checkMicLevel);
+      if (avg > 18) {
+        localPipCard.classList.add("speaking");
+        if (micSpeakingBadge) micSpeakingBadge.style.display = "inline";
+
+        // Dynamic glow calculation based on loudness (normalized between 18 and 98)
+        const intensity = Math.min(1, Math.max(0, (avg - 18) / 80));
+        const glowRadius = Math.round(10 + intensity * 26);
+        const spreadRadius = Math.round(intensity * 10);
+
+        // Dynamic color shift: Cyan (soft) -> Emerald (medium) -> Pink (loud)
+        let ringColor = "#06b6d4"; // soft cyan
+        if (intensity > 0.65) {
+          ringColor = "#ec4899"; // pink/violet peak
+        } else if (intensity > 0.28) {
+          ringColor = "#10b981"; // vibrant emerald
         }
 
-        if (micAnimFrame) cancelAnimationFrame(micAnimFrame);
-        checkMicLevel();
-      } catch (e) {
-        console.warn("Audio Context init note:", e);
+        localPipCard.style.borderColor = ringColor;
+        localPipCard.style.boxShadow = `0 0 ${glowRadius}px ${spreadRadius}px ${ringColor}, 0 12px 32px rgba(0, 0, 0, 0.85)`;
+      } else {
+        localPipCard.classList.remove("speaking");
+        localPipCard.style.borderColor = "rgba(59, 130, 246, 0.45)";
+        localPipCard.style.boxShadow = "0 12px 32px rgba(0, 0, 0, 0.75)";
+        if (micSpeakingBadge) micSpeakingBadge.style.display = "none";
       }
+      micAnimFrame = requestAnimationFrame(checkMicLevel);
     }
+
+    if (micAnimFrame) cancelAnimationFrame(micAnimFrame);
+    checkMicLevel();
+  } catch (e) {
+    console.warn("Audio Context init note:", e);
+  }
+}
 
     function applyVoiceFilter(mode) {
       if (!micFilterNode) return;
