@@ -1611,17 +1611,19 @@
       border: 1px solid rgba(255, 255, 255, 0.2);
     }
 
-    .btn-danger-action {
-      background: #7f1d1d;
-      color: #fca5a5;
-      border: 1px solid #991b1b;
-      padding: 9px 14px;
-      border-radius: var(--radius-md);
-      font-weight: 800;
-      font-size: 0.8rem;
-      cursor: pointer;
-      display: none;
-    }
+    .btn-danger-action,
+  .cancel-btn,
+  #btnCancel,
+  button[id*="cancel" i],
+  button[class*="cancel" i] {
+    padding: 8px 16px !important;
+    font-size: 0.85rem !important;
+    border-radius: 10px !important;
+    min-height: auto !important;
+    width: auto !important;
+    max-width: 200px;
+    margin: 4px auto;
+  }
 
     .deck-filters {
       display: flex;
