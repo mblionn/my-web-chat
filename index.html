@@ -5236,6 +5236,34 @@ window.addEventListener("click", (e) => {
     syncCanvasDimensions();
     renderAvatarsLoop();
     updateFakeOnlineDisplay();
+    // ==========================================
+// MOBILE FOOTER MENU SHEET TOGGLE
+// ==========================================
+const btnToggleFooterMenu = document.getElementById("btnToggleFooterMenu");
+const mobileFooterMenuSheet = document.getElementById("mobileFooterMenuSheet");
+
+if (btnToggleFooterMenu && mobileFooterMenuSheet) {
+  btnToggleFooterMenu.onclick = (e) => {
+    e.stopPropagation();
+    mobileFooterMenuSheet.style.display = "flex";
+  };
+
+  mobileFooterMenuSheet.onclick = (e) => {
+    if (e.target === mobileFooterMenuSheet || e.target.tagName === "BUTTON") {
+      mobileFooterMenuSheet.style.display = "none";
+    }
+  };
+}
+
+// Link your main cancel action button cleanly
+const actualCancelBtn = document.querySelector("#btnCancel, .cancel-btn, button[id*='cancel' i]");
+const mobileCancelBtnTarget = document.getElementById("mobileCancelBtnTarget");
+if (actualCancelBtn && mobileCancelBtnTarget) {
+  mobileCancelBtnTarget.onclick = (e) => {
+    e.stopPropagation();
+    actualCancelBtn.click();
+  };
+}
   </script>
 </body>
 </html>
