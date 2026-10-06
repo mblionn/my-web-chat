@@ -845,12 +845,17 @@
     }
 
     .video-stage-container {
-  display: grid;
-  grid-template-columns: 1fr 1fr; /* Creates two equal 50% columns */
-  gap: 12px;
-  width: 100%;
-  height: 100%;
-}
+      flex: 1;
+      position: relative;
+      background: #020617;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-subtle);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.85);
+    }
 
     .remote-video-wrap {
       width: 100%;
@@ -1867,7 +1872,7 @@
 
   #mobileHeaderModal {
   display: none !important;
-  }
+}
 
 #mobileHeaderModal[style*="display: flex"] {
   display: flex !important;
