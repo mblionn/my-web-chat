@@ -38,43 +38,39 @@
    MODERN MINIMALIST SCROLLBAR STYLING
    ========================================== */
 
-/* Firefox minimal scrollbar */
 * {
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
 }
 
-/* Chrome, Safari, Edge, WebKit modern scrollbar */
 ::-webkit-scrollbar {
   width: 5px;
-  height: 5px; /* Thin, sleek horizontal track */
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent; /* Seamless blend into dark backdrop */
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.16);
-  border-radius: 9999px; /* Smooth rounded pill edges */
+  border-radius: 9999px;
   transition: background 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(59, 130, 246, 0.5); /* Glowing blue tint on hover */
+  background: rgba(59, 130, 246, 0.5);
 }
 
-/* Remove default browser scroll arrows */
 ::-webkit-scrollbar-button {
   display: none !important;
   width: 0 !important;
   height: 0 !important;
 }
+
 /* ==========================================
    HORIZONTAL SCROLLING: HEADER & FOOTER
    ========================================== */
-
-/* 1. Header Horizontal Scroll */
 .app-header {
   overflow-x: auto !important;
   overflow-y: hidden !important;
@@ -106,7 +102,6 @@
   white-space: nowrap !important;
 }
 
-/* 2. Footer Deck Horizontal Scroll */
 .app-deck {
   overflow-x: auto !important;
   overflow-y: hidden !important;
@@ -141,7 +136,6 @@
   white-space: nowrap !important;
 }
 
-/* 3. Modern Scrollbar Track & Thumb for Header and Footer */
 .app-header::-webkit-scrollbar,
 .app-deck::-webkit-scrollbar {
   height: 4px !important;
@@ -166,7 +160,6 @@
   background: #3b82f6;
 }
 
-/* Specific enhancement for the quick replies chip deck */
 .quick-replies-deck {
   scrollbar-width: thin;
   padding-bottom: 6px !important;
@@ -644,7 +637,6 @@
       color: var(--text-main);
     }
 
-    /* Auto-Next Header Toggle Pill */
     .autonext-toggle-btn {
       background: rgba(16, 185, 129, 0.16) !important;
       color: #34d399 !important;
@@ -990,21 +982,21 @@
     }
 
     /* Picture-in-Picture (PiP) Local Box */
-  .local-pip-card {
-  position: absolute;
-  bottom: 14px;
-  right: 14px;
-  width: 196px;
-  height: 146px;
-  background: #0f172a;
-  border-radius: var(--radius-md);
-  border: 2px solid rgba(59, 130, 246, 0.45);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.75);
-  overflow: hidden;
-  z-index: 20;
-  transition: border-color 0.08s ease-out, box-shadow 0.08s ease-out;
-  will-change: border-color, box-shadow;
-}
+    .local-pip-card {
+      position: absolute;
+      bottom: 14px;
+      right: 14px;
+      width: 196px;
+      height: 146px;
+      background: #0f172a;
+      border-radius: var(--radius-md);
+      border: 2px solid rgba(59, 130, 246, 0.45);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.75);
+      overflow: hidden;
+      z-index: 20;
+      transition: border-color 0.08s ease-out, box-shadow 0.08s ease-out;
+      will-change: border-color, box-shadow;
+    }
 
     .local-pip-card.speaking {
       border-color: var(--success) !important;
@@ -1025,7 +1017,6 @@
       height: 100%;
       display: block;
     }
-
 
     .talking-dot {
       font-size: 0.62rem;
@@ -1189,7 +1180,6 @@
 
     .blur-tip { font-size: 0.74rem; color: #94a3b8; }
 
-    /* Stranger Disconnected & Auto-Next Countdown Stage Overlay */
     .stranger-disconnected-overlay {
       position: absolute;
       inset: 0;
@@ -1612,18 +1602,18 @@
     }
 
     .btn-danger-action,
-  .cancel-btn,
-  #btnCancel,
-  button[id*="cancel" i],
-  button[class*="cancel" i] {
-    padding: 8px 16px !important;
-    font-size: 0.85rem !important;
-    border-radius: 10px !important;
-    min-height: auto !important;
-    width: auto !important;
-    max-width: 200px;
-    margin: 4px auto;
-  }
+    .cancel-btn,
+    #btnCancel,
+    button[id*="cancel" i],
+    button[class*="cancel" i] {
+      padding: 8px 16px !important;
+      font-size: 0.85rem !important;
+      border-radius: 10px !important;
+      min-height: auto !important;
+      width: auto !important;
+      max-width: 200px;
+      margin: 4px auto;
+    }
 
     .deck-filters {
       display: flex;
@@ -1865,388 +1855,319 @@
       cursor: crosshair;
       touch-action: none;
     }
-    /* Keep mobile menu and action sheet hidden on desktop */
-.mobile-media-toolbar,
-#mobileActionSheet {
-  display: none !important;
-}
-@media (max-width: 900px) {
 
-  #mobileHeaderModal {
-  display: none !important;
-  }
+    .mobile-media-toolbar,
+    #mobileActionSheet {
+      display: none !important;
+    }
 
-#mobileHeaderModal[style*="display: flex"] {
-  display: flex !important;
-}
-/* Reveal the trigger pill on mobile viewports */
-  .mobile-media-toolbar {
-    display: flex !important;
-  }
-
-  /* Only display the sheet when active on mobile */
-  #mobileActionSheet.show {
-    display: flex !important;
-  }
-  /* Make bottom filter deck and topic tags smoothly scrollable horizontally */
-  .deck-filters {
-    display: flex !important;
-    align-items: center !important;
-    flex-wrap: nowrap !important;
-    overflow-x: auto !important;
-    overflow-y: hidden !important;
-    -webkit-overflow-scrolling: touch;
-    scroll-behavior: smooth;
-    gap: 8px !important;
-    width: 100% !important;
-    padding: 4px 2px 6px 2px !important;
-    scrollbar-width: none; /* Hide scrollbar on Firefox */
-  }
-
-  /* Hide default scrollbar track on Chrome, Safari & Edge */
-  .deck-filters::-webkit-scrollbar {
-    display: none !important;
-    height: 0 !important;
-  }
-
-  /* Prevent gender dropdown pods and tags container from shrinking */
-  .deck-filters .filter-pod {
-    flex-shrink: 0 !important;
-    white-space: nowrap !important;
-  }
-
-  .deck-filters .interests-pod {
-    flex-shrink: 0 !important;
-    max-width: none !important;
-    white-space: nowrap !important;
-    overflow-x: visible !important;
-  }
-  /* Make Top Header horizontally scrollable on mobile screens */
-  .app-header {
-    overflow-x: auto !important;
-    overflow-y: hidden !important;
-    -webkit-overflow-scrolling: touch;
-    scroll-behavior: smooth;
-    white-space: nowrap;
-    padding: 0 10px !important;
-    scrollbar-width: none; /* Hide default scrollbar on Firefox */
-  }
-
-  /* Hide default scrollbar on Chrome, Safari & Edge */
-  .app-header::-webkit-scrollbar {
-    display: none !important;
-    height: 0 !important;
-  }
-
-  .header-left {
-    flex-shrink: 0 !important;
-    margin-right: 12px;
-  }
-
-  .header-right {
-    display: flex !important;
-    align-items: center !important;
-    flex-shrink: 0 !important;
-    gap: 6px !important;
-    overflow: visible !important;
-  }
-
-  /* Prevent buttons from squishing or breaking into multiple lines */
-  .header-right .nav-btn,
-  .header-right .primary-cam-btn {
-    flex-shrink: 0 !important;
-    white-space: nowrap !important;
-    font-size: 0.76rem !important;
-    padding: 6px 10px !important;
-  }
-
-  /* 1. App Workspace Container: Edge-to-edge mobile feel */
-  .app-workspace {
-    flex-direction: column;
-    padding: 6px;
-    gap: 8px;
-  }
-
-  /* Mobile Menu Bar: Single Sleek Pill */
-  .mobile-media-toolbar {
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
-    background: transparent;
-    padding: 2px 0;
-    margin: 0;
-    border: none;
-    box-shadow: none;
-    flex-shrink: 0;
-  }
-
-  .mobile-menu-trigger-btn {
-    width: 100%;
-    background: rgba(15, 23, 42, 0.88);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    border: 1px solid rgba(59, 130, 246, 0.35);
-    color: #93c5fd;
-    border-radius: 14px;
-    padding: 9px 16px;
-    font-size: 0.84rem;
-    font-weight: 800;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    cursor: pointer;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
-    transition: all 0.15s ease;
-  }
-
-  .mobile-menu-trigger-btn:active {
-    transform: scale(0.98);
-    background: rgba(30, 41, 59, 0.95);
-  }
-
-  /* Floating Pop-up Action Sheet Modal */
-  .mobile-action-sheet {
-    display: none;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: rgba(11, 17, 32, 0.96);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-top: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 20px 20px 0 0;
-    padding: 16px;
-    z-index: 999;
-    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.85);
-    animation: slideUpSheet 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  .mobile-action-sheet.show {
-    display: block !important;
-  }
-
-  @keyframes slideUpSheet {
-    from { transform: translateY(100%); }
-    to { transform: translateY(0); }
-  }
-
-  .action-sheet-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.9rem;
-    font-weight: 800;
-    color: #e2e8f0;
-    margin-bottom: 12px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  }
-
-  .action-sheet-close {
-    background: none;
-    border: none;
-    color: #94a3b8;
-    font-size: 1.5rem;
-    cursor: pointer;
-    line-height: 1;
-  }
-
-  .action-sheet-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-  }
-
-  .sheet-action-item {
-    background: #1e293b;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    color: #f8fafc;
-    border-radius: 12px;
-    padding: 12px 6px;
-    font-size: 1.1rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-  }
-
-  .sheet-action-item span {
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: #cbd5e1;
-  }
-
-  .sheet-action-item:active {
-    background: #2563eb;
-    transform: scale(0.94);
-  }
-
-  .status-pills, .deck-trailing-hint, .desktop-only {
-    display: none !important;
-  }
-
-  /* 2. Video Stage: Rounded corners with immersive depth */
-  .stage-column {
-    flex: 1;
-    min-height: 48%;
-    border-radius: 16px;
-  }
-
-  .video-stage-container {
-    border-radius: 16px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
-  }
-
-  /* 3. Floating Mobile Local PiP: Frosted glass pill style with elevation */
-  /* Allow floating badges to sit outside the video box boundaries */
-.local-pip-card {
-  overflow: visible !important;
-}
-
-/* Ensure the video element itself stays cleanly clipped to the rounded corners */
-.local-pip-card video,
-.local-pip-card canvas {
-  border-radius: inherit;
-  overflow: hidden;
-}
-
-/* Float the 'You: Chill' badge completely above the PiP card */
-.local-pip-badge {
-  position: absolute;
-  top: -30px !important;
-  left: 0 !important;
-  bottom: auto !important;
-  background: rgba(15, 23, 42, 0.88) !important;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: var(--radius-pill) !important;
-  padding: 3px 10px !important;
-  white-space: nowrap;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-}
-
-/* Position badge neatly above the smaller mobile PiP box */
-  .local-pip-badge {
-    top: -26px !important;
-    left: 2px !important;
-    padding: 2px 8px !important;
-    font-size: 0.66rem !important;
-  }
-
-  .local-pip-card:active {
-    transform: scale(0.95);
-  }
-
-  /* 4. Interactive Mobile Media Toolbar: Glassmorphic Floating Island */
-  .mobile-media-toolbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-    background: rgba(15, 23, 42, 0.85);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 18px;
-    padding: 6px 8px;
-    gap: 6px;
-    flex-shrink: 0;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
-  }
-
-  .m-tool-btn {
-    flex: 1;
-    background: rgba(255, 255, 255, 0.05);
-    color: #e2e8f0;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 10px;
-    padding: 7px 2px;
-    font-size: 0.72rem;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-    cursor: pointer;
-  }
-
-  .m-tool-btn:active {
-    transform: scale(0.92);
-    background: rgba(59, 130, 246, 0.28);
-    border-color: rgba(59, 130, 246, 0.6);
-    color: #60a5fa;
-  }
-
-  /* 5. Mobile Chat Section: Modernized card container */
-  .chat-section {
-    flex: 1;
-    max-width: 100%;
-    min-width: 0;
-    min-height: 40%;
-    border-radius: 16px;
-  }
-
-  .chat-input-deck {
-    padding: 8px 10px;
-    gap: 8px;
-    background: rgba(14, 21, 38, 0.95);
-  }
-
-  .chat-input-deck input {
-    background: rgba(0, 0, 0, 0.35);
-    border-radius: 10px;
-    padding: 8px 12px;
-  }
-
-  .send-btn {
-    border-radius: 10px;
-    padding: 8px 14px;
-  }
-
-  /* 6. Mobile Bottom Deck: Responsive spacing and tactile action buttons */
-  .app-deck {
-    height: auto;
-    padding: 8px 10px;
-    flex-wrap: wrap;
-    gap: 8px;
-    background: rgba(15, 21, 35, 0.98);
-  }
-
-  .deck-main-actions {
-    width: 100%;
-    justify-content: space-between;
-    gap: 8px;
-  }
-
-  .btn-primary-action {
-    flex: 1;
-    justify-content: center;
-    padding: 12px 16px;
-    border-radius: 12px;
-    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
-  }
-
-  .btn-primary-action:active {
-    transform: scale(0.96);
-  }
-
-  .btn-secondary-action {
-    padding: 12px 14px;
-    border-radius: 12px;
-  }
-
-  .deck-filters {
-    width: 100%;
-    overflow-x: auto;
-    padding-bottom: 2px;
-  }
-
-  .landing-form-grid {
-    grid-template-columns: 1fr;
-  }
-}
+    @media (max-width: 900px) {
+      #mobileHeaderModal {
+        display: none !important;
+      }
+      #mobileHeaderModal[style*="display: flex"] {
+        display: flex !important;
+      }
+      .mobile-media-toolbar {
+        display: flex !important;
+      }
+      #mobileActionSheet.show {
+        display: flex !important;
+      }
+      .deck-filters {
+        display: flex !important;
+        align-items: center !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        -webkit-overflow-scrolling: touch;
+        scroll-behavior: smooth;
+        gap: 8px !important;
+        width: 100% !important;
+        padding: 4px 2px 6px 2px !important;
+        scrollbar-width: none;
+      }
+      .deck-filters::-webkit-scrollbar {
+        display: none !important;
+        height: 0 !important;
+      }
+      .deck-filters .filter-pod {
+        flex-shrink: 0 !important;
+        white-space: nowrap !important;
+      }
+      .deck-filters .interests-pod {
+        flex-shrink: 0 !important;
+        max-width: none !important;
+        white-space: nowrap !important;
+        overflow-x: visible !important;
+      }
+      .app-header {
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        -webkit-overflow-scrolling: touch;
+        scroll-behavior: smooth;
+        white-space: nowrap;
+        padding: 0 10px !important;
+        scrollbar-width: none;
+      }
+      .app-header::-webkit-scrollbar {
+        display: none !important;
+        height: 0 !important;
+      }
+      .header-left {
+        flex-shrink: 0 !important;
+        margin-right: 12px;
+      }
+      .header-right {
+        display: flex !important;
+        align-items: center !important;
+        flex-shrink: 0 !important;
+        gap: 6px !important;
+        overflow: visible !important;
+      }
+      .header-right .nav-btn,
+      .header-right .primary-cam-btn {
+        flex-shrink: 0 !important;
+        white-space: nowrap !important;
+        font-size: 0.76rem !important;
+        padding: 6px 10px !important;
+      }
+      .app-workspace {
+        flex-direction: column;
+        padding: 6px;
+        gap: 8px;
+      }
+      .mobile-media-toolbar {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        padding: 2px 0;
+        margin: 0;
+        border: none;
+        box-shadow: none;
+        flex-shrink: 0;
+      }
+      .mobile-menu-trigger-btn {
+        width: 100%;
+        background: rgba(15, 23, 42, 0.88);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        border: 1px solid rgba(59, 130, 246, 0.35);
+        color: #93c5fd;
+        border-radius: 14px;
+        padding: 9px 16px;
+        font-size: 0.84rem;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+        transition: all 0.15s ease;
+      }
+      .mobile-menu-trigger-btn:active {
+        transform: scale(0.98);
+        background: rgba(30, 41, 59, 0.95);
+      }
+      .mobile-action-sheet {
+        display: none;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(11, 17, 32, 0.96);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-top: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 20px 20px 0 0;
+        padding: 16px;
+        z-index: 999;
+        box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.85);
+        animation: slideUpSheet 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .mobile-action-sheet.show {
+        display: block !important;
+      }
+      @keyframes slideUpSheet {
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
+      }
+      .action-sheet-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.9rem;
+        font-weight: 800;
+        color: #e2e8f0;
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .action-sheet-close {
+        background: none;
+        border: none;
+        color: #94a3b8;
+        font-size: 1.5rem;
+        cursor: pointer;
+        line-height: 1;
+      }
+      .action-sheet-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+      }
+      .sheet-action-item {
+        background: #1e293b;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: #f8fafc;
+        border-radius: 12px;
+        padding: 12px 6px;
+        font-size: 1.1rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+      .sheet-action-item span {
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: #cbd5e1;
+      }
+      .sheet-action-item:active {
+        background: #2563eb;
+        transform: scale(0.94);
+      }
+      .status-pills, .deck-trailing-hint, .desktop-only {
+        display: none !important;
+      }
+      .stage-column {
+        flex: 1;
+        min-height: 48%;
+        border-radius: 16px;
+      }
+      .video-stage-container {
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+      }
+      .local-pip-card {
+        overflow: visible !important;
+      }
+      .local-pip-card video,
+      .local-pip-card canvas {
+        border-radius: inherit;
+        overflow: hidden;
+      }
+      .local-pip-badge {
+        position: absolute;
+        top: -26px !important;
+        left: 2px !important;
+        bottom: auto !important;
+        background: rgba(15, 23, 42, 0.88) !important;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: var(--radius-pill) !important;
+        padding: 2px 8px !important;
+        font-size: 0.66rem !important;
+        white-space: nowrap;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+      }
+      .local-pip-card:active {
+        transform: scale(0.95);
+      }
+      .mobile-media-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        background: rgba(15, 23, 42, 0.85);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 18px;
+        padding: 6px 8px;
+        gap: 6px;
+        flex-shrink: 0;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+      }
+      .m-tool-btn {
+        flex: 1;
+        background: rgba(255, 255, 255, 0.05);
+        color: #e2e8f0;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 10px;
+        padding: 7px 2px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+      }
+      .m-tool-btn:active {
+        transform: scale(0.92);
+        background: rgba(59, 130, 246, 0.28);
+        border-color: rgba(59, 130, 246, 0.6);
+        color: #60a5fa;
+      }
+      .chat-section {
+        flex: 1;
+        max-width: 100%;
+        min-width: 0;
+        min-height: 40%;
+        border-radius: 16px;
+      }
+      .chat-input-deck {
+        padding: 8px 10px;
+        gap: 8px;
+        background: rgba(14, 21, 38, 0.95);
+      }
+      .chat-input-deck input {
+        background: rgba(0, 0, 0, 0.35);
+        border-radius: 10px;
+        padding: 8px 12px;
+      }
+      .send-btn {
+        border-radius: 10px;
+        padding: 8px 14px;
+      }
+      .app-deck {
+        height: auto;
+        padding: 8px 10px;
+        flex-wrap: wrap;
+        gap: 8px;
+        background: rgba(15, 21, 35, 0.98);
+      }
+      .deck-main-actions {
+        width: 100%;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      .btn-primary-action {
+        flex: 1;
+        justify-content: center;
+        padding: 12px 16px;
+        border-radius: 12px;
+        box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
+      }
+      .btn-primary-action:active {
+        transform: scale(0.96);
+      }
+      .btn-secondary-action {
+        padding: 12px 14px;
+        border-radius: 12px;
+      }
+      .deck-filters {
+        width: 100%;
+        overflow-x: auto;
+        padding-bottom: 2px;
+      }
+      .landing-form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
@@ -2271,7 +2192,6 @@
         <p>Web TV 555 pairs you with random strangers. Matches are anonymous. Auto-Next instantly finds a new partner the moment someone disconnects!</p>
       </div>
 
-      <!-- Profile Config -->
       <div class="landing-form-grid">
         <div class="form-group">
           <label for="landingNameInput">Your Display Name</label>
@@ -2296,7 +2216,6 @@
         </select>
       </div>
 
-      <!-- Interests Topic Tags Builder -->
       <div class="interests-section">
         <div class="interests-header">
           <span class="sec-title">What do you wanna talk about?</span>
@@ -2369,14 +2288,6 @@
     </div>
     
     <div class="header-right">
-      <!-- Inside .header-right in <header class="app-header"> -->
-<div class="mobile-header-menu-wrap">
-  <button id="btnToggleMobileHeaderMenu" class="mobile-header-dots-btn" type="button" title="More Header Options">
-    ⋮
-  </button>
- 
-</div>
-      <!-- Auto-Next Toggle Button -->
       <button class="nav-btn autonext-toggle-btn" id="btnToggleAutoNext" title="Toggle Automatic Stranger Searching on Disconnect">
         <span id="autoNextDot" class="status-dot online"></span>
         <span id="autoNextLabel">Auto-Next: ON</span>
@@ -2443,7 +2354,6 @@
           </select>
         </div>
 
-        <!-- VIRTUAL BACKGROUND DROPDOWN -->
         <div class="menu-field">
           <label for="virtualBgSelect">Virtual Background</label>
           <select id="virtualBgSelect" class="clean-select">
@@ -2454,7 +2364,6 @@
           </select>
         </div>
 
-        <!-- RELOCATED SCREEN SHARE OPTION (DISABLED) -->
         <div class="menu-field" style="background: rgba(255,255,255,0.03); padding: 8px 12px; border-radius: 8px; border: 1px dashed rgba(255,255,255,0.12); opacity: 0.65;">
           <label style="color: #94a3b8;">Screen Sharing</label>
           <button id="btnSettingsScreenShare" disabled type="button" style="background: #1e293b; color: #64748b; border: 1px solid #334155; padding: 6px 10px; border-radius: 6px; font-size: 0.76rem; font-weight: 700; cursor: not-allowed; text-align: left; width: 100%;">
@@ -2523,7 +2432,6 @@
           <div class="subtitle-overlay" id="subtitleOverlay"></div>
           <div class="reaction-fly-container" id="reactionFlyContainer"></div>
 
-          <!-- Stage Reactions Bar -->
           <div class="reactions-floating-bar" id="reactionsBar">
             <button class="reaction-trigger-btn" data-emoji="❤️">❤️</button>
             <button class="reaction-trigger-btn" data-emoji="😂">😂</button>
@@ -2545,7 +2453,7 @@
             <span class="blur-tip">Auto-reveals in 5s</span>
           </div>
 
-          <!-- Modals (Truth or Dare, WYR, Doodle, Tic-Tac-Toe) -->
+          <!-- Modals -->
           <div class="tod-modal-overlay" id="todModal">
             <div class="modal-card tod-box">
               <div class="modal-card-header">
@@ -2624,39 +2532,31 @@
           <button id="btnToggleMirror" title="Flip Mirror">🪞</button>
           <button id="btnMuteAudio" title="Mute Mic">🎤</button>
           <button id="btnMuteVideo" title="Stop Video">📷</button>
-          
-          <!-- Preserved in DOM, hidden via CSS -->
           <button id="btnToggleScreenShare" title="Share Screen" style="display: none !important;">🖥</button>
-          
           <button id="btnTriggerPopoutPiP" title="Pop-out Video">🪟</button>
           <button id="btnToggleFullscreen" title="Toggle Fullscreen">⛶</button>
         </div>
       </div>
 
-      <!-- Dedicated Mobile Toolbar -->
-     <!-- Mobile Quick Tools Trigger & Pop-up Action Menu -->
-<div class="mobile-media-toolbar">
-  <button id="btnToggleMobileMenu" class="mobile-menu-trigger-btn" type="button">
-    <span>🎛️ Media Controls</span>
-    <span id="mobileMenuArrow" style="font-size: 0.75rem; transition: transform 0.2s;">▲</span>
-  </button>
-</div>
+      <!-- Mobile Quick Tools Trigger & Pop-up Action Menu -->
+      <div class="mobile-media-toolbar">
+        <button id="btnToggleMobileMenu" class="mobile-menu-trigger-btn" type="button">
+          <span>🎛️ Media Controls</span>
+          <span id="mobileMenuArrow" style="font-size: 0.75rem; transition: transform 0.2s;">▲</span>
+        </button>
+      </div>
 
-<!-- Floating Action Sheet for Mobile -->
-<div id="mobileActionSheet" class="mobile-action-sheet">
-
-  <div class="action-sheet-grid">
-    <button id="mBtnSwitchCamera" class="sheet-action-item">🔄 <span>Flip Cam</span></button>
-    <button id="mBtnToggleMirror" class="sheet-action-item">🪞 <span>Mirror</span></button>
-    <button id="mBtnMuteAudio" class="sheet-action-item">🎤 <span>Mute Mic</span></button>
-    <button id="mBtnMuteVideo" class="sheet-action-item">📷 <span>Stop Cam</span></button>
-    <button id="mBtnTriggerPopoutPiP" class="sheet-action-item">🪟 <span>Pop-out PiP</span></button>
-    <button id="mBtnToggleFullscreen" class="sheet-action-item">⛶ <span>Fullscreen</span></button>
-    
-    <!-- Preserved in DOM so existing code stays intact -->
-    <button id="mBtnToggleScreenShare" style="display: none !important;"></button>
-  </div>
-</div>
+      <div id="mobileActionSheet" class="mobile-action-sheet">
+        <div class="action-sheet-grid">
+          <button id="mBtnSwitchCamera" class="sheet-action-item">🔄 <span>Flip Cam</span></button>
+          <button id="mBtnToggleMirror" class="sheet-action-item">🪞 <span>Mirror</span></button>
+          <button id="mBtnMuteAudio" class="sheet-action-item">🎤 <span>Mute Mic</span></button>
+          <button id="mBtnMuteVideo" class="sheet-action-item">📷 <span>Stop Cam</span></button>
+          <button id="mBtnTriggerPopoutPiP" class="sheet-action-item">🪟 <span>Pop-out PiP</span></button>
+          <button id="mBtnToggleFullscreen" class="sheet-action-item">⛶ <span>Fullscreen</span></button>
+          <button id="mBtnToggleScreenShare" style="display: none !important;"></button>
+        </div>
+      </div>
     </div>
 
     <!-- Right Chat Column -->
@@ -2668,7 +2568,6 @@
         </div>
 
         <div class="chat-header-menus">
-          <!-- Games Menu Dropdown -->
           <div class="relative-dropdown">
             <button class="chat-menu-btn emerald-btn" id="btnOpenGamesDropdown">
               <span>🎮 Games ▾</span>
@@ -2681,7 +2580,6 @@
             </div>
           </div>
 
-          <!-- Tools Menu Dropdown -->
           <div class="relative-dropdown">
             <button class="chat-menu-btn gray-btn" id="btnOpenToolsDropdown">
               <span>🛠 Tools ▾</span>
@@ -2699,7 +2597,6 @@
         <div class="message system">Welcome to Web TV 555! Click Start Chat to connect with a stranger.</div>
       </div>
 
-      <!-- Quick Conversation Chips -->
       <div class="quick-replies-deck">
         <button class="quick-chip highlight" id="btnRandomIcebreaker">🎲 Icebreaker</button>
         <button class="quick-chip" id="btnCoinFlip">🪙 Flip Coin</button>
@@ -2766,46 +2663,34 @@
   </footer>
 
   <script>
+    const btnToggleMobileMenu = document.getElementById("btnToggleMobileMenu");
+    const mobileActionSheet = document.getElementById("mobileActionSheet");
+    const mobileMenuArrow = document.getElementById("mobileMenuArrow");
 
-    // Mobile Action Sheet Trigger & Dismiss Logic
-const btnToggleMobileMenu = document.getElementById("btnToggleMobileMenu");
-const mobileActionSheet = document.getElementById("mobileActionSheet");
-const btnCloseMobileSheet = document.getElementById("btnCloseMobileSheet");
-const mobileMenuArrow = document.getElementById("mobileMenuArrow");
-
-if (btnToggleMobileMenu && mobileActionSheet) {
-  btnToggleMobileMenu.addEventListener("click", (e) => {
-    e.stopPropagation();
-    const isShowing = mobileActionSheet.classList.toggle("show");
-    if (mobileMenuArrow) {
-      mobileMenuArrow.style.transform = isShowing ? "rotate(180deg)" : "rotate(0deg)";
+    if (btnToggleMobileMenu && mobileActionSheet) {
+      btnToggleMobileMenu.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const isShowing = mobileActionSheet.classList.toggle("show");
+        if (mobileMenuArrow) {
+          mobileMenuArrow.style.transform = isShowing ? "rotate(180deg)" : "rotate(0deg)";
+        }
+      });
     }
-  });
-}
 
-if (btnCloseMobileSheet && mobileActionSheet) {
-  btnCloseMobileSheet.addEventListener("click", () => {
-    mobileActionSheet.classList.remove("show");
-    if (mobileMenuArrow) mobileMenuArrow.style.transform = "rotate(0deg)";
-  });
-}
+    document.querySelectorAll(".sheet-action-item").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        if (mobileActionSheet) mobileActionSheet.classList.remove("show");
+        if (mobileMenuArrow) mobileMenuArrow.style.transform = "rotate(0deg)";
+      });
+    });
 
-// Close sheet automatically when any tool button inside it is clicked
-document.querySelectorAll(".sheet-action-item").forEach((btn) => {
-  btn.addEventListener("click", () => {
-    if (mobileActionSheet) mobileActionSheet.classList.remove("show");
-    if (mobileMenuArrow) mobileMenuArrow.style.transform = "rotate(0deg)";
-  });
-});
+    window.addEventListener("click", (e) => {
+      if (mobileActionSheet && mobileActionSheet.classList.contains("show") && !mobileActionSheet.contains(e.target) && e.target !== btnToggleMobileMenu) {
+        mobileActionSheet.classList.remove("show");
+        if (mobileMenuArrow) mobileMenuArrow.style.transform = "rotate(0deg)";
+      }
+    });
 
-// Close sheet if user taps outside
-window.addEventListener("click", (e) => {
-  if (mobileActionSheet && mobileActionSheet.classList.contains("show") && !mobileActionSheet.contains(e.target) && e.target !== btnToggleMobileMenu) {
-    mobileActionSheet.classList.remove("show");
-    if (mobileMenuArrow) mobileMenuArrow.style.transform = "rotate(0deg)";
-  }
-});
-    /* Canvas roundRect polyfill */
     if (!CanvasRenderingContext2D.prototype.roundRect) {
       CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, radii) {
         if (!radii) { this.rect(x, y, w, h); return; }
@@ -2836,9 +2721,6 @@ window.addEventListener("click", (e) => {
     let screenStream = null;
     let isScreenSharing = false;
 
-    // ==========================================
-    // VIRTUAL BACKGROUND CANVAS STREAM PROCESSOR
-    // ==========================================
     let virtualBgCanvas = document.createElement("canvas");
     let virtualBgCtx = virtualBgCanvas.getContext("2d");
     let virtualBgStream = null;
@@ -2896,6 +2778,20 @@ window.addEventListener("click", (e) => {
         virtualBgCtx.restore();
       }
 
+      // Sync processed virtual background stream to local screen preview
+      if (currentVirtualBgMode !== "none" && virtualBgCanvas.captureStream) {
+        if (!virtualBgStream) {
+          virtualBgStream = virtualBgCanvas.captureStream(30);
+        }
+        if (localVideo.srcObject !== virtualBgStream) {
+          localVideo.srcObject = virtualBgStream;
+        }
+      } else if (currentVirtualBgMode === "none" && localStream) {
+        if (localVideo.srcObject !== localStream) {
+          localVideo.srcObject = localStream;
+        }
+      }
+
       virtualBgAnimId = requestAnimationFrame(runVirtualBackgroundLoop);
     }
 
@@ -2920,9 +2816,8 @@ window.addEventListener("click", (e) => {
       }
     }
 
-    // Profile & Mode State
     let userDisplayName = "Stranger";
-    let userTags = ["music", "chill"];
+    let userTags = []; // Default empty so matchmaking starts clean without forced tags
     let chosenMode = "video";
 
     let isSearching = false;
@@ -2937,19 +2832,16 @@ window.addEventListener("click", (e) => {
     let captionsEnabled = false;
     let currentFacingMode = "user";
 
-    // Auto-Next Match Engine State
     let autoNextEnabled = true;
     let autoNextTimeout = null;
     let autoNextCountdownInterval = null;
 
-    // Speed Chat
     let isSpeedMode = false;
     let speedSecondsRemaining = 60;
     let speedTimerInterval = null;
     let hasVotedExtend = false;
     let partnerVotedExtend = false;
 
-    // Recording & Log State
     let mediaRecorder = null;
     let recordedChunks = [];
     let isRecordingClip = false;
@@ -2964,7 +2856,6 @@ window.addEventListener("click", (e) => {
     let callSecondsElapsed = 0;
     let statsPollInterval = null;
 
-    // Audio DSP & Voice
     let audioCtx = null;
     let micAnalyser = null;
     let micDataArray = null;
@@ -2973,7 +2864,6 @@ window.addEventListener("click", (e) => {
     let micFilterNode = null;
     let speechRecognizer = null;
 
-    // Games State
     let currentWyr = null;
     let myWyrVote = null;
     let tttBoard = Array(9).fill(null);
@@ -3122,7 +3012,6 @@ window.addEventListener("click", (e) => {
     const userCount = document.getElementById("userCount");
     const p2pStatus = document.getElementById("p2pStatus");
 
-    // Auto-Next & Disconnected Overlay
     const strangerDisconnectedOverlay = document.getElementById("strangerDisconnectedOverlay");
     const autoNextCountdownText = document.getElementById("autoNextCountdownText");
     const autoNextDesc = document.getElementById("autoNextDesc");
@@ -3162,9 +3051,6 @@ window.addEventListener("click", (e) => {
     const mBtnTriggerPopoutPiP = document.getElementById("mBtnTriggerPopoutPiP");
     const mBtnToggleFullscreen = document.getElementById("mBtnToggleFullscreen");
 
-    // ==========================================
-    // PERSISTENT FAKE ONLINE TICKER SIMULATION
-    // ==========================================
     let simulatedOnlineCount = 42810;
     function updateFakeOnlineDisplay() {
       const formatted = simulatedOnlineCount.toLocaleString();
@@ -3374,13 +3260,14 @@ window.addEventListener("click", (e) => {
 
       appendMessage("", "Looking for an active stranger who is ready to chat...", "system");
 
+      // Only pass tags if the user explicitly added them
       socket.emit("join_queue", {
         peerId: myPeerId,
         userName: userDisplayName,
         mode: chosenMode,
         gender: myGenderSelect ? myGenderSelect.value : "male",
         matchPref: genderSelect ? genderSelect.value : "both",
-        tags: userTags
+        tags: userTags && userTags.length > 0 ? userTags : []
       });
     }
 
@@ -3567,7 +3454,6 @@ window.addEventListener("click", (e) => {
       });
     }
 
-    // Settings Modal Handlers
     if (btnOpenSettingsMenu && settingsMenuModal) {
       btnOpenSettingsMenu.addEventListener("click", (e) => {
         e.preventDefault(); e.stopPropagation();
@@ -3588,7 +3474,6 @@ window.addEventListener("click", (e) => {
       });
     }
 
-    // Dropdown Toggles
     if (btnOpenGamesDropdown && gamesDropdownList) {
       btnOpenGamesDropdown.addEventListener("click", (e) => {
         e.preventDefault(); e.stopPropagation();
@@ -3636,72 +3521,70 @@ window.addEventListener("click", (e) => {
       return audioCtx;
     }
 
-  function setupMicVisualizer(stream) {
-  try {
-    const ctx = getAudioContext();
-    const audioTracks = stream.getAudioTracks();
-    if (audioTracks.length === 0) return;
+    function setupMicVisualizer(stream) {
+      try {
+        const ctx = getAudioContext();
+        const audioTracks = stream.getAudioTracks();
+        if (audioTracks.length === 0) return;
 
-    micSourceNode = ctx.createMediaStreamSource(stream);
-    micAnalyser = ctx.createAnalyser();
-    micAnalyser.fftSize = 64;
+        micSourceNode = ctx.createMediaStreamSource(stream);
+        micAnalyser = ctx.createAnalyser();
+        micAnalyser.fftSize = 64;
 
-    micFilterNode = ctx.createBiquadFilter();
-    applyVoiceFilter(voiceFxSelect ? voiceFxSelect.value : "normal");
+        micFilterNode = ctx.createBiquadFilter();
+        applyVoiceFilter(voiceFxSelect ? voiceFxSelect.value : "normal");
 
-    micSourceNode.connect(micFilterNode);
-    micFilterNode.connect(micAnalyser);
-    micDataArray = new Uint8Array(micAnalyser.frequencyBinCount);
+        micSourceNode.connect(micFilterNode);
+        micFilterNode.connect(micAnalyser);
+        micDataArray = new Uint8Array(micAnalyser.frequencyBinCount);
 
-    function checkMicLevel() {
-      if (!localStream || micMuted) {
-        localPipCard.classList.remove("speaking");
-        localPipCard.style.borderColor = "rgba(59, 130, 246, 0.45)";
-        localPipCard.style.boxShadow = "0 12px 32px rgba(0, 0, 0, 0.75)";
-        if (micSpeakingBadge) micSpeakingBadge.style.display = "none";
-        micAnimFrame = requestAnimationFrame(checkMicLevel);
-        return;
-      }
+        function checkMicLevel() {
+          if (!localStream || micMuted) {
+            localPipCard.classList.remove("speaking");
+            localPipCard.style.borderColor = "rgba(59, 130, 246, 0.45)";
+            localPipCard.style.boxShadow = "0 12px 32px rgba(0, 0, 0, 0.75)";
+            if (micSpeakingBadge) micSpeakingBadge.style.display = "none";
+            micAnimFrame = requestAnimationFrame(checkMicLevel);
+            return;
+          }
 
-      micAnalyser.getByteFrequencyData(micDataArray);
-      let sum = 0;
-      for (let i = 0; i < micDataArray.length; i++) sum += micDataArray[i];
-      const avg = sum / micDataArray.length;
+          micAnalyser.getByteFrequencyData(micDataArray);
+          let sum = 0;
+          for (let i = 0; i < micDataArray.length; i++) sum += micDataArray[i];
+          const avg = sum / micDataArray.length;
 
-      if (avg > 18) {
-        localPipCard.classList.add("speaking");
-        if (micSpeakingBadge) micSpeakingBadge.style.display = "inline";
+          if (avg > 18) {
+            localPipCard.classList.add("speaking");
+            if (micSpeakingBadge) micSpeakingBadge.style.display = "inline";
 
-        // Dynamic glow calculation based on loudness (normalized between 18 and 98)
-        const intensity = Math.min(1, Math.max(0, (avg - 18) / 80));
-        const glowRadius = Math.round(10 + intensity * 26);
-        const spreadRadius = Math.round(intensity * 10);
+            const intensity = Math.min(1, Math.max(0, (avg - 18) / 80));
+            const glowRadius = Math.round(10 + intensity * 26);
+            const spreadRadius = Math.round(intensity * 10);
 
-        // Dynamic color shift: Cyan (soft) -> Emerald (medium) -> Pink (loud)
-        let ringColor = "#06b6d4"; // soft cyan
-        if (intensity > 0.65) {
-          ringColor = "#ec4899"; // pink/violet peak
-        } else if (intensity > 0.28) {
-          ringColor = "#10b981"; // vibrant emerald
+            let ringColor = "#06b6d4";
+            if (intensity > 0.65) {
+              ringColor = "#ec4899";
+            } else if (intensity > 0.28) {
+              ringColor = "#10b981";
+            }
+
+            localPipCard.style.borderColor = ringColor;
+            localPipCard.style.boxShadow = `0 0 ${glowRadius}px ${spreadRadius}px ${ringColor}, 0 12px 32px rgba(0, 0, 0, 0.85)`;
+          } else {
+            localPipCard.classList.remove("speaking");
+            localPipCard.style.borderColor = "rgba(59, 130, 246, 0.45)";
+            localPipCard.style.boxShadow = "0 12px 32px rgba(0, 0, 0, 0.75)";
+            if (micSpeakingBadge) micSpeakingBadge.style.display = "none";
+          }
+          micAnimFrame = requestAnimationFrame(checkMicLevel);
         }
 
-        localPipCard.style.borderColor = ringColor;
-        localPipCard.style.boxShadow = `0 0 ${glowRadius}px ${spreadRadius}px ${ringColor}, 0 12px 32px rgba(0, 0, 0, 0.85)`;
-      } else {
-        localPipCard.classList.remove("speaking");
-        localPipCard.style.borderColor = "rgba(59, 130, 246, 0.45)";
-        localPipCard.style.boxShadow = "0 12px 32px rgba(0, 0, 0, 0.75)";
-        if (micSpeakingBadge) micSpeakingBadge.style.display = "none";
+        if (micAnimFrame) cancelAnimationFrame(micAnimFrame);
+        checkMicLevel();
+      } catch (e) {
+        console.warn("Audio Context init note:", e);
       }
-      micAnimFrame = requestAnimationFrame(checkMicLevel);
     }
-
-    if (micAnimFrame) cancelAnimationFrame(micAnimFrame);
-    checkMicLevel();
-  } catch (e) {
-    console.warn("Audio Context init note:", e);
-  }
-}
 
     function applyVoiceFilter(mode) {
       if (!micFilterNode) return;
@@ -3782,49 +3665,6 @@ window.addEventListener("click", (e) => {
           gain.gain.setValueAtTime(0.12, now);
           gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
           osc.start(now); osc.stop(now + 0.2);
-        } else if (type === "airhorn") {
-          [466.16, 470].forEach((freq) => {
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.connect(gain); gain.connect(ctx.destination);
-            osc.type = "sawtooth";
-            osc.frequency.setValueAtTime(freq, now);
-            gain.gain.setValueAtTime(0.25, now);
-            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
-            osc.start(now); osc.stop(now + 0.45);
-          });
-        } else if (type === "laser") {
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc.connect(gain); gain.connect(ctx.destination);
-          osc.type = "sawtooth";
-          osc.frequency.setValueAtTime(1600, now);
-          osc.frequency.exponentialRampToValueAtTime(120, now + 0.25);
-          gain.gain.setValueAtTime(0.22, now);
-          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
-          osc.start(now); osc.stop(now + 0.25);
-        } else if (type === "applause") {
-          for (let i = 0; i < 6; i++) {
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.connect(gain); gain.connect(ctx.destination);
-            osc.type = "triangle";
-            osc.frequency.setValueAtTime(150 + Math.random() * 200, now + i * 0.05);
-            gain.gain.setValueAtTime(0.15, now + i * 0.05);
-            gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.05 + 0.08);
-            osc.start(now + i * 0.05); osc.stop(now + i * 0.05 + 0.08);
-          }
-        } else if (type === "victory") {
-          [523.25, 659.25, 783.99, 1046.5].forEach((note, idx) => {
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.connect(gain); gain.connect(ctx.destination);
-            osc.type = "sine";
-            osc.frequency.setValueAtTime(note, now + idx * 0.1);
-            gain.gain.setValueAtTime(0.2, now + idx * 0.1);
-            gain.gain.exponentialRampToValueAtTime(0.01, now + idx * 0.1 + 0.3);
-            osc.start(now + idx * 0.1); osc.stop(now + idx * 0.1 + 0.3);
-          });
         }
       } catch (err) {
         console.warn("Audio note:", err);
@@ -3854,684 +3694,6 @@ window.addEventListener("click", (e) => {
           remoteCanvas.style.display = isConnected && !isAudioOnlyMode ? "none" : "block";
         }
       });
-    }
-
-    if (btnOpenTOD) {
-      btnOpenTOD.addEventListener("click", (e) => {
-        e.preventDefault(); e.stopPropagation();
-        if (todModal) todModal.style.display = "flex";
-      });
-    }
-
-    if (btnTodClose) {
-      btnTodClose.addEventListener("click", () => {
-        if (todModal) todModal.style.display = "none";
-      });
-    }
-
-    if (btnPickTruth) {
-      btnPickTruth.addEventListener("click", () => {
-        const p = TRUTH_PROMPTS[Math.floor(Math.random() * TRUTH_PROMPTS.length)];
-        todPromptText.textContent = "📖 [Truth]: " + p;
-        sendChatMessage(`📖 [Truth Challenge]: ${p}`);
-        if (activeDataConnection && activeDataConnection.open) {
-          activeDataConnection.send({ type: "tod_card", text: "📖 [Truth]: " + p });
-        }
-      });
-    }
-
-    if (btnPickDare) {
-      btnPickDare.addEventListener("click", () => {
-        const p = DARE_PROMPTS[Math.floor(Math.random() * DARE_PROMPTS.length)];
-        todPromptText.textContent = "⚡ [Dare]: " + p;
-        sendChatMessage(`⚡ [Dare Challenge]: ${p}`);
-        if (activeDataConnection && activeDataConnection.open) {
-          activeDataConnection.send({ type: "tod_card", text: "⚡ [Dare]: " + p });
-        }
-      });
-    }
-
-    if (btnOpenWYR) {
-      btnOpenWYR.addEventListener("click", (e) => {
-        e.preventDefault(); e.stopPropagation();
-        startWyrGame();
-      });
-    }
-
-    if (btnWyrClose) {
-      btnWyrClose.addEventListener("click", () => {
-        if (wyrModal) wyrModal.style.display = "none";
-      });
-    }
-
-    function startWyrGame(promptObj = null) {
-      currentWyr = promptObj || WYR_DILEMMAS[Math.floor(Math.random() * WYR_DILEMMAS.length)];
-      myWyrVote = null;
-      if (btnWyrOptA) {
-        btnWyrOptA.textContent = "A: " + currentWyr.a;
-        btnWyrOptA.style.opacity = "1";
-      }
-      if (btnWyrOptB) {
-        btnWyrOptB.textContent = "B: " + currentWyr.b;
-        btnWyrOptB.style.opacity = "1";
-      }
-      if (wyrStatusLabel) wyrStatusLabel.textContent = "Cast your vote to see what the stranger picked!";
-      if (wyrModal) wyrModal.style.display = "flex";
-
-      if (!promptObj && activeDataConnection && activeDataConnection.open) {
-        activeDataConnection.send({ type: "wyr_prompt", data: currentWyr });
-      }
-    }
-
-    if (btnWyrOptA) btnWyrOptA.addEventListener("click", () => handleWyrVote("A"));
-    if (btnWyrOptB) btnWyrOptB.addEventListener("click", () => handleWyrVote("B"));
-
-    function handleWyrVote(choice) {
-      if (myWyrVote) return;
-      myWyrVote = choice;
-      wyrStatusLabel.textContent = `You picked: [${choice}]. Waiting for stranger's vote...`;
-      if (choice === "A") btnWyrOptB.style.opacity = "0.5";
-      if (choice === "B") btnWyrOptA.style.opacity = "0.5";
-
-      if (activeDataConnection && activeDataConnection.open) {
-        activeDataConnection.send({ type: "wyr_vote", choice: choice });
-      }
-    }
-
-    if (btnOpenGame) {
-      btnOpenGame.addEventListener("click", (e) => {
-        e.preventDefault(); e.stopPropagation();
-        openGameModal(true);
-        if (activeDataConnection && activeDataConnection.open) {
-          activeDataConnection.send({ type: "game_invite" });
-        }
-      });
-    }
-
-    if (btnGameClose) {
-      btnGameClose.addEventListener("click", () => {
-        if (gameModal) gameModal.style.display = "none";
-        gameActive = false;
-        if (activeDataConnection && activeDataConnection.open) {
-          activeDataConnection.send({ type: "game_close" });
-        }
-      });
-    }
-
-    function openGameModal(isStarter = true) {
-      resetTTTBoard();
-      mySymbol = isStarter ? "X" : "O";
-      isMyTurn = isStarter;
-      gameActive = true;
-      if (gameModal) gameModal.style.display = "flex";
-      updateGameStatus();
-    }
-
-    function resetTTTBoard() {
-      tttBoard = Array(9).fill(null);
-      document.querySelectorAll(".ttt-cell").forEach((cell) => {
-        cell.textContent = "";
-        cell.className = "ttt-cell";
-      });
-    }
-
-    function updateGameStatus() {
-      if (!gameActive || !gameStatusLabel) return;
-      gameStatusLabel.textContent = isMyTurn ? `Your turn (${mySymbol})` : `Stranger's turn (${mySymbol === "X" ? "O" : "X"})`;
-    }
-
-    if (tttGrid) {
-      tttGrid.addEventListener("click", (e) => {
-        if (!gameActive || !isMyTurn) return;
-        const cell = e.target.closest(".ttt-cell");
-        if (!cell) return;
-        const idx = parseInt(cell.getAttribute("data-idx"));
-        if (tttBoard[idx] !== null) return;
-
-        applyMove(idx, mySymbol);
-        if (activeDataConnection && activeDataConnection.open) {
-          activeDataConnection.send({ type: "game_move", index: idx, symbol: mySymbol });
-        }
-
-        if (checkTTTWinner()) return;
-        isMyTurn = false;
-        updateGameStatus();
-      });
-    }
-
-    function applyMove(index, symbol) {
-      tttBoard[index] = symbol;
-      const cell = document.querySelector(`.ttt-cell[data-idx="${index}"]`);
-      if (cell) {
-        cell.textContent = symbol;
-        cell.classList.add(symbol === "X" ? "x-cell" : "o-cell");
-      }
-    }
-
-    function checkTTTWinner() {
-      const wins = [
-        [0, 1, 2], [3, 4, 5], [6, 7, 8],
-        [0, 3, 6], [1, 4, 7], [2, 5, 8],
-        [0, 4, 8], [2, 4, 6]
-      ];
-
-      for (let [a, b, c] of wins) {
-        if (tttBoard[a] && tttBoard[a] === tttBoard[b] && tttBoard[a] === tttBoard[c]) {
-          const winner = tttBoard[a];
-          gameStatusLabel.textContent = winner === mySymbol ? "🎉 You Won!" : "Stranger Won!";
-          gameActive = false;
-          return true;
-        }
-      }
-
-      if (tttBoard.every((c) => c !== null)) {
-        gameStatusLabel.textContent = "🤝 It's a Draw!";
-        gameActive = false;
-        return true;
-      }
-      return false;
-    }
-
-    if (btnOpenWhiteboard) {
-      btnOpenWhiteboard.addEventListener("click", (e) => {
-        e.preventDefault(); e.stopPropagation();
-        if (whiteboardModal) {
-          whiteboardModal.style.display = "flex";
-          resizeWhiteboard();
-        }
-        if (activeDataConnection && activeDataConnection.open) {
-          activeDataConnection.send({ type: "whiteboard_open" });
-        }
-      });
-    }
-
-    if (btnWbClose) {
-      btnWbClose.addEventListener("click", () => {
-        if (whiteboardModal) whiteboardModal.style.display = "none";
-        if (activeDataConnection && activeDataConnection.open) {
-          activeDataConnection.send({ type: "whiteboard_close" });
-        }
-      });
-    }
-
-    function resizeWhiteboard() {
-      if (!whiteboardCanvas) return;
-      const rect = whiteboardCanvas.getBoundingClientRect();
-      whiteboardCanvas.width = rect.width;
-      whiteboardCanvas.height = rect.height;
-    }
-
-    if (btnWbClear) {
-      btnWbClear.addEventListener("click", () => {
-        const ctx = whiteboardCanvas.getContext("2d");
-        ctx.clearRect(0, 0, whiteboardCanvas.width, whiteboardCanvas.height);
-        if (activeDataConnection && activeDataConnection.open) {
-          activeDataConnection.send({ type: "whiteboard_clear" });
-        }
-      });
-    }
-
-    function drawSegment(x0, y0, x1, y1, color, emit = false) {
-      if (!whiteboardCanvas) return;
-      const ctx = whiteboardCanvas.getContext("2d");
-      ctx.beginPath();
-      ctx.moveTo(x0, y0);
-      ctx.lineTo(x1, y1);
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 3;
-      ctx.lineCap = "round";
-      ctx.stroke();
-      ctx.closePath();
-
-      if (emit && activeDataConnection && activeDataConnection.open) {
-        activeDataConnection.send({
-          type: "whiteboard_draw",
-          x0: x0 / whiteboardCanvas.width,
-          y0: y0 / whiteboardCanvas.height,
-          x1: x1 / whiteboardCanvas.width,
-          y1: y1 / whiteboardCanvas.height,
-          color: color
-        });
-      }
-    }
-
-    function getWbPointerPos(e) {
-      const rect = whiteboardCanvas.getBoundingClientRect();
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-      return { x: clientX - rect.left, y: clientY - rect.top };
-    }
-
-    if (whiteboardCanvas) {
-      whiteboardCanvas.addEventListener("mousedown", (e) => {
-        isDrawing = true;
-        const pos = getWbPointerPos(e);
-        lastX = pos.x; lastY = pos.y;
-      });
-
-      whiteboardCanvas.addEventListener("mousemove", (e) => {
-        if (!isDrawing) return;
-        const pos = getWbPointerPos(e);
-        drawSegment(lastX, lastY, pos.x, pos.y, wbColorPicker.value, true);
-        lastX = pos.x; lastY = pos.y;
-      });
-
-      window.addEventListener("mouseup", () => { isDrawing = false; });
-
-      whiteboardCanvas.addEventListener("touchstart", (e) => {
-        isDrawing = true;
-        const pos = getWbPointerPos(e);
-        lastX = pos.x; lastY = pos.y;
-      }, { passive: true });
-
-      whiteboardCanvas.addEventListener("touchmove", (e) => {
-        if (!isDrawing) return;
-        const pos = getWbPointerPos(e);
-        drawSegment(lastX, lastY, pos.x, pos.y, wbColorPicker.value, true);
-        lastX = pos.x; lastY = pos.y;
-      }, { passive: true });
-
-      whiteboardCanvas.addEventListener("touchend", () => { isDrawing = false; });
-    }
-
-    function spawnFloatingEmoji(emoji) {
-      if (!reactionFlyContainer) return;
-      const el = document.createElement("div");
-      el.className = "floating-emoji";
-      el.textContent = emoji;
-      el.style.left = `${Math.floor(Math.random() * 60) + 20}%`;
-      reactionFlyContainer.appendChild(el);
-      playSound("reaction");
-      setTimeout(() => el.remove(), 2400);
-    }
-
-    document.querySelectorAll(".reaction-trigger-btn").forEach((btn) => {
-      if (btn.id === "btnTriggerSoundboard") return;
-      btn.addEventListener("click", () => {
-        const emoji = btn.getAttribute("data-emoji");
-        spawnFloatingEmoji(emoji);
-        if (activeDataConnection && activeDataConnection.open) {
-          activeDataConnection.send({ type: "reaction", emoji: emoji });
-        }
-      });
-    });
-
-    if (btnTriggerSoundboard) {
-      btnTriggerSoundboard.addEventListener("click", (e) => {
-        e.stopPropagation();
-        soundboardDrawer.style.display = soundboardDrawer.style.display === "flex" ? "none" : "flex";
-      });
-    }
-
-    document.querySelectorAll(".soundboard-btn").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const sfx = btn.getAttribute("data-sfx");
-        playSound(sfx);
-        if (activeDataConnection && activeDataConnection.open) {
-          activeDataConnection.send({ type: "sfx", sfx: sfx });
-        }
-        soundboardDrawer.style.display = "none";
-      });
-    });
-
-    window.addEventListener("click", () => {
-      if (soundboardDrawer) soundboardDrawer.style.display = "none";
-    });
-
-    if (btnCoinFlip) {
-      btnCoinFlip.addEventListener("click", () => {
-        if (!isConnected) return;
-        const result = Math.random() > 0.5 ? "🪙 Heads!" : "🪙 Tails!";
-        sendChatMessage(`[Coin Flip]: ${result}`);
-      });
-    }
-
-    if (btnDiceRoll) {
-      btnDiceRoll.addEventListener("click", () => {
-        if (!isConnected) return;
-        const dice = Math.floor(Math.random() * 6) + 1;
-        sendChatMessage(`[Dice Roll]: Rolled a 🎲 ${dice}!`);
-      });
-    }
-
-    if (btnRandomIcebreaker) {
-      btnRandomIcebreaker.addEventListener("click", () => {
-        if (!isConnected) {
-          appendMessage("", "Connect with a stranger first before sending an icebreaker question!", "system");
-          return;
-        }
-        const randomQ = ICEBREAKER_PROMPTS[Math.floor(Math.random() * ICEBREAKER_PROMPTS.length)];
-        sendChatMessage(`🎲 [Icebreaker]: ${randomQ}`);
-      });
-    }
-
-    if (btnExportChat) {
-      btnExportChat.addEventListener("click", () => {
-        if (chatHistoryLog.length === 0) {
-          appendMessage("", "No chat messages to export yet.", "system");
-          return;
-        }
-        const logText = chatHistoryLog.join("\n");
-        document.execCommand('copy');
-        const blob = new Blob([logText], { type: "text/plain" });
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
-        a.download = `webtv555-chat-${Date.now()}.txt`;
-        a.click();
-        appendMessage("", "Chat transcript copied & downloaded!", "system");
-      });
-    }
-
-    if (btnShareRoom) {
-      btnShareRoom.addEventListener("click", () => {
-        if (!myPeerId) {
-          appendMessage("", "Peer connection still establishing, try again shortly.", "system");
-          return;
-        }
-        const inviteUrl = `${window.location.origin}${window.location.pathname}#room=${myPeerId}`;
-        appendMessage("", `Direct room link: ${inviteUrl}`, "system");
-      });
-    }
-
-    function triggerPrivacyShield() {
-      if (!blurOverlay) return;
-      blurOverlay.style.display = "flex";
-      clearTimeout(blurTimeout);
-      blurTimeout = setTimeout(() => {
-        blurOverlay.style.display = "none";
-      }, 5000);
-    }
-
-    if (btnUnblurVideo) {
-      btnUnblurVideo.addEventListener("click", () => {
-        blurOverlay.style.display = "none";
-        clearTimeout(blurTimeout);
-      });
-    }
-
-    if (btnSnapshot) {
-      btnSnapshot.addEventListener("click", () => {
-        if (!isConnected && !isStrangerDisconnected) {
-          appendMessage("", "Connect with someone first before snapping a memory!", "system");
-          return;
-        }
-
-        const snapCanvas = document.createElement("canvas");
-        snapCanvas.width = 1280;
-        snapCanvas.height = 720;
-        const sCtx = snapCanvas.getContext("2d");
-
-        sCtx.fillStyle = "#000";
-        sCtx.fillRect(0, 0, 1280, 720);
-
-        if (remoteVideo.style.display === "block" && remoteVideo.videoWidth) {
-          sCtx.drawImage(remoteVideo, 0, 0, 1280, 720);
-        } else {
-          sCtx.drawImage(remoteCanvas, 0, 0, 1280, 720);
-        }
-
-        const pipW = 260;
-        const pipH = 195;
-        const pipX = 1280 - pipW - 24;
-        const pipY = 24;
-
-        sCtx.fillStyle = "#1e293b";
-        sCtx.lineWidth = 4;
-        sCtx.strokeStyle = "#3b82f6";
-        sCtx.strokeRect(pipX, pipY, pipW, pipH);
-
-        if (localVideo.style.display === "block" && localVideo.videoWidth) {
-          sCtx.save();
-          if (isMirrored && !isScreenSharing) {
-            sCtx.translate(pipX + pipW, pipY);
-            sCtx.scale(-1, 1);
-            sCtx.drawImage(localVideo, 0, 0, pipW, pipH);
-          } else {
-            sCtx.drawImage(localVideo, pipX, pipY, pipW, pipH);
-          }
-          sCtx.restore();
-        }
-
-        sCtx.fillStyle = "rgba(15, 23, 42, 0.85)";
-        sCtx.roundRect(24, 650, 210, 44, 8);
-        sCtx.fill();
-        sCtx.fillStyle = "#38bdf8";
-        sCtx.font = "bold 20px sans-serif";
-        sCtx.fillText("Web TV 555", 42, 679);
-
-        const link = document.createElement("a");
-        link.download = `webtv555-memory-${Date.now()}.png`;
-        link.href = snapCanvas.toDataURL("image/png");
-        link.click();
-      });
-    }
-
-    if (btnToggleSpeedMode) {
-      btnToggleSpeedMode.addEventListener("click", () => {
-        isSpeedMode = !isSpeedMode;
-        btnToggleSpeedMode.textContent = isSpeedMode ? "⏱ Speed Chat (60s): On" : "⏱ Speed Chat (60s): Off";
-        btnToggleSpeedMode.classList.toggle("active", isSpeedMode);
-
-        if (isConnected) {
-          if (isSpeedMode) startSpeedCountdown();
-          else stopSpeedCountdown();
-        }
-      });
-    }
-
-    function startSpeedCountdown() {
-      stopSpeedCountdown();
-      if (!isSpeedMode || !isConnected || !speedTimerBadge) return;
-
-      speedSecondsRemaining = 60;
-      hasVotedExtend = false;
-      partnerVotedExtend = false;
-      if (btnExtendTime) {
-        btnExtendTime.textContent = "+60s Extend";
-        btnExtendTime.classList.remove("voted");
-        btnExtendTime.style.display = "none";
-      }
-      speedTimerBadge.classList.remove("urgent");
-      speedTimerValue.textContent = `${speedSecondsRemaining}s`;
-      speedTimerBadge.style.display = "flex";
-
-      speedTimerInterval = setInterval(() => {
-        speedSecondsRemaining--;
-        speedTimerValue.textContent = `${speedSecondsRemaining}s`;
-
-        if (speedSecondsRemaining <= 20) {
-          speedTimerBadge.classList.add("urgent");
-          if (btnExtendTime) btnExtendTime.style.display = "inline-block";
-        }
-
-        if (speedSecondsRemaining <= 0) {
-          stopSpeedCountdown();
-          appendMessage("", "⏱ Speed time is up! Moving to next stranger...", "system");
-          skipToNextStranger();
-        }
-      }, 1000);
-    }
-
-    function stopSpeedCountdown() {
-      if (speedTimerInterval) {
-        clearInterval(speedTimerInterval);
-        speedTimerInterval = null;
-      }
-      if (speedTimerBadge) {
-        speedTimerBadge.style.display = "none";
-        speedTimerBadge.classList.remove("urgent");
-      }
-      if (btnExtendTime) btnExtendTime.style.display = "none";
-      hasVotedExtend = false;
-      partnerVotedExtend = false;
-    }
-
-    if (btnExtendTime) {
-      btnExtendTime.addEventListener("click", () => {
-        if (hasVotedExtend) return;
-        hasVotedExtend = true;
-        btnExtendTime.textContent = "✔ Voted";
-        btnExtendTime.classList.add("voted");
-
-        if (activeDataConnection && activeDataConnection.open) {
-          activeDataConnection.send({ type: "speed_extend_vote" });
-        }
-        checkMutualExtend();
-      });
-    }
-
-    function checkMutualExtend() {
-      if (hasVotedExtend && partnerVotedExtend) {
-        speedSecondsRemaining += 60;
-        hasVotedExtend = false;
-        partnerVotedExtend = false;
-        if (btnExtendTime) {
-          btnExtendTime.textContent = "+60s Extend";
-          btnExtendTime.classList.remove("voted");
-          btnExtendTime.style.display = "none";
-        }
-        if (speedTimerBadge) speedTimerBadge.classList.remove("urgent");
-        playSound("victory");
-        appendMessage("", "🎉 Both accepted! +60 seconds added to the call.", "system");
-      }
-    }
-
-    // 15s Highlight Video Clip Recorder
-    if (btnRecordClip) {
-      btnRecordClip.addEventListener("click", () => {
-        if (isRecordingClip) {
-          stopClipRecording();
-          return;
-        }
-
-        const streamToRecord = (remoteVideo && remoteVideo.srcObject && isConnected) ? remoteVideo.srcObject : localStream;
-        if (!streamToRecord) {
-          showFloatingSubtitle("Enable camera or connect first to record a clip.");
-          return;
-        }
-
-        try {
-          recordedChunks = [];
-          mediaRecorder = new MediaRecorder(streamToRecord, { mimeType: "video/webm" });
-
-          mediaRecorder.ondataavailable = (e) => {
-            if (e.data.size > 0) recordedChunks.push(e.data);
-          };
-
-          mediaRecorder.onstop = () => {
-            const blob = new Blob(recordedChunks, { type: "video/webm" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = `webtv555-highlight-${Date.now()}.webm`;
-            a.click();
-            appendMessage("", "Highlight video clip downloaded successfully!", "system");
-          };
-
-          mediaRecorder.start();
-          isRecordingClip = true;
-          btnRecordClip.textContent = "🔴 Recording (15s)";
-          btnRecordClip.classList.add("active");
-
-          clearTimeout(recordTimeout);
-          recordTimeout = setTimeout(() => {
-            if (isRecordingClip) stopClipRecording();
-          }, 15000);
-        } catch (err) {
-          console.warn("MediaRecorder note:", err);
-          showFloatingSubtitle("Recording not supported on this browser.");
-        }
-      });
-    }
-
-    function stopClipRecording() {
-      if (!isRecordingClip) return;
-      isRecordingClip = false;
-      clearTimeout(recordTimeout);
-      if (mediaRecorder && mediaRecorder.state !== "inactive") {
-        mediaRecorder.stop();
-      }
-      if (btnRecordClip) {
-        btnRecordClip.textContent = "📹 Record Clip (15s)";
-        btnRecordClip.classList.remove("active");
-      }
-    }
-
-    // Live Captions & TTS
-    function setupLiveCaptions() {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SpeechRecognition) {
-        if (btnToggleCaptions) btnToggleCaptions.style.display = "none";
-        return;
-      }
-
-      speechRecognizer = new SpeechRecognition();
-      speechRecognizer.continuous = true;
-      speechRecognizer.interimResults = true;
-      speechRecognizer.lang = "en-US";
-
-      speechRecognizer.onresult = (event) => {
-        let transcript = "";
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-          transcript += event.results[i][0].transcript;
-        }
-        if (transcript.trim()) {
-          showFloatingSubtitle("You: " + transcript);
-          if (activeDataConnection && activeDataConnection.open) {
-            activeDataConnection.send({ type: "caption", text: transcript });
-          }
-        }
-      };
-
-      speechRecognizer.onerror = (e) => {
-        console.warn("Speech recognition note:", e.error);
-      };
-    }
-    setupLiveCaptions();
-
-    function showFloatingSubtitle(text) {
-      if (!subtitleOverlay) return;
-      subtitleOverlay.textContent = text;
-      subtitleOverlay.style.display = "block";
-      clearTimeout(subtitleTimer);
-      subtitleTimer = setTimeout(() => {
-        subtitleOverlay.style.display = "none";
-      }, 4000);
-    }
-
-    if (btnToggleCaptions) {
-      btnToggleCaptions.addEventListener("click", () => {
-        if (!speechRecognizer) {
-          showFloatingSubtitle("Live Captions not supported on this device.");
-          return;
-        }
-        captionsEnabled = !captionsEnabled;
-        btnToggleCaptions.textContent = captionsEnabled ? "💬 Live CC: On" : "💬 Live CC: Off";
-        btnToggleCaptions.classList.toggle("active", captionsEnabled);
-
-        if (captionsEnabled) {
-          try { speechRecognizer.start(); } catch (e) {}
-        } else {
-          try { speechRecognizer.stop(); } catch (e) {}
-          if (subtitleOverlay) subtitleOverlay.style.display = "none";
-        }
-      });
-    }
-
-    if (btnToggleTTS) {
-      btnToggleTTS.addEventListener("click", () => {
-        ttsEnabled = !ttsEnabled;
-        btnToggleTTS.textContent = ttsEnabled ? "🗣 Audio TTS: On" : "🗣 Audio TTS: Off";
-        btnToggleTTS.classList.toggle("active", ttsEnabled);
-      });
-    }
-
-    function speakText(text) {
-      if (!ttsEnabled || !window.speechSynthesis) return;
-      const clean = text.replace(/🎲|🪙|🎨|💬|🎡/g, "");
-      const utterance = new SpeechSynthesisUtterance(clean);
-      utterance.rate = 1.05;
-      window.speechSynthesis.speak(utterance);
     }
 
     socket.on("connect", () => {
@@ -4589,9 +3751,12 @@ window.addEventListener("click", (e) => {
       btnSendMessage.disabled = false;
       chatInput.focus();
 
+      // Only display matched badge if partner actually shares a topic
       if (payload.partnerTags && payload.partnerTags.length > 0) {
         strangerTag.textContent = `Matched on: #${payload.partnerTags[0]}`;
         strangerTag.style.display = "flex";
+      } else {
+        strangerTag.style.display = "none";
       }
 
       appendMessage("", `Connected with ${partnerName}. Say hi!`, "system");
@@ -4664,7 +3829,6 @@ window.addEventListener("click", (e) => {
         if (data.type === "chat") {
           appendMessage(data.senderName || "Stranger", data.text, "stranger");
           playSound("message");
-          speakText(data.text);
           if (typingIndicator) typingIndicator.style.display = "none";
         } else if (data.type === "typing") {
           if (typingIndicator) typingIndicator.style.display = data.status ? "inline" : "none";
@@ -4676,53 +3840,6 @@ window.addEventListener("click", (e) => {
           if (data.senderName) {
             strangerLabel.textContent = data.senderName;
           }
-        } else if (data.type === "caption") {
-          showFloatingSubtitle("Stranger: " + data.text);
-        } else if (data.type === "reaction") {
-          spawnFloatingEmoji(data.emoji);
-        } else if (data.type === "sfx") {
-          playSound(data.sfx);
-        } else if (data.type === "speed_extend_vote") {
-          partnerVotedExtend = true;
-          appendMessage("", "⏳ Stranger wants to extend the call (+60s)!", "system");
-          checkMutualExtend();
-        } else if (data.type === "tod_card") {
-          todPromptText.textContent = data.text;
-          todModal.style.display = "flex";
-        } else if (data.type === "wyr_prompt") {
-          startWyrGame(data.data);
-        } else if (data.type === "wyr_vote") {
-          wyrStatusLabel.textContent = `Stranger voted [${data.choice}]! ${myWyrVote ? (myWyrVote === data.choice ? "🎉 You both agreed!" : "⚡ You picked differently!") : ""}`;
-        } else if (data.type === "game_invite") {
-          openGameModal(false);
-          appendMessage("", "Stranger started a Tic-Tac-Toe match!", "system");
-        } else if (data.type === "game_move") {
-          applyMove(data.index, data.symbol);
-          if (!checkTTTWinner()) {
-            isMyTurn = true;
-            updateGameStatus();
-          }
-        } else if (data.type === "game_close") {
-          gameModal.style.display = "none";
-          gameActive = false;
-        } else if (data.type === "whiteboard_open") {
-          whiteboardModal.style.display = "flex";
-          resizeWhiteboard();
-          appendMessage("", "Stranger opened the live doodle pad!", "system");
-        } else if (data.type === "whiteboard_close") {
-          whiteboardModal.style.display = "none";
-        } else if (data.type === "whiteboard_clear") {
-          const ctx = whiteboardCanvas.getContext("2d");
-          ctx.clearRect(0, 0, whiteboardCanvas.width, whiteboardCanvas.height);
-        } else if (data.type === "whiteboard_draw") {
-          drawSegment(
-            data.x0 * whiteboardCanvas.width,
-            data.y0 * whiteboardCanvas.height,
-            data.x1 * whiteboardCanvas.width,
-            data.y1 * whiteboardCanvas.height,
-            data.color,
-            false
-          );
         }
       });
       conn.on("close", handleStrangerLeft);
@@ -4815,88 +3932,6 @@ window.addEventListener("click", (e) => {
       if (mBtnMuteVideo) mBtnMuteVideo.textContent = camDisabled ? "📷 Show" : "📷 Cam";
     });
 
-    async function toggleScreenShare() {
-      if (!isScreenSharing) {
-        try {
-          screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-          const screenTrack = screenStream.getVideoTracks()[0];
-
-          if (activeCall && activeCall.peerConnection) {
-            const sender = activeCall.peerConnection.getSenders().find((s) => s.track && s.track.kind === "video");
-            if (sender) sender.replaceTrack(screenTrack);
-          }
-
-          localVideo.srcObject = screenStream;
-          localVideo.classList.remove("mirrored");
-          isScreenSharing = true;
-          if (btnToggleScreenShare) btnToggleScreenShare.textContent = "🖥 Active";
-          if (mBtnToggleScreenShare) mBtnToggleScreenShare.textContent = "🖥 Stop";
-
-          screenTrack.onended = () => stopScreenSharing();
-        } catch (e) {
-          console.warn("Screen share note:", e);
-        }
-      } else {
-        stopScreenSharing();
-      }
-    }
-
-    function stopScreenSharing() {
-      if (!isScreenSharing) return;
-      if (screenStream) {
-        screenStream.getTracks().forEach((t) => t.stop());
-        screenStream = null;
-      }
-      if (localStream) {
-        const activeStream = getOutgoingVideoStream();
-        const camTrack = activeStream ? activeStream.getVideoTracks()[0] : localStream.getVideoTracks()[0];
-        if (activeCall && activeCall.peerConnection && camTrack) {
-          const sender = activeCall.peerConnection.getSenders().find((s) => s.track && s.track.kind === "video");
-          if (sender) sender.replaceTrack(camTrack);
-        }
-        localVideo.srcObject = localStream;
-        if (isMirrored) localVideo.classList.add("mirrored");
-      }
-      isScreenSharing = false;
-      if (btnToggleScreenShare) btnToggleScreenShare.textContent = "🖥";
-      if (mBtnToggleScreenShare) mBtnToggleScreenShare.textContent = "🖥 Share";
-    }
-
-    bindMediaAction(btnToggleScreenShare, mBtnToggleScreenShare, toggleScreenShare);
-
-    async function togglePopoutPiP() {
-      if (document.pictureInPictureElement) {
-        await document.exitPictureInPicture();
-      } else if (remoteVideo && remoteVideo.readyState >= 2) {
-        try { await remoteVideo.requestPictureInPicture(); } catch (e) { console.warn("PiP note:", e); }
-      } else {
-        showFloatingSubtitle("Connect to a stranger video stream first to pop out.");
-      }
-    }
-    bindMediaAction(btnTriggerPopoutPiP, mBtnTriggerPopoutPiP, togglePopoutPiP);
-
-    function toggleFullscreen() {
-      if (!document.fullscreenElement) {
-        videoStageContainer.requestFullscreen().catch(() => {});
-      } else {
-        document.exitFullscreen();
-      }
-    }
-    bindMediaAction(btnToggleFullscreen, mBtnToggleFullscreen, toggleFullscreen);
-
-    if (arPropSelect) {
-      arPropSelect.addEventListener("change", (e) => {
-        const val = e.target.value;
-        if (!arPropOverlay) return;
-        if (val === "none") {
-          arPropOverlay.style.display = "none";
-        } else {
-          arPropOverlay.textContent = val;
-          arPropOverlay.style.display = "block";
-        }
-      });
-    }
-
     function createFallbackStream() {
       const fallbackCanvas = document.createElement("canvas");
       fallbackCanvas.width = 320;
@@ -4986,7 +4021,6 @@ window.addEventListener("click", (e) => {
       ctx.fillStyle = skinColor;
       ctx.fill();
 
-      // Hair
       ctx.fillStyle = gender === "female" ? "#451a03" : "#1e293b";
       ctx.beginPath();
       if (gender === "female") {
@@ -5023,20 +4057,6 @@ window.addEventListener("click", (e) => {
       ctx.beginPath();
       ctx.arc(cx, cy + headRadius * 0.22, headRadius * 0.22, 0.15 * Math.PI, 0.85 * Math.PI);
       ctx.stroke();
-
-      if (canvas === remoteCanvas) {
-        ctx.fillStyle = "#94a3b8";
-        ctx.font = "600 13px sans-serif";
-        ctx.textAlign = "center";
-
-        if (isSearching) {
-          const dotCount = Math.floor((animStep * 1.5) % 4);
-          ctx.fillText(`Scanning for someone ready${".".repeat(dotCount)}`, cx, h - 30);
-        } else if (isStrangerDisconnected) {
-          ctx.fillStyle = "#38bdf8";
-          ctx.fillText("Finding next stranger...", cx, h - 30);
-        }
-      }
     }
 
     function syncCanvasDimensions() {
@@ -5088,35 +4108,6 @@ window.addEventListener("click", (e) => {
       });
     }
 
-    if (tagsList) {
-      tagsList.addEventListener("click", (e) => {
-        if (e.target.classList.contains("remove-tag")) {
-          const toRemove = e.target.getAttribute("data-tag");
-          userTags = userTags.filter((t) => t !== toRemove);
-          renderTags();
-          renderLandingTags();
-        }
-      });
-    }
-
-    let isMouseDown = false;
-    let startXPos, initialScrollLeft;
-    if (interestsContainer) {
-      interestsContainer.addEventListener("mousedown", (e) => {
-        if (e.target.tagName === "INPUT" || e.target.tagName === "BUTTON") return;
-        isMouseDown = true;
-        startXPos = e.pageX - interestsContainer.offsetLeft;
-        initialScrollLeft = interestsContainer.scrollLeft;
-      });
-
-      window.addEventListener("mouseup", () => { isMouseDown = false; });
-      interestsContainer.addEventListener("mousemove", (e) => {
-        if (!isMouseDown) return;
-        e.preventDefault();
-        interestsContainer.scrollLeft = initialScrollLeft - (e.pageX - interestsContainer.offsetLeft);
-      });
-    }
-
     function appendMessage(sender, text, type = "stranger") {
       const now = new Date();
       const timeStr = now.getHours().toString().padStart(2, "0") + ":" + now.getMinutes().toString().padStart(2, "0");
@@ -5140,18 +4131,6 @@ window.addEventListener("click", (e) => {
     }
 
     if (chatInput) {
-      chatInput.addEventListener("input", () => {
-        if (activeDataConnection && activeDataConnection.open) {
-          activeDataConnection.send({ type: "typing", status: true });
-          clearTimeout(typingTimer);
-          typingTimer = setTimeout(() => {
-            if (activeDataConnection && activeDataConnection.open) {
-              activeDataConnection.send({ type: "typing", status: false });
-            }
-          }, 1200);
-        }
-      });
-
       chatInput.addEventListener("keydown", (e) => {
         if (e.key === "Enter") sendChatMessage();
       });
@@ -5163,17 +4142,11 @@ window.addEventListener("click", (e) => {
       appendMessage(userDisplayName, msg, "you");
       if (chatInput) chatInput.value = "";
       if (activeDataConnection && activeDataConnection.open) {
-        activeDataConnection.send({ type: "typing", status: false });
         activeDataConnection.send({ type: "chat", text: msg, senderName: userDisplayName });
       }
     }
 
     if (btnSendMessage) btnSendMessage.addEventListener("click", () => sendChatMessage());
-
-    document.querySelectorAll(".quick-chip").forEach((chip) => {
-      if (chip.id === "btnRandomIcebreaker" || chip.id === "btnCoinFlip" || chip.id === "btnDiceRoll") return;
-      chip.addEventListener("click", () => sendChatMessage(chip.getAttribute("data-msg")));
-    });
 
     function startCallTimer() {
       stopCallTimer();
@@ -5199,44 +4172,11 @@ window.addEventListener("click", (e) => {
       callSecondsElapsed = 0;
     }
 
-    function startStatsPolling(peerConnection) {
-      stopStatsPolling();
-      if (!pingIndicator) return;
-      pingIndicator.style.display = "inline-block";
-      pingIndicator.textContent = "📶 ...";
-
-      statsPollInterval = setInterval(async () => {
-        if (!peerConnection || peerConnection.connectionState !== "connected") return;
-        try {
-          const stats = await peerConnection.getStats();
-          stats.forEach((report) => {
-            if (report.type === "candidate-pair" && report.state === "succeeded") {
-              if (report.currentRoundTripTime !== undefined) {
-                const ms = Math.round(report.currentRoundTripTime * 1000);
-                pingIndicator.textContent = `📶 ${ms}ms`;
-                pingIndicator.style.color = ms < 80 ? "#10b981" : (ms < 180 ? "#f59e0b" : "#ef4444");
-              }
-            }
-          });
-        } catch (e) {}
-      }, 2000);
-    }
-
-    function stopStatsPolling() {
-      if (statsPollInterval) {
-        clearInterval(statsPollInterval);
-        statsPollInterval = null;
-      }
-      if (pingIndicator) pingIndicator.style.display = "none";
-    }
-
-    // Initialize UI, loop, and fake presence counter
     updateAutoNextUI();
     renderLandingTags();
     syncCanvasDimensions();
     renderAvatarsLoop();
     updateFakeOnlineDisplay();
-    
   </script>
 </body>
 </html>
