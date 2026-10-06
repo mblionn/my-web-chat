@@ -1871,7 +1871,25 @@
   display: none !important;
 }
 @media (max-width: 900px) {
+/* Force the footer container to hold items side by side */
+  .footer-action-wrapper, 
+  .cancel-btn-container {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
 
+  /* Force the red Cancel button to shrink and share the space */
+  .btn-danger-action, 
+  #btnCancel, 
+  .cancel-btn {
+    flex: 1 !important;
+    width: auto !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+  }
   #mobileHeaderModal {
   display: none !important;
   }
