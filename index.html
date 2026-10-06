@@ -843,19 +843,24 @@
       min-height: 0;
       position: relative;
     }
+.video-stage-container {
+  flex: 1;
+  position: relative;
+  background: #020617;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 1fr; /* Default: Single view */
+  gap: 12px;
+  padding: 12px;
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.85);
+}
 
-    .video-stage-container {
-      flex: 1;
-      position: relative;
-      background: #020617;
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--border-subtle);
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.85);
-    }
+/* When connected, automatically split into two equal columns */
+.video-stage-container.connected {
+  grid-template-columns: 1fr 1fr;
+}
 
     .remote-video-wrap {
       width: 100%;
@@ -990,20 +995,17 @@
     }
 
     /* Picture-in-Picture (PiP) Local Box */
-  .local-pip-card {
-  position: absolute;
-  bottom: 14px;
-  right: 14px;
-  width: 196px;
-  height: 146px;
+ .local-pip-card {
+  position: relative; /* Removes the floating corner behavior */
+  width: 100%;
+  height: 100%;
+  min-height: 200px;
   background: #0f172a;
   border-radius: var(--radius-md);
   border: 2px solid rgba(59, 130, 246, 0.45);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.75);
   overflow: hidden;
   z-index: 20;
-  transition: border-color 0.08s ease-out, box-shadow 0.08s ease-out;
-  will-change: border-color, box-shadow;
 }
 
     .local-pip-card.speaking {
@@ -3254,6 +3256,9 @@ window.addEventListener("click", (e) => {
       isConnected = false;
       isStrangerDisconnected = true;
 
+// ── ADD THIS LINE HERE ──
+      videoStageContainer.classList.remove("connected");
+
       playSound("leave");
       stopCallTimer();
       stopSpeedCountdown();
@@ -3384,6 +3389,9 @@ window.addEventListener("click", (e) => {
       isConnected = false;
       isSearching = false;
       isStrangerDisconnected = false;
+
+      // ── ADD THIS LINE HERE ──
+      videoStageContainer.classList.remove("connected");
 
       stopCallTimer();
       stopSpeedCountdown();
@@ -4550,6 +4558,8 @@ window.addEventListener("click", (e) => {
         skipToNextStranger();
         return;
       }
+ 
+      videoStageContainer.classList.add("connected");
 
       cancelAutoNextTimer();
       isSearching = false;
