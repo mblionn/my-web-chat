@@ -1995,6 +1995,34 @@
     transform: scale(0.98);
     background: rgba(30, 41, 59, 0.95);
   }
+  /* Main stage container remains single view */
+.video-stage-container {
+  flex: 1;
+  position: relative;
+  background: #020617;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.85);
+}
+
+/* Float your local camera back to the bottom-right corner as a PiP box */
+.local-pip-card {
+  position: absolute;
+  bottom: 14px;
+  right: 14px;
+  width: 196px;
+  height: 146px;
+  background: #0f172a;
+  border-radius: var(--radius-md);
+  border: 2px solid rgba(59, 130, 246, 0.45);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.75);
+  overflow: hidden;
+  z-index: 20;
+}
 
   /* Floating Pop-up Action Sheet Modal */
   .mobile-action-sheet {
@@ -2088,15 +2116,33 @@
     border-radius: 16px;
   }
 
-  .video-stage-container {
-    border-radius: 16px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
-  }
+ /* Main stage container remains single view */
+.video-stage-container {
+  flex: 1;
+  position: relative;
+  background: #020617;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.85);
+}
 
-  /* 3. Floating Mobile Local PiP: Frosted glass pill style with elevation */
-  /* Allow floating badges to sit outside the video box boundaries */
+/* Float your local camera back to the bottom-right corner as a PiP box */
 .local-pip-card {
-  overflow: visible !important;
+  position: absolute;
+  bottom: 14px;
+  right: 14px;
+  width: 196px;
+  height: 146px;
+  background: #0f172a;
+  border-radius: var(--radius-md);
+  border: 2px solid rgba(59, 130, 246, 0.45);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.75);
+  overflow: hidden;
+  z-index: 20;
 }
 
 /* Ensure the video element itself stays cleanly clipped to the rounded corners */
@@ -4558,9 +4604,6 @@ window.addEventListener("click", (e) => {
         skipToNextStranger();
         return;
       }
- 
-      videoStageContainer.classList.add("connected");
-
       cancelAutoNextTimer();
       isSearching = false;
       isConnected = true;
