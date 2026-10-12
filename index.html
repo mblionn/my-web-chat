@@ -1026,11 +1026,14 @@
     .mirrored { transform: scaleX(-1); }
 
     canvas#localCanvas {
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
-
+  position: absolute !important;
+  top: 0;
+  left: 0;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  border-radius: inherit; /* Keeps the clean rounded corners */
+}
 
     .talking-dot {
       font-size: 0.62rem;
